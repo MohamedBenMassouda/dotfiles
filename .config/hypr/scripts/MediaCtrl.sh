@@ -40,6 +40,32 @@ show_music_notification() {
     fi
 }
 
+show_music() {
+    song_info=$(playerctl metadata --format "{{title}} - {{artist}}")
+    # Check where song is coming from
+    player=$(playerctl -l | head -n 1)
+    logo=""
+
+    # Check if player is spotify
+    if [[ "$player" == "spotify" ]]; then
+        logo=""     
+    elif [[ "$player" == "firefox" ]]; then
+        logo=""
+    elif [[ "$player" == "chromium" ]]; then
+        logo=""
+    elif [[ "$player" == "mopidy" ]]; then
+        logo=""
+    elif [[ "$player" == "mpv" ]]; then
+        logo="󰐹"
+    elif [[ "$player" == "kdeconnect" ]]; then
+        logo=""
+    else
+        logo=""
+    fi
+
+    echo $logo $song_info
+}
+
 # Get media control action from command line argument
 case "$1" in
     "--nxt")
@@ -53,6 +79,9 @@ case "$1" in
         ;;
     "--stop")
         stop_playback
+        ;;
+    "show")
+        show_music
         ;;
     *)
         echo "Usage: $0 [--nxt|--prv|--pause|--stop]"
