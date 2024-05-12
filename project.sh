@@ -1,1 +1,0 @@
-.config/project.sh

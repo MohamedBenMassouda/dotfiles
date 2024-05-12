@@ -1,10 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    selected=$(find /mnt/AA4C6EDE4C6EA4B3/Programming -mindepth 1 -maxdepth 2 -type d | fzf)
-    # selected=$(fd --min-depth=1 --max-depth=2 --type d . /mnt/AA4C6EDE4C6EA4B3/Programming | fzf)
+    selected=$(find /mnt/AA4C6EDE4C6EA4B3/Class/ -mindepth 1 -maxdepth 2 -type d | fzf)
 fi
 
 if [[ -z $selected ]]; then
@@ -15,6 +14,7 @@ selected_name=$(basename "$selected" | tr . _)
 tmux_running=$(pgrep tmux)
 
 if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
+    # zellij a -c $selected_name -- -d $selected
     tmux new-session -s $selected_name -c $selected
     exit 0
 fi
