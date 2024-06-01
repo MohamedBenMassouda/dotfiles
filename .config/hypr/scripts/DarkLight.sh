@@ -9,6 +9,7 @@ dark_wallpapers="$wallpaper_base_path/Dark"
 light_wallpapers="$wallpaper_base_path/Light"
 hypr_config_path="$HOME/.config/hypr"
 swaync_style="$HOME/.config/swaync/style.css"
+ags_style="$HOME/.config/ags/user/style.css"
 SCRIPTSDIR="$HOME/.config/hypr/scripts"
 notif="$HOME/.config/swaync/images/bell.png"
 dark_rofi_pywal="$HOME/.cache/wal/colors-rofi-dark.rasi"
@@ -17,7 +18,7 @@ light_rofi_pywal="$HOME/.cache/wal/colors-rofi-light.rasi"
 pkill swaybg
 
 # Initialize swww if needed
-swww query || swww init
+swww query || swww-daemon
 
 # Set swww options
 swww="swww img"
@@ -74,6 +75,17 @@ else
 	sed -i '/@define-color noti-bg-alt/s/#.*;/#F0F0F0;/' "${swaync_style}"
 fi
 
+# ags color change
+if [ "$next_mode" = "Dark" ]; then
+    sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.4);/' "${ags_style}"
+	sed -i '/@define-color text-color/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.7);/' "${ags_style}"
+	sed -i '/@define-color noti-bg-alt/s/#.*;/#111111;/' "${ags_style}"
+else
+    sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.4);/' "${ags_style}"
+    sed -i '/@define-color text-color/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.7);/' "${ags_style}"
+	sed -i '/@define-color noti-bg-alt/s/#.*;/#F0F0F0;/' "${ags_style}"
+fi
+
 # Set Dynamic Wallpaper for Dark or Light Mode
 if [ "$next_mode" = "Dark" ]; then
     next_wallpaper="$(find "${dark_wallpapers}" -type f \( -iname "*.jpg" -o -iname "*.png" \) -print0 | shuf -n1 -z | xargs -0)"
@@ -87,13 +99,13 @@ $swww "${next_wallpaper}" $effect
 
 # Set Kvantum Manager theme & QT5/QT6 settings
 if [ "$next_mode" = "Dark" ]; then
-    kvantum_theme="Tokyo-Night"
-    qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Tokyo-Night.conf"
-    qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Tokyo-Night.conf"
+    kvantum_theme="Catppuccin-Mocha"
+    qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Catppuccin-Mocha.conf"
+    qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Catppuccin-Mocha.conf"
 else
-    kvantum_theme="Tokyo-Day"
-    qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Tokyo-Day.conf"
-    qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Tokyo-Day.conf"
+    kvantum_theme="Catppuccin-Latte"
+    qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Catppuccin-Latte.conf"
+    qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Catppuccin-Latte.conf"
 fi
 
 kvantummanager --set "$kvantum_theme"

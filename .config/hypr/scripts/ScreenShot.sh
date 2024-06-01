@@ -1,9 +1,9 @@
 #!/bin/bash
-## /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
+# /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # Screenshots scripts
 
 iDIR="$HOME/.config/swaync/icons"
-sDIR="$HOME/.config/hypr/UserScripts"
+sDIR="$HOME/.config/hypr/scripts"
 notify_cmd_shot="notify-send -h string:x-canonical-private-synchronous:shot-notify -u low -i ${iDIR}/picture.png"
 
 time=$(date "+%d-%b_%H-%M-%S")
@@ -75,7 +75,13 @@ shotwin() {
 }
 
 shotarea() {
-	cd ${dir} && grim -g "$(slurp)" - | tee "$file" | wl-copy
+	tmpfile=$(mktemp)
+	grim -g "$(slurp)" - >"$tmpfile"
+	if [[ -s "$tmpfile" ]]; then
+		wl-copy <"$tmpfile"
+		mv "$tmpfile" "$dir/$file"
+	fi
+	rm "$tmpfile"
 	notify_view
 }
 

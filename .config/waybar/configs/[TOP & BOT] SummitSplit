@@ -1,0 +1,46 @@
+/* ---- 💫 https://github.com/JaKooLit 💫 ---- */
+
+// ### DUAL TOP and BOTTOM ### //
+
+{
+    "include": "~/.config/waybar/modules",
+        "layer": "top",
+        //"mode": "dock",
+        "exclusive": true,
+        "passthrough": false,
+        "position": "top",
+        "spacing": 3,
+        "fixed-center": true,
+        "ipc": true,
+        "margin-top": 2,
+        "margin-left": 8,
+        "margin-right": 8,
+
+        "modules-left": [
+            "hyprland/workspaces#kanji", 
+            "custom/separator#blank_2", 
+            "cpu", 
+            "memory",
+            "custom/cava_mviz",
+            "wlr/taskbar",
+        ],
+
+        "modules-center": [
+            "custom/notification",
+            "clock",
+        ], 
+
+        "modules-right": [
+          "mpris",
+        "keyboard-state",
+        "pulseaudio",
+        //"custom/updater",
+        "pulseaudio#microphone",	  
+        "bluetooth",
+        "tray",
+        "battery", 
+        "custom/power", 
+        ],
+},
+
+

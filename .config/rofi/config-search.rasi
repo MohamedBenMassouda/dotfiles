@@ -1,0 +1,83 @@
+/* ---- 💫 https://github.com/JaKooLit 💫 ---- */
+/* Rofi Config for Google Search) */
+
+/* ---- 💫 https://github.com/JaKooLit 💫 ---- */
+/* Main Config 1080p */
+
+/* ---- Load pywal colors ---- */
+@theme "~/.cache/wal/colors-rofi-dark.rasi"
+
+/* ---- Global Properties ---- */
+* {
+
+    background-alt:              @selected-active-background; // Buttons backgroundr
+    selected:                    @selected-urgent-background; // Button selected
+    active:                      @selected-normal-background; // Window activated
+    urgent:                      @selected; // When hovering the activated window (maybe more?)
+
+    text-selected:               @background;
+    text-color:                  @foreground;
+    border-color:                @selected;
+}
+
+/* ---- Window ---- */
+window {
+    // Default
+    enabled:                    true;
+    fullscreen:                 false;
+    transparency:               "real";
+    cursor:                     "default";
+    spacing:                    0px;
+    border:                     2px;
+    border-radius:              30px;
+    location:                   center;
+    anchor:                     center;
+
+    // Style Values
+    width:                      50%;
+    background-color:           #00000099;
+}
+
+/* ----- Main Box ----- */
+mainbox {
+    enabled:                     true;
+    orientation:                 vertical;
+    children:                    [ "inputbar" ];
+    background-color:            transparent;
+	padding: 2px;
+	children: [ "entry"];
+}
+
+
+/* ---- Inputbar ---- */
+inputbar {
+    enabled:                     true;
+    padding:                     10px 10px 200px 10px;
+    margin:                      10px;
+    background-color:            transparent;
+    border-radius:               25px;
+    orientation:                 horizontal;
+    background-image:            url("~/.config/rofi/.current_wallpaper", width);
+}
+
+/* ---- Entry input ---- */
+entry {
+	enabled:                     true;
+	expand:                      false;
+	width:                       300px;
+	padding:                     10px;
+	border-radius:               12px;
+	background-color:            @background-alt;
+	text-color:                  inherit;
+	cursor:                      text;
+	placeholder-color:           inherit;
+
+	placeholder: "🔎 Google Search";
+}
+
+/* ---- Window ---- */
+window {
+	width: 40%;
+	location: north;
+}
+

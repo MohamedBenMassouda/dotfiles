@@ -19,7 +19,7 @@ configuration {
     display-run:                "RUN";
     display-filebrowser:        "FILES";
     display-window:             "WINDOW";
-	drun-display-format:        "{name}";
+    drun-display-format:        "{name}";
     hover-select:               true;
     me-select-entry:            "";
     me-accept-entry:            "MousePrimary";
@@ -98,7 +98,7 @@ inputbar {
 textbox-prompt-colon {
     enabled:                      true;
     expand:                       false;
-    str:                          "";
+    str:                          " ";
     background-color:             transparent;
     text-color:                   inherit;
 }
@@ -250,4 +250,5 @@ error-message {
     background-color:            @background;
     text-color:                  @foreground;
 }
+
 

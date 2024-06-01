@@ -1,5 +1,5 @@
 #!/bin/bash
-## /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
+# /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 
 # Modified version of Refresh but no waybar refresh
 # Used by automatic wallpaper change
@@ -25,14 +25,17 @@ for _prs in "${_ps[@]}"; do
     fi
 done
 
+# quit ags
+ags -q
+
 # Pywal refresh
 ${SCRIPTSDIR}/PywalSwww.sh &
 
 # Relaunching rainbow borders if the script exists
 sleep 1
-# if file_exists "${UserScripts}/RainbowBorders.sh"; then
-#     ${UserScripts}/RainbowBorders.sh &
-# fi
+if file_exists "${UserScripts}/RainbowBorders.sh"; then
+    ${UserScripts}/RainbowBorders.sh &
+fi
 
 # for cava-pywal (note, need to manually restart cava once wallpaper changes)
 ln -sf "$HOME/.cache/wal/cava-colors" "$HOME/.config/cava/config" || true

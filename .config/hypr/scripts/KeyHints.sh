@@ -1,5 +1,5 @@
 #!/bin/bash
-## /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
+# /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # Keyhints. Idea got from Garuda Hyprland
 
 # Detect monitor resolution and scale
@@ -39,10 +39,13 @@ yad --width=$dynamic_width --height=$dynamic_height \
     --timeout-indicator=bottom \
 "ESC" "close this app" "" "=" "SUPER KEY (Windows Key)" "(SUPER KEY)" \
 " enter" "Terminal" "(kitty)" \
-" or  D" "App Launcher" "(rofi)" \
+" SHIFT enter" "DropDown Terminal" "(kitty-pyprland)" \
+" D" "App Launcher" "(rofi)" \
 " T" "Open File Manager" "(Thunar)" \
+" S" "Google Search" "(rofi)" \
 " Q" "close active window" "(not kill)" \
 " Shift Q " "closes a specified window" "(window)" \
+" Z" "Desktop Zoom" "(pyprland)" \
 " Alt V" "Clipboard Manager" "(cliphist)" \
 " W" "Choose wallpaper" "(Wallpaper Menu)" \
 "CTRL ALT W" "Random wallpaper" "(via swww)" \
@@ -68,6 +71,3 @@ yad --width=$dynamic_width --height=$dynamic_height \
 " E" "View or EDIT Keybinds, Settings, Monitor" "" \
 "" "" "" \
 "More tips:" "https://github.com/JaKooLit/Hyprland-Dots/wiki" ""\
-
-
-
