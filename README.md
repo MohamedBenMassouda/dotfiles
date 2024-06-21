@@ -11,7 +11,7 @@ This is my current dotfiles using Hyprland in Fedora 38.
 - hyprland (Tiling Window Manager)
 - swaync (Notification deamon)
 - rofi (Launcher)
-- copyq (Clipboard Manager)
+- clipman (Clipboard Manager)
 
 ### Installation
 #### Requirements
@@ -28,6 +28,6 @@ trs-sod/swaylock-effects
 ```
 
 ```bash
-sudo dnf install git fzf tmux neovim fd-find ripgrep rofi copyq SwayNotificationCenter
+sudo dnf install git fzf tmux neovim fd-find ripgrep rofi clipman SwayNotificationCenter hyprshot hyprlock hypridle
 ```
 
