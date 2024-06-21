@@ -14,10 +14,6 @@ else
     if [[ -z $result ]]; then
         exit 0
     fi
- echo "Current result:"
-    echo "$result"
-    echo "Cache file content:"
-    [[ -f $CACHE_FILE ]] && cat "$CACHE_FILE"
     # Ensure cache directory exists
     mkdir -p "$(dirname "$CACHE_FILE")"
 
