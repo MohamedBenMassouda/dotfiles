@@ -24,7 +24,7 @@ else
     fi
 
     # Use fzf to select a directory from the cache
-    selected=$(cat "$CACHE_FILE" | fzf)
+    selected=$(bat "$CACHE_FILE" | fzf)
 fi
 
 # Exit if no selection is made
