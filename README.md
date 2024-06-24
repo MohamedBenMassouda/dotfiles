@@ -21,13 +21,20 @@ Also I installed hyprland using this [repo](https://github.com/JaKooLit/Fedora-H
 #### Needed coprs
 ```
 alebastr/sway-extras
+cyqsimon/fzf
 en4aew/desktop-tools
 erikreider/SwayNotificationCenter
+phracek/PyCharm
 solopasha/hyprland
 trs-sod/swaylock-effects
+zeno/scrcpy
 ```
 
 ```bash
-sudo dnf install git fzf tmux neovim fd-find ripgrep rofi clipman SwayNotificationCenter hyprshot hyprlock hypridle
+sudo dnf install zsh stow git fzf tmux neovim fd-find ripgrep rofi-wayland SwayNotificationCenter hyprshot hyprlock hypridle wl-clipboard swww wlogout
+```
+```bash
+mkdir ~/Git && cd ~/Git && git clone https://github.com/MohamedBenMassouda/clipman
+cd clipman && go build
 ```
 
