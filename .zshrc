@@ -21,7 +21,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Display Pokemon-colorscripts
 # Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
-pokemon-colorscripts --no-title -s -r
+# pokemon-colorscripts --no-title -s -r
 
 # Import colorscheme from 'wal' asynchronously
 # &   # Run the process in the background.
@@ -94,9 +94,9 @@ alias rg="rg -g '!{**/node_modules/*,**/.git/*, **/venv/*}' --hidden --follow"
 # alias fd="fd --ignore-file=.gitignore"
 
 # kubectl autocompletion
-autoload -Uz compinit
-compinit
-source <(kubectl completion zsh)
+# autoload -Uz compinit
+# compinit
+# source <(kubectl completion zsh)
 
 function fuzzy_nvim_start {
     if [ "$#" -eq 0 ]; then
