@@ -6,36 +6,48 @@
 # CTRL Del to delete an entry
 # ALT Del to wipe clipboard contents
 
-while true; do
-    result=$(
-        rofi -i -dmenu \
-            -kb-custom-1 "Control-Delete" \
-            -kb-custom-2 "Alt-Delete" \
-            -display-columns 2 \
-            -config ~/.config/rofi/config-clipboard.rasi < <(cliphist list)
-    )
+start() {
+  wl-paste --type text --watch cliphist store #Stores only text data
+  wl-paste --type image --watch cliphist store #Stores only image data
+}
 
-    case "$?" in
+case "$1" in
+  "--start")
+    start
+    ;;
+  *)
+    while true; do
+      result=$(
+      rofi -i -dmenu \
+        -kb-custom-1 "Control-Delete" \
+        -kb-custom-2 "Alt-Delete" \
+        -display-columns 2 \
+        -config ~/.config/rofi/config-clipboard.rasi < <(cliphist list)
+      )
+
+      case "$?" in
         1)
-            exit
-            ;;
+          exit
+          ;;
         0)
-            case "$result" in
-                "")
-                    continue
-                    ;;
-                *)
-                    cliphist decode <<<"$result" | wl-copy
-                    exit
-                    ;;
-            esac
-            ;;
+          case "$result" in
+            "")
+              continue
+              ;;
+            *)
+              cliphist decode <<<"$result" | wl-copy
+              exit
+              ;;
+          esac
+          ;;
         10)
-            cliphist delete <<<"$result"
-            ;;
+          cliphist delete <<<"$result"
+          ;;
         11)
-            cliphist wipe
-            ;;
-    esac
-done
+          cliphist wipe
+          ;;
+      esac
+    done
+    ;;
+esac
 
