@@ -87,6 +87,7 @@ alias dotfilesadd='dotfiles add ~/.config/nvim/ ~/.config/sessionizer.sh ~/.conf
 alias v="fd --type f --hidden --exclude .git | fzf-tmux -p | xargs --no-run-if-empty nvim"
 alias lvim="NVIM_APPNAME=lazy nvim"
 alias poetry="~/.local/bin/poetry"
+alias ls="ls --color=auto"
 
 export EDITOR="/usr/bin/nvim"
 export KEYTIMEOUT=1
