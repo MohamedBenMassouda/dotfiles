@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Directory to search for project directories
-PROJECT_DIR="/mnt/AA4C6EDE4C6EA4B3/Programming"
+PROJECT_DIR="/mnt/7C2885E92885A2AE/Programming"
 CACHE_FILE="$HOME/.cache/sessionizer"
+CUSTOM_CACHE_FILE="$HOME/.cache/sessionizer_custom"
 
 if [[ $# -eq 1 ]]; then
     selected=$1
@@ -24,7 +25,7 @@ else
     fi
 
     # Use fzf to select a directory from the cache
-    selected=$(bat "$CACHE_FILE" | fzf)
+    selected=$(bat "$CACHE_FILE" "$CUSTOM_CACHE_FILE" | fzf)
 fi
 
 # Exit if no selection is made
