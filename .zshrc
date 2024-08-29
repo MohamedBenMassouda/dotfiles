@@ -107,4 +107,4 @@ unset zle_bracketed_paste
 # Enable incremental history search
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
-
+export CHROME_EXECUTABLE="/var/lib/flatpak/app/com.google.Chrome/x86_64/stable/active/export/bin/com.google.Chrome"
