@@ -49,8 +49,8 @@ setopt hist_ignore_dups
 setopt hist_find_no_dups
 
 # /home/monarch/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/plugins/Kotlin/kotlinc/bin/ if kotlin is needed as a command
-export PATH="$PATH:$HOME/Development/flutter/bin:$HOME/.pub-cache/bin:$GOPATH/bin/:$HOME/.local/share/JetBrains/Toolbox/scripts/"
-alias docker="sudo docker"
+export PATH="$PATH:$HOME/Development/flutter/bin:$HOME/.pub-cache/bin:$GOPATH/bin/:$HOME/.local/share/JetBrains/Toolbox/scripts/:$HOME/.bun/bin/"
+# alias docker="sudo docker"
 export PROJECT="$HOME/.config/project.sh"
 export SESSIONEZ="$HOME/.config/sessionizer.sh"
 export GOPATH="$HOME/go/"
@@ -75,7 +75,7 @@ alias nv='fuzzy_nvim_start'
 
 alias mongosh="podman exec -it my_mongo mongosh"
 function kdeconnect-share {
-    kdeconnect-cli --share=$(fzf) --device=d46f60b0_9e03_4e0d_a1d6_6c0646fa98d1
+    kdeconnect-cli --share=$(fzf) --device=a1203570_bbba_42f5_98e2_0797fa4f0f89
 }
 
 alias share="kdeconnect-share"
@@ -108,3 +108,7 @@ unset zle_bracketed_paste
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 export CHROME_EXECUTABLE="/var/lib/flatpak/app/com.google.Chrome/x86_64/stable/active/export/bin/com.google.Chrome"
+
+# setopt correct_all
+export PATH=$HOME/.dotnet/tools:$PATH
+source ~/.config/completion-for-pnpm.zsh
