@@ -217,6 +217,7 @@
     },
 
     "clock": {
+      "timezone": "",
       "interval": 1,
       //"format": " {:%I:%M %p}", // AM PM format
       "format": " {:%H:%M:%S}",
