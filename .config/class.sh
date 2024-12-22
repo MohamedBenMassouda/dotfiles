@@ -3,7 +3,15 @@
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    selected=$(find /mnt/AA4C6EDE4C6EA4B3/Class/ -mindepth 1 -maxdepth 2 -type d | fzf)
+    base_path="/mnt/7C2885E92885A2AE/Class"
+    results=$(find "$base_path" -mindepth 1 -maxdepth 2 -type d)
+    results="$base_path"$'\n'"$results"
+
+    if [[ -z $results ]]; then
+        exit 0
+    fi 
+
+    selected=$(echo -e "$results" | fzf)
 fi
 
 if [[ -z $selected ]]; then
