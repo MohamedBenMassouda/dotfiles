@@ -107,8 +107,14 @@ unset zle_bracketed_paste
 # Enable incremental history search
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
-export CHROME_EXECUTABLE="/var/lib/flatpak/app/com.google.Chrome/x86_64/stable/active/export/bin/com.google.Chrome"
+# export CHROME_EXECUTABLE="/var/lib/flatpak/app/com.google.Chrome/x86_64/stable/active/export/bin/com.google.Chrome"
+export CHROME_EXECUTABLE="google-chrome-stable"
 
 # setopt correct_all
 export PATH=$HOME/.dotnet/tools:$PATH
 source ~/.config/completion-for-pnpm.zsh
+  
+alias python="python3.12"
+alias pip="pip3.12"
+alias lg="lazygit"
+# source /usr/share/nvm/init-nvm.sh
