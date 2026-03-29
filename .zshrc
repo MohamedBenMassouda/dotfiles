@@ -73,7 +73,7 @@ function fuzzy_nvim_start {
 }
 alias nv='fuzzy_nvim_start'
 
-alias mongosh="podman exec -it my_mongo mongosh"
+# alias mongosh="podman exec -it my_mongo mongosh"
 function kdeconnect-share {
     kdeconnect-cli --share=$(fzf) --device=a1203570_bbba_42f5_98e2_0797fa4f0f89
 }
