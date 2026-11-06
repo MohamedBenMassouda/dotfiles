@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # This script is used to play system sounds.
 # Script is used by Volume.Sh and ScreenShots.sh 
@@ -26,8 +26,13 @@ elif [[ "$1" == "--volume" ]]; then
         exit 0
     fi
     soundoption="audio-volume-change.*"
+elif [[ "$1" == "--error" ]]; then
+    if [[ "$muteScreenshots" = true ]]; then
+        exit 0
+    fi
+    soundoption="dialog-error.*"
 else
-    echo -e "Available sounds: --screenshot, --volume"
+    echo -e "Available sounds: --screenshot, --volume, --error"
     exit 0
 fi
 
@@ -53,13 +58,13 @@ iTheme=$(cat "$sDIR/index.theme" | grep -i "inherits" | cut -d "=" -f 2)
 iDIR="$sDIR/../$iTheme"
 
 # Find the sound file and play it.
-sound_file=$(find $sDIR/stereo -name "$soundoption" -print -quit)
+sound_file=$(find -L $sDIR/stereo -name "$soundoption" -print -quit)
 if ! test -f "$sound_file"; then
-    sound_file=$(find $iDIR/stereo -name "$soundoption" -print -quit)
+    sound_file=$(find -L $iDIR/stereo -name "$soundoption" -print -quit)
     if ! test -f "$sound_file"; then
-        sound_file=$(find $userDIR/$defaultTheme/stereo -name "$soundoption" -print -quit)
+        sound_file=$(find -L $userDIR/$defaultTheme/stereo -name "$soundoption" -print -quit)
         if ! test -f "$sound_file"; then
-            sound_file=$(find $systemDIR/$defaultTheme/stereo -name "$soundoption" -print -quit)
+            sound_file=$(find -L $systemDIR/$defaultTheme/stereo -name "$soundoption" -print -quit)
             if ! test -f "$sound_file"; then
                 echo "Error: Sound file not found."
                 exit 1
@@ -67,4 +72,19 @@ if ! test -f "$sound_file"; then
         fi
     fi
 fi
-pw-play "$sound_file"
+
+# Play the sound: prefer PipeWire, then PulseAudio, then ALSA
+if command -v pw-play >/dev/null 2>&1; then
+    pw-play "$sound_file" && exit 0
+fi
+
+if command -v paplay >/dev/null 2>&1; then
+    paplay "$sound_file" && exit 0
+fi
+
+if command -v aplay >/dev/null 2>&1; then
+    aplay "$sound_file" && exit 0
+fi
+
+echo "Error: No suitable audio player (pw-play/paplay/aplay) found."
+exit 1

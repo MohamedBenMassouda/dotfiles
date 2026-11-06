@@ -1,0 +1,39 @@
+-- Turn off animations, blur and shadows while a game window is open; restore when the last one closes.
+local function is_game(w)
+    if not w then return false end
+    local c = w.class or ""
+    return c:match("^steam_app_%d+$") or c == "gamescope" or w.content_type == "game"
+end
+
+local saved
+
+local function games_open(except)
+    for _, w in ipairs(hl.get_windows()) do
+        if w.address ~= except and is_game(w) then return true end
+    end
+    return false
+end
+
+hl.on("window.open", function(w)
+    if saved or not is_game(w) then return end
+    saved = {
+        anim   = hl.get_config("animations.enabled"),
+        blur   = hl.get_config("decoration.blur.enabled"),
+        shadow = hl.get_config("decoration.shadow.enabled"),
+    }
+    hl.config({
+        animations = { enabled = false },
+        decoration = { blur = { enabled = false }, shadow = { enabled = false } },
+    })
+    hl.notification.create({ text = "Game mode on", timeout = 2000 })
+end)
+
+hl.on("window.close", function(w)
+    if not saved or not is_game(w) or games_open(w.address) then return end
+    hl.config({
+        animations = { enabled = saved.anim },
+        decoration = { blur = { enabled = saved.blur }, shadow = { enabled = saved.shadow } },
+    })
+    saved = nil
+    hl.notification.create({ text = "Game mode off", timeout = 2000 })
+end)

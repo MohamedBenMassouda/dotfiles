@@ -14,3 +14,4 @@ if [[ "$1" == "--clipboard" ]]; then
 else
 	screenshotWithSave
 fi
+
