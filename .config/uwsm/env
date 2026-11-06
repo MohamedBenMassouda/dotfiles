@@ -1,0 +1,17 @@
+# Sourced by uwsm for the "Hyprland (uwsm-managed)" session.
+# Exported to Hyprland and to every app started with uwsm-app.
+# Keep in sync with ~/.config/hypr/configs/ENVariables.lua and UserConfigs/ENVariables.lua
+export GDK_BACKEND=wayland,x11,*
+export QT_QPA_PLATFORM='wayland;xcb'
+export CLUTTER_BACKEND=wayland
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_QUICK_CONTROLS_STYLE=org.hyprland.style
+export GDK_SCALE=1
+export QT_SCALE_FACTOR=1
+export MOZ_ENABLE_WAYLAND=1
+export ELECTRON_OZONE_PLATFORM_HINT=auto
+export XCURSOR_THEME=Bibata-Modern-Ice
+export XCURSOR_SIZE=24
+export HYPRCURSOR_SIZE=24
