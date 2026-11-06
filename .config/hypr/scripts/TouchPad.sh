@@ -1,27 +1,48 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # For disabling touchpad.
-# Edit the Touchpad_Device according to your system
+# Edit the touchpad hl.device name in ~/.config/hypr/configs/Laptops.lua according to your system
 # use hyprctl devices to get your system touchpad device name
+# source https://github.com/hyprwm/Hyprland/discussions/4283?sort=new#discussioncomment-8648109
 
+set -euo pipefail
 
-Touchpad_Device="asue1209:00-04f3:319f-touchpad"
-notif="$HOME/.config/swaync/images/bell.png"
+notif="$HOME/.config/swaync/images/ja.png"
+laptops_conf="$HOME/.config/hypr/configs/Laptops.lua"
 
-XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
-STATUS_FILE="$XDG_RUNTIME_DIR/touchpad.status"
+touchpad_device="${TOUCHPAD_DEVICE:-}"
+if [[ -z "$touchpad_device" && -f "$laptops_conf" ]]; then
+    touchpad_device="$(
+        grep -oP 'name\s*=\s*"\K[^"]*touchpad[^"]*' "$laptops_conf" | head -1
+    )"
+fi
 
-toggle_touchpad() {
-  if [ ! -f "$STATUS_FILE" ] || [ "$(cat "$STATUS_FILE")" = "false" ]; then
-    echo "true" > "$STATUS_FILE"
-    action="enabled"
-  else
-    echo "false" > "$STATUS_FILE"
-    action="disabled"
-  fi
+if [[ -z "$touchpad_device" ]]; then
+    notify-send -u low -i "$notif" " Touchpad" " Device name not set (check configs/Laptops.lua)"
+    exit 1
+fi
 
-  notify-send -u low -i "$notif" "Touchpad $action"
-  hyprctl keyword "device[$Touchpad_Device]:enabled" "$(cat "$STATUS_FILE")"
+status_file="${XDG_RUNTIME_DIR:-/tmp}/touchpad.status"
+
+enable_touchpad() {
+    printf "true" >"$status_file"
+    notify-send -u low -i "$notif" " Enabling" " touchpad"
+    hyprctl eval "hl.device({ name = \"$touchpad_device\", enabled = true })"
 }
 
-toggle_touchpad
+disable_touchpad() {
+    printf "false" >"$status_file"
+    notify-send -u low -i "$notif" " Disabling" " touchpad"
+    hyprctl eval "hl.device({ name = \"$touchpad_device\", enabled = false })"
+}
+
+current_state="false"
+if [[ -f "$status_file" ]]; then
+    current_state="$(<"$status_file")"
+fi
+
+if [[ "$current_state" == "true" ]]; then
+    disable_touchpad
+else
+    enable_touchpad
+fi

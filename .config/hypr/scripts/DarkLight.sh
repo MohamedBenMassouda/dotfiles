@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ## /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # For Dark and Light switching
-# Note: Scripts are looking for keywords Light or Dark except for wallpapers as the are in a separate folders
+# Note: Scripts are looking for keywords Light or Dark except for wallpapers as the are in a separate directories
 
 # Paths
-wallpaper_base_path="$HOME/Pictures/wallpapers/Dynamic-Wallpapers"
+PICTURES_DIR="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")"
+wallpaper_base_path="$PICTURES_DIR/wallpapers/Dynamic-Wallpapers"
 dark_wallpapers="$wallpaper_base_path/Dark"
 light_wallpapers="$wallpaper_base_path/Light"
 hypr_config_path="$HOME/.config/hypr"
@@ -12,16 +13,29 @@ swaync_style="$HOME/.config/swaync/style.css"
 ags_style="$HOME/.config/ags/user/style.css"
 SCRIPTSDIR="$HOME/.config/hypr/scripts"
 notif="$HOME/.config/swaync/images/bell.png"
-dark_rofi_pywal="$HOME/.cache/wal/colors-rofi-dark.rasi"
-light_rofi_pywal="$HOME/.cache/wal/colors-rofi-light.rasi"
+wallust_rofi="$HOME/.config/wallust/templates/colors-rofi.rasi"
 
-pkill swaybg
+kitty_conf="$HOME/.config/kitty/kitty.conf"
 
-# Initialize swww if needed
-swww query || swww-daemon
+wallust_config="$HOME/.config/wallust/wallust.toml"
+pallete_dark="dark16"
+pallete_light="light16"
+qt5ct_dark="$HOME/.config/qt5ct/colors/Catppuccin-Mocha.conf"
+qt5ct_light="$HOME/.config/qt5ct/colors/Catppuccin-Latte.conf"
+qt6ct_dark="$HOME/.config/qt6ct/colors/Catppuccin-Mocha.conf"
+qt6ct_light="$HOME/.config/qt6ct/colors/Catppuccin-Latte.conf"
 
-# Set swww options
-swww="swww img"
+# intial kill process
+for pid in waybar rofi swaync ags swaybg; do
+    killall -SIGUSR1 "$pid"
+done
+
+
+# Initialize awww if needed
+awww query || awww-daemon --format xrgb
+
+# Set awww options
+awww="awww img"
 effect="--transition-bezier .43,1.19,1,.4 --transition-fps 60 --transition-type grow --transition-pos 0.925,0.977 --transition-duration 2"
 
 # Determine current theme mode
@@ -34,16 +48,31 @@ else
     # Logic for Light mode
     wallpaper_path="$light_wallpapers"
 fi
+# Select Qt color scheme templates for the upcoming mode
+if [ "$next_mode" = "Dark" ]; then
+    qt5ct_color_scheme="$qt5ct_dark"
+    qt6ct_color_scheme="$qt6ct_dark"
+else
+    qt5ct_color_scheme="$qt5ct_light"
+    qt6ct_color_scheme="$qt6ct_light"
+fi
 
 # Function to update theme mode for the next cycle
 update_theme_mode() {
-    echo "$next_mode" > ~/.cache/.theme_mode
+    echo "$next_mode" > "$HOME/.cache/.theme_mode"
 }
 
 # Function to notify user
 notify_user() {
-    notify-send -u low -i "$notif" "Switching to $1 mode"
+    notify-send -u low -i "$notif" " Switching to" " $1 mode"
 }
+
+# Use sed to replace the palette setting in the wallust config file
+if [ "$next_mode" = "Dark" ]; then
+    sed -i 's/^palette = .*/palette = "'"$pallete_dark"'"/' "$wallust_config" 
+else
+    sed -i 's/^palette = .*/palette = "'"$pallete_light"'"/' "$wallust_config" 
+fi
 
 # Function to set Waybar style
 set_waybar_style() {
@@ -52,7 +81,7 @@ set_waybar_style() {
     waybar_style_link="$HOME/.config/waybar/style.css"
     style_prefix="\\[${theme}\\].*\\.css$"
 
-    style_file=$(find "$waybar_styles" -maxdepth 1 -type f -regex ".*$style_prefix" | shuf -n 1)
+    style_file=$(find -L "$waybar_styles" -maxdepth 1 -type f -regex ".*$style_prefix" | shuf -n 1)
 
     if [ -n "$style_file" ]; then
         ln -sf "$style_file" "$waybar_style_link"
@@ -69,55 +98,74 @@ notify_user "$next_mode"
 # swaync color change
 if [ "$next_mode" = "Dark" ]; then
     sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.8);/' "${swaync_style}"
-	sed -i '/@define-color noti-bg-alt/s/#.*;/#111111;/' "${swaync_style}"
+	#sed -i '/@define-color noti-bg-alt/s/#.*;/#111111;/' "${swaync_style}"
 else
     sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.9);/' "${swaync_style}"
-	sed -i '/@define-color noti-bg-alt/s/#.*;/#F0F0F0;/' "${swaync_style}"
+	#sed -i '/@define-color noti-bg-alt/s/#.*;/#F0F0F0;/' "${swaync_style}"
 fi
 
 # ags color change
-if [ "$next_mode" = "Dark" ]; then
-    sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.4);/' "${ags_style}"
-	sed -i '/@define-color text-color/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.7);/' "${ags_style}"
-	sed -i '/@define-color noti-bg-alt/s/#.*;/#111111;/' "${ags_style}"
-else
-    sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.4);/' "${ags_style}"
-    sed -i '/@define-color text-color/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.7);/' "${ags_style}"
-	sed -i '/@define-color noti-bg-alt/s/#.*;/#F0F0F0;/' "${ags_style}"
+if command -v ags >/dev/null 2>&1; then    
+    if [ "$next_mode" = "Dark" ]; then
+        sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.4);/' "${ags_style}"
+	    sed -i '/@define-color text-color/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.7);/' "${ags_style}" 
+	    sed -i '/@define-color noti-bg-alt/s/#.*;/#111111;/' "${ags_style}"
+    else
+        sed -i '/@define-color noti-bg/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(255, 255, 255, 0.4);/' "${ags_style}"
+        sed -i '/@define-color text-color/s/rgba([0-9]*,\s*[0-9]*,\s*[0-9]*,\s*[0-9.]*);/rgba(0, 0, 0, 0.7);/' "${ags_style}"
+	    sed -i '/@define-color noti-bg-alt/s/#.*;/#F0F0F0;/' "${ags_style}"
+    fi
 fi
+
+# kitty background color change
+if [ "$next_mode" = "Dark" ]; then
+    sed -i '/^foreground /s/^foreground .*/foreground #dddddd/' "${kitty_conf}"
+	sed -i '/^background /s/^background .*/background #000000/' "${kitty_conf}"
+	sed -i '/^cursor /s/^cursor .*/cursor #dddddd/' "${kitty_conf}"
+else
+	sed -i '/^foreground /s/^foreground .*/foreground #000000/' "${kitty_conf}"
+	sed -i '/^background /s/^background .*/background #dddddd/' "${kitty_conf}"
+	sed -i '/^cursor /s/^cursor .*/cursor #000000/' "${kitty_conf}"
+fi
+
+for pid_kitty in $(pidof kitty); do
+    kill -SIGUSR1 "$pid_kitty"
+done
 
 # Set Dynamic Wallpaper for Dark or Light Mode
 if [ "$next_mode" = "Dark" ]; then
-    next_wallpaper="$(find "${dark_wallpapers}" -type f \( -iname "*.jpg" -o -iname "*.png" \) -print0 | shuf -n1 -z | xargs -0)"
+    next_wallpaper="$(find -L "${dark_wallpapers}" -type f \( -iname "*.jpg" -o -iname "*.png" \) -print0 | shuf -n1 -z | xargs -0)"
 else
-    next_wallpaper="$(find "${light_wallpapers}" -type f \( -iname "*.jpg" -o -iname "*.png" \) -print0 | shuf -n1 -z | xargs -0)"
+    next_wallpaper="$(find -L "${light_wallpapers}" -type f \( -iname "*.jpg" -o -iname "*.png" \) -print0 | shuf -n1 -z | xargs -0)"
 fi
 
-# Update wallpaper using swww command
-$swww "${next_wallpaper}" $effect
+# Update wallpaper using awww command
+$awww "${next_wallpaper}" $effect
 
 
 # Set Kvantum Manager theme & QT5/QT6 settings
 if [ "$next_mode" = "Dark" ]; then
-    kvantum_theme="Catppuccin-Mocha"
-    qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Catppuccin-Mocha.conf"
-    qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Catppuccin-Mocha.conf"
+    kvantum_theme="catppuccin-mocha-blue"
+    #qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Catppuccin-Mocha.conf"
+    #qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Catppuccin-Mocha.conf"
 else
-    kvantum_theme="Catppuccin-Latte"
-    qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Catppuccin-Latte.conf"
-    qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Catppuccin-Latte.conf"
+    kvantum_theme="catppuccin-latte-blue"
+    #qt5ct_color_scheme="$HOME/.config/qt5ct/colors/Catppuccin-Latte.conf"
+    #qt6ct_color_scheme="$HOME/.config/qt6ct/colors/Catppuccin-Latte.conf"
 fi
 
-kvantummanager --set "$kvantum_theme"
 sed -i "s|^color_scheme_path=.*$|color_scheme_path=$qt5ct_color_scheme|" "$HOME/.config/qt5ct/qt5ct.conf"
 sed -i "s|^color_scheme_path=.*$|color_scheme_path=$qt6ct_color_scheme|" "$HOME/.config/qt6ct/qt6ct.conf"
+kvantummanager --set "$kvantum_theme"
 
-# Set Rofi Themes
+
+# set the rofi color for background
 if [ "$next_mode" = "Dark" ]; then
-    ln -sf "$dark_rofi_pywal" "$HOME/.config/rofi/pywal-color/pywal-theme.rasi"
+    sed -i '/^background:/s/.*/background: rgba(0,0,0,0.7);/' $wallust_rofi
 else
-    ln -sf "$light_rofi_pywal" "$HOME/.config/rofi/pywal-color/pywal-theme.rasi"
+    sed -i '/^background:/s/.*/background: rgba(255,255,255,0.9);/' $wallust_rofi
 fi
+
 
 # GTK themes and icons switching
 set_custom_gtk_theme() {
@@ -199,14 +247,21 @@ set_custom_gtk_theme "$next_mode"
 # Update theme mode for the next cycle
 update_theme_mode
 
-sleep 0.5
-# Run remaining scripts
-${SCRIPTSDIR}/PywalSwww.sh
+
+${SCRIPTSDIR}/WallustSwww.sh &&
+
+sleep 2
+# kill process
+for pid1 in waybar rofi swaync ags swaybg; do
+    killall "$pid1"
+done
+
 sleep 1
 ${SCRIPTSDIR}/Refresh.sh 
 
-# Display notifications for theme and icon changes
-notify-send -u normal -i "$notif" "Themes in $next_mode Mode"
+sleep 0.5
+# Display notifications for theme and icon changes 
+notify-send -u low -i "$notif" " Themes switched to:" " $next_mode Mode"
 
 exit 0
 
