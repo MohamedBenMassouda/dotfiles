@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Directory to search for project directories
-PROJECT_DIR="/mnt/7C2885E92885A2AE/Programming"
+PROJECT_DIR="/mnt/Data/Programming"
 CACHE_FILE="$HOME/.cache/sessionizer"
 CUSTOM_CACHE_FILE="$HOME/.cache/sessionizer_custom"
 
@@ -21,7 +21,7 @@ else
     # Update cache file if it's empty or contents have changed
     if [[ ! -s $CACHE_FILE ]] || [[ "$result" != "$(cat "$CACHE_FILE")" ]]; then
         echo "Updating cache file..."
-        echo "$result" > "$CACHE_FILE"
+        echo "$result" >"$CACHE_FILE"
     fi
 
     # Use fzf to select a directory from the cache
@@ -46,10 +46,9 @@ if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
 fi
 
 # Create a new TMUX session if it doesn't already exist
-if ! tmux has-session -t="$selected_name" 2> /dev/null; then
+if ! tmux has-session -t="$selected_name" 2>/dev/null; then
     tmux new-session -ds "$selected_name" -c "$selected"
 fi
 
 # Attach to the existing or newly created TMUX session
 tmux attach-session -t "$selected_name"
-
