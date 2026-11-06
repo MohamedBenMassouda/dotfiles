@@ -27,8 +27,11 @@ configuration {
     
 }
 
-/* ---- Load pywal colors (custom wal template) ---- */
-@import "~/.cache/wal/colors-rofi-pywal"
+/* ---- Colors ---- */
+/* Drop rofi's built-in theme, else its defaults override everything below. */
+@theme "/dev/null"
+/* NOTE: rofi 2.0 does not expand "~" in @import - keep this path relative. */
+@import "colors-shared.rasi"
 
 /* ---- Window ---- */
 window {
@@ -138,13 +141,13 @@ button selected {
 listview {
     enabled:                      true;
     columns:                      1;
-    lines:                        8;
+    lines:                        5;
     cycle:                        true;
     dynamic:                      true;
     scrollbar:                    false;
     layout:                       vertical;
     reverse:                      false;
-    fixed-height:                 true;
+    fixed-height:                 false;
     fixed-columns:                true;
     spacing:                      0px;
     padding:                      10px;

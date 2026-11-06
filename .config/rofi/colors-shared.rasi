@@ -1,0 +1,14 @@
+/* Shared palette for rofi configs that used to import the pywal cache.
+ * pywal is not installed here, so those imports resolved to nothing and rofi
+ * fell back to its built-in theme. Values mirror config.rasi.
+ * Do not write a slash-star sequence in these comments - rofi does not nest
+ * comments and the rest of the file gets swallowed. */
+
+* {
+    background:     #242424E6;
+    foreground:     #DEDEDE;
+
+    color0:         #242424E6;
+    color1:         #7E7E7E80;
+    color11:        #0860f2E6;
+}
