@@ -2,8 +2,8 @@ ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 
 # Install zinit
 if [[ ! -d $ZINIT_HOME ]]; then
-  mkdir -p "$(dirname $ZINIT_HOME)"
-  git clone https://github.com/zdharma-continuum/zinit.git $ZINIT_HOME
+    mkdir -p "$(dirname $ZINIT_HOME)"
+    git clone https://github.com/zdharma-continuum/zinit.git $ZINIT_HOME
 fi
 
 source $ZINIT_HOME/zinit.zsh
@@ -14,8 +14,8 @@ zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
 
 fpath=(
-   $fpath
-   $HOME/.local/share/zsh/generated_man_completions
+    $fpath
+    $HOME/.local/share/zsh/generated_man_completions
 )
 
 # Load completions
@@ -99,7 +99,6 @@ alias clipman="~/Git/clipman/clipman"
 export FZF_DEFAULT_COMMAND='rg --files --hidden'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
-
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 unset zle_bracketed_paste
@@ -113,8 +112,25 @@ export CHROME_EXECUTABLE="google-chrome-stable"
 # setopt correct_all
 export PATH=$HOME/.dotnet/tools:$PATH
 source ~/.config/completion-for-pnpm.zsh
-  
+
 alias python="python3.12"
 alias pip="pip3.12"
 alias lg="lazygit"
 # source /usr/share/nvm/init-nvm.sh
+fpath=(~/.stripe $fpath)
+autoload -Uz compinit && compinit -i
+
+# pnpm
+export PNPM_HOME="/home/monarch/.local/share/pnpm"
+case ":$PATH:" in
+*":$PNPM_HOME:"*) ;;
+*) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
+# Load Angular CLI autocompletion.
+# source <(ng completion script)
+fastfetch
+
+# Turso
+export PATH="$PATH:/home/monarch/.turso"
