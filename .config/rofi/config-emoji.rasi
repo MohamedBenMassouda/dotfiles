@@ -1,0 +1,2 @@
+/* emoji menu: uses the main rofi theme. Add overrides below. */
+@import "config.rasi"
