@@ -2,11 +2,6 @@
 -- Defaults live in configs/, your overrides in UserConfigs/ (loaded after, so they win).
 -- Wiki: https://wiki.hypr.land/configuring/
 
-hl.on("hyprland.start", function()
-    -- Initial boot script (wallpaper/theming). Skips itself once .initial_startup_done exists.
-    hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/initial-boot.sh")
-end)
-
 require("configs/Keybinds")
 
 require("configs/Startup_Apps")
