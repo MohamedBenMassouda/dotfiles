@@ -107,7 +107,7 @@ rainbow_borders_menu() {
     # Build options and prompt
     local options="Disable Rainbow Borders\nWallust Color\nOriginal Rainbow\nGradient Flow"
     local choice
-    choice=$(printf "%b" "$options" | rofi -i -dmenu -config "$rofi_theme" -mesg "Rainbow Borders: current = $current_display")
+    choice=$(printf "%b" "$options" | rofi -i -dmenu -p Settings -config "$rofi_theme" -mesg "Rainbow Borders: current = $current_display")
 
     [[ -z "$choice" ]] && return
 
@@ -210,7 +210,7 @@ EOF
 
 # Main function to handle menu selection
 main() {
-    choice=$(menu | rofi -i -dmenu -config $rofi_theme -mesg "$msg")
+    choice=$(menu | rofi -i -dmenu -p Settings -config $rofi_theme -mesg "$msg")
     
     # Map choices to corresponding files
     case "$choice" in
@@ -276,8 +276,7 @@ main() {
 }
 
 # Check if rofi is already running
-if pidof rofi > /dev/null; then
-  pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle Kool_Quick_Settings || exit 0
 
 main

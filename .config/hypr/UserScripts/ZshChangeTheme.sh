@@ -23,7 +23,7 @@ themes_array=($(find -L "$themes_dir" -type f -name "*$file_extension" -exec bas
 # Add "Random" option to the beginning of the array
 themes_array=("Random" "${themes_array[@]}")
 
-rofi_command="rofi -i -dmenu -config $rofi_theme"
+rofi_command="rofi -i -dmenu -p Zsh -config $rofi_theme"
 
 menu() {
     for theme in "${themes_array[@]}"; do
@@ -62,8 +62,7 @@ main() {
 }
 
 # Check if rofi is already running
-if pidof rofi > /dev/null; then
-  pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle ZshChangeTheme || exit 0
 
 main

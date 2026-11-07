@@ -42,7 +42,7 @@ main() {
 
     # launch rofi with the annotated list and pre‑selected row
     choice=$(printf '%s\n' "${options[@]}" \
-        | rofi -i -dmenu \
+        | rofi -i -dmenu -p Waybar \
                -config "$rofi_config" \
                -mesg "$msg" \
                -selected-row "$default_row"
@@ -56,9 +56,7 @@ main() {
 }
 
 # Kill Rofi if already running before execution
-if pgrep -x "rofi" >/dev/null; then
-    pkill rofi
-    #exit 0
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle WaybarStyles || exit 0
 
 main

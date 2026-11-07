@@ -3,7 +3,8 @@
 # Searchable keybinds using rofi, read live from Hyprland (descriptions set in the Lua config)
 
 pkill yad || true
-pidof rofi >/dev/null && pkill rofi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle keybinds || exit 0
 
 
 hyprctl binds -j | jq -r '

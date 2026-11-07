@@ -6,15 +6,14 @@
 rofi_theme="$HOME/.config/rofi/config-calc.rasi"
 
 # Kill Rofi if already running before execution
-if pgrep -x "rofi" >/dev/null; then
-    pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle RofiCalc || exit 0
 
 # main function
 
 while true; do
     result=$(
-        rofi -i -dmenu \
+        rofi -i -dmenu -p Calculator \
             -config $rofi_theme \
             -mesg "$result      =    $calc_result"
     )

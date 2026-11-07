@@ -5,9 +5,8 @@
 BACKEND=wayland
 
 # Check if rofi or yad is running and kill them if they are
-if pidof rofi > /dev/null; then
-  pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle KeyHints || exit 0
 
 if pidof yad > /dev/null; then
   pkill yad
