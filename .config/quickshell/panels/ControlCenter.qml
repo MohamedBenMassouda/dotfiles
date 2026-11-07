@@ -396,7 +396,8 @@ SidePanel {
         Tile {
             glyph: 0xF03D5
             label: "Updates"
-            detail: Globals.updates > 0 ? Globals.updates + " available" : "Up to date"
+            detail: (Globals.updates > 0 ? Globals.updates + " available" : "Up to date")
+                    + (Globals.news > 0 ? " · " + Globals.news + " news to read" : "")
             on: Globals.updates > 0
             tint: Theme.memory
             onClicked: {
