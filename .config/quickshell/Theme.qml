@@ -36,6 +36,7 @@ Singleton {
     readonly property color battery: tint(0.60)
     readonly property color notifications: tint(0.08)
     readonly property color power: tint(0.27)
+    readonly property color brightness: tint(0.22)
 
     readonly property string font: "JetbrainsMono Nerd Font"
     readonly property int fontSize: 13
