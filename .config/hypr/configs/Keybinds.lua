@@ -9,7 +9,7 @@ local function m(keys) return "SUPER + " .. keys end
 bind("CTRL + ALT + Delete", "Log out", exec("hyprshutdown -t 'Logging out...'"))
 bind("CTRL + ALT + End", "Shut down", exec("hyprshutdown -t 'Shutting down...' --post-cmd 'systemctl poweroff'"))
 bind("CTRL + ALT + Home", "Restart", exec("hyprshutdown -t 'Restarting...' --post-cmd 'systemctl reboot'"))
-bind("CTRL + ALT + P", "Power menu (wlogout)", exec(s .. "/Wlogout.sh"))
+bind("CTRL + ALT + P", "Power menu", exec(lib.UserScripts .. "/PowerMenu.sh"))
 bind("CTRL + ALT + L", "Lock screen", exec(s .. "/LockScreen.sh"))
 
 -- Windows
