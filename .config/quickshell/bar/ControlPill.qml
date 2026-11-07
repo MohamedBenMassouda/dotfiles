@@ -2,8 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import qs
 
-// GNOME / macOS style status pill: Wi-Fi, Bluetooth (+ headphone battery) and
-// pending updates in one rounded button. Click: quick settings.
+// GNOME / macOS style status pill: Wi-Fi, Bluetooth (+ headphone battery),
+// phone battery (KDE Connect) and pending updates in one rounded button.
+// Click: quick settings.
 // Right / middle clicks still reach each icon (Wi-Fi off, Bluetooth off...).
 Rectangle {
     id: pill
@@ -26,6 +27,13 @@ Rectangle {
 
         NetworkStatus {}
         BluetoothStatus {}
+
+        Label {
+            visible: Globals.phone !== null
+            text: Globals.phone ? String.fromCodePoint(Globals.phone.charging ? 0xF1397 : 0xF011C) + " " + Globals.phone.battery + "%" : ""
+            color: Theme.bluetooth
+        }
+
         Updates {}
     }
 
