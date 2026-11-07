@@ -34,6 +34,45 @@ Scope {
 
     onOpenChanged: if (open) Hyprland.refreshToplevels()   // fresh window positions
 
+    // window positions/sizes come from the last IPC read: re-read them whenever a
+    // window moves, opens, closes or floats while the overview is open (e.g. after
+    // dropping one onto a workspace, the windows there re-tile). Twice, because
+    // Hyprland may still be laying them out on the first read.
+    Connections {
+        target: Hyprland
+        enabled: root.open
+        function onRawEvent(event) {
+            if (/^(movewindow|openwindow|closewindow|changefloatingmode|fullscreen|resizewindow)/.test(event.name))
+                refresh.restart();
+        }
+    }
+
+    Timer {
+        id: refresh
+        interval: 120
+        property bool again: true
+        onTriggered: {
+            Hyprland.refreshToplevels();
+            Hyprland.refreshWorkspaces();
+            if (again) {
+                again = false;
+                restart();
+            } else {
+                again = true;
+                recaptureDelay.restart();
+            }
+        }
+    }
+
+    // previews are still images: grab them again once windows have finished
+    // their resize animation
+    signal recapture
+    Timer {
+        id: recaptureDelay
+        interval: 450
+        onTriggered: root.recapture()
+    }
+
     FontLoader {
         id: kanjiFont
         source: "file:///usr/share/fonts/droid/DroidSansJapanese.ttf"
@@ -161,10 +200,16 @@ Scope {
                             Drag.hotSpot.y: height / 2
 
                             ScreencopyView {
+                                id: shot
                                 anchors.fill: parent
                                 anchors.margins: 1
                                 captureSource: root.open ? preview.modelData.wayland : null
                                 live: false
+
+                                Connections {
+                                    target: root
+                                    function onRecapture() { shot.captureFrame(); }
+                                }
                             }
 
                             IconImage {
@@ -172,6 +217,23 @@ Scope {
                                 implicitSize: Math.min(40, parent.height * 0.4)
                                 source: Icons.forApp(preview.modelData.wayland?.appId ?? "")
                                 opacity: 0.9
+                            }
+
+                            // no picture: windows on a workspace you're not looking at
+                            // don't redraw, so after a move/resize there's nothing new to
+                            // capture until you visit it. Show the title instead.
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 6
+                                width: parent.width - 12
+                                visible: !shot.hasContent && parent.height > 50
+                                horizontalAlignment: Text.AlignHCenter
+                                text: preview.modelData.title
+                                color: Theme.dim
+                                font.family: Theme.font
+                                font.pixelSize: Theme.fontSize - 3
+                                elide: Text.ElideRight
                             }
 
                             MouseArea {
