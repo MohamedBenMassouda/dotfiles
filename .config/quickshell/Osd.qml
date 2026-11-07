@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
@@ -135,6 +136,20 @@ Scope {
         sticky = kind === "battery-low";
         hideTimer.interval = x.timeout ?? (toast.actions.length ? 6000 : 2500);
         show();
+    }
+
+    // "2:58" from seconds
+    function clock(sec) {
+        const t = Math.max(0, Math.floor(sec || 0));
+        return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
+    }
+
+    // MPRIS doesn't announce the playback position: ask every second while it shows
+    Timer {
+        running: root.shown && root.mode === "media" && (root.player?.isPlaying ?? false)
+        interval: 1000
+        repeat: true
+        onTriggered: root.player?.positionChanged()
     }
 
     // "1 h 20 min" from seconds
@@ -468,6 +483,39 @@ Scope {
                     id: cardHover
                 }
 
+                // media: the cover, blurred and darkened, fills the card behind everything
+                ClippingRectangle {
+                    anchors.fill: parent
+                    anchors.margins: Theme.border
+                    radius: Theme.radius - Theme.border
+                    color: "transparent"
+                    visible: root.mode === "media" && !!root.player?.trackArtUrl
+
+                    Image {
+                        id: backdropArt
+                        anchors.fill: parent
+                        source: root.player?.trackArtUrl ?? ""
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        sourceSize.width: 240
+                        visible: false
+                    }
+
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: backdropArt
+                        blurEnabled: true
+                        blur: 1
+                        blurMax: 48
+                        saturation: 0.3
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.alpha(Theme.background, 0.6)
+                    }
+                }
+
                 // click anywhere on the card that isn't a button: dismiss
                 MouseArea {
                     anchors.fill: parent
@@ -625,9 +673,9 @@ Scope {
                         spacing: 14
 
                         ClippingRectangle {
-                            implicitWidth: 72
-                            implicitHeight: 72
-                            radius: 8
+                            implicitWidth: 92
+                            implicitHeight: 92
+                            radius: 10
                             color: Theme.surface
 
                             Image {
@@ -635,8 +683,8 @@ Scope {
                                 source: root.player?.trackArtUrl ?? ""
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
-                                sourceSize.width: 144
-                                sourceSize.height: 144
+                                sourceSize.width: 184
+                                sourceSize.height: 184
                             }
 
                             // note when there is no cover
@@ -673,9 +721,75 @@ Scope {
                                 elide: Text.ElideRight
                             }
 
+                            // track position: elapsed, bar (click to seek), length
                             RowLayout {
-                                Layout.topMargin: 6
-                                spacing: 18
+                                Layout.topMargin: 4
+                                Layout.fillWidth: true
+                                visible: (root.player?.lengthSupported ?? false) && root.player.length > 0
+                                spacing: 8
+
+                                Text {
+                                    text: root.clock(root.player?.position)
+                                    color: Theme.dim
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.fontSize - 2
+                                }
+
+                                Item {
+                                    id: seek
+                                    Layout.fillWidth: true
+                                    implicitHeight: 12
+                                    readonly property real progress: Math.min(1, (root.player?.position ?? 0) / Math.max(1, root.player?.length ?? 1))
+
+                                    Rectangle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: parent.width
+                                        height: 4
+                                        radius: 2
+                                        color: Qt.alpha(Theme.foreground, 0.2)
+
+                                        Rectangle {
+                                            width: parent.width * seek.progress
+                                            height: parent.height
+                                            radius: 2
+                                            color: Theme.media
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        x: seek.width * seek.progress - width / 2
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: seekArea.containsMouse ? 12 : 8
+                                        height: width
+                                        radius: width / 2
+                                        color: Theme.foreground
+                                    }
+
+                                    MouseArea {
+                                        id: seekArea
+                                        anchors.fill: parent
+                                        anchors.margins: -4
+                                        enabled: root.player?.canSeek ?? false
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: mouse => {
+                                            root.player.position = Math.max(0, Math.min(1, mouse.x / seek.width)) * root.player.length;
+                                            root.show();
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    text: root.clock(root.player?.length)
+                                    color: Theme.dim
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.fontSize - 2
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignHCenter
+                                spacing: 26
 
                                 Repeater {
                                     model: [
