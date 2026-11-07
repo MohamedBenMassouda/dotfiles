@@ -52,6 +52,9 @@ ShellRoot {
     // volume / media / brightness / toast flyout + notification popups
     Osd {}
 
+    // SUPER+A: qs ipc call overview toggle
+    Overview {}
+
     ControlCenter {}
     NotificationCenter {}
 }
