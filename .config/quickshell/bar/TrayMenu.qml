@@ -40,10 +40,12 @@ PopupWindow {
     anchor.edges: Edges.Bottom
     anchor.gravity: Edges.Bottom
 
-    QsMenuOpener {
-        id: opener
-        menu: root.stack.length ? root.stack[root.stack.length - 1] : null
-    }
+    // One opener per level: a submenu entry lives only while its parent menu
+    // is open, so the parent's opener has to stay alive (max 3 levels deep).
+    QsMenuOpener { id: level0; menu: root.stack[0] ?? null }
+    QsMenuOpener { id: level1; menu: root.stack[1] ?? null }
+    QsMenuOpener { id: level2; menu: root.stack[2] ?? null }
+    readonly property QsMenuOpener opener: [level0, level1, level2][Math.max(0, stack.length - 1)]
 
     Rectangle {
         id: card
@@ -71,7 +73,7 @@ PopupWindow {
             }
 
             Repeater {
-                model: opener.children
+                model: root.opener.children
 
                 delegate: Loader {
                     id: row
@@ -109,7 +111,7 @@ PopupWindow {
                             trailing: item.hasChildren ? String.fromCodePoint(0xF0142) : ""
                             enabled: item.enabled
                             onActivated: {
-                                if (item.hasChildren) {
+                                if (item.hasChildren && root.stack.length < 3) {
                                     root.stack = root.stack.concat([item]);
                                 } else {
                                     item.triggered();
