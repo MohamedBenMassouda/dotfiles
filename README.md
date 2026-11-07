@@ -15,7 +15,7 @@ The desktop itself (Hyprland, Quickshell, rofi, wallust, kitty, zsh, tmux) is al
 installed. `bootstrap.sh` asks first about the extras: login screen (greetd + Quickshell), Neovim + config,
 Docker / lazygit, games (umu), Flathub apps (all or one by one, see
 [`flatpaks.txt`](flatpaks.txt)), Firefox theming, firewall, Timeshift snapshots
-(btrfs + GRUB only), Waybar fallback and zsh as login shell. Then it installs yay and
+(btrfs + GRUB only) and zsh as login shell. Then it installs yay and
 the chosen groups from [`packages.txt`](packages.txt), links the configs into `~` with
 GNU stow (existing files are moved to `*.pre-dotfiles`), enables the services and
 generates the colours. Log in to **Hyprland (uwsm-managed)**.
@@ -34,7 +34,6 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `.config/wireplumber` | Bluetooth headsets start on AAC; headset mode only while the mic is in use |
 | `.config/kitty`, `nvim` (submodule), `.zshrc`, `.tmux.conf` | Terminal and editor |
 
-`.config/waybar` is kept as a fallback: in `configs/Startup_Apps.lua` swap `app("qs")` for `app("waybar")`.
 
 ## Desktop
 

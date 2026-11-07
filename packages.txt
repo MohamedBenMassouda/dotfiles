@@ -132,7 +132,3 @@ timeshift-autosnap
 grub-btrfs
 inotify-tools
 cronie
-
-[waybar]
-# Fallback bar (swap app("qs") for app("waybar") in configs/Startup_Apps.lua)
-waybar

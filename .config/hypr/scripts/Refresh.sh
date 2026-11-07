@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
-# Scripts for refreshing waybar (if used instead of Quickshell), rofi, wallust
+# Closes rofi and re-applies colours (Quickshell reloads its own colours)
 
 SCRIPTSDIR=$HOME/.config/hypr/scripts
 UserScripts=$HOME/.config/hypr/UserScripts
@@ -14,35 +14,8 @@ file_exists() {
   fi
 }
 
-# Kill already running processes
-_ps=(waybar rofi)
-for _prs in "${_ps[@]}"; do
-  if pidof "${_prs}" >/dev/null; then
-    pkill "${_prs}"
-  fi
-done
-
-# added since wallust sometimes not applying
-killall -SIGUSR2 waybar
-# Added sleep for GameMode causing multiple waybar
-sleep 0.1
-
-# quit quickshell & relaunch quickshell
-#pkill qs && qs &
-
-# some process to kill
-for pid in $(pidof waybar rofi swaybg); do
-  kill -SIGUSR1 "$pid"
-  sleep 0.1
-done
-
-# Restart waybar, unless the Quickshell bar is in use (it reloads its colours by itself)
-sleep 0.1
-if ! pgrep -x qs >/dev/null; then
-  waybar &
-fi
-
-# notifications are handled by Quickshell (no swaync to relaunch)
+# close rofi if it's open
+pkill -x rofi 2>/dev/null
 
 # Relaunching rainbow borders if the script exists
 sleep 1
