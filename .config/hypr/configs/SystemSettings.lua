@@ -88,6 +88,7 @@ hl.config({
         enable_swallow           = true,
         focus_on_activate        = false,
         swallow_regex            = "^(kitty)$",
+        allow_session_lock_restore = true,  -- a crashed lock screen can be restarted (QsLock.sh / hyprlock)
     },
 
     binds = {
