@@ -60,14 +60,14 @@ if [[ "$state" == "on" ]]; then
       sleep 0.3 && pkill -x hyprsunset || true
     fi
     echo off > "$STATE_FILE"
-    notify-send -u low "Hyprsunset: Disabled" || true
+    qs ipc call osd toast night-off "Night light" "Off" >/dev/null 2>&1 || notify-send -u low "Hyprsunset: Disabled" || true
   else
     # Turning ON: start hyprsunset at target temp in background
     if command -v hyprsunset >/dev/null 2>&1; then
       nohup hyprsunset -t "$TARGET_TEMP" >/dev/null 2>&1 &
     fi
     echo on > "$STATE_FILE"
-    notify-send -u low "Hyprsunset: Enabled" "${TARGET_TEMP}K" || true
+    qs ipc call osd toast night "Night light" "On · ${TARGET_TEMP}K" >/dev/null 2>&1 || notify-send -u low "Hyprsunset: Enabled" "${TARGET_TEMP}K" || true
   fi
 }
 

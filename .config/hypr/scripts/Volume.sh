@@ -40,6 +40,7 @@ get_icon() {
 
 # Quickshell flyout (album art + volume bar); falls back to notifications if quickshell isn't running
 osd() { qs ipc call osd "$1" >/dev/null 2>&1; }
+osd_toast() { qs ipc call osd toast "$@" >/dev/null 2>&1; }
 
 # Notify
 notify_user() {
@@ -93,9 +94,9 @@ toggle_mute() {
 # Toggle Mic
 toggle_mic() {
 	if [ "$(pamixer --default-source --get-mute)" == "false" ]; then
-		pamixer --default-source -m && notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone-mute.png" " Microphone:" " Switched OFF"
+		pamixer --default-source -m && { osd_toast mic-off "Microphone muted" "" || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone-mute.png" " Microphone:" " Switched OFF"; }
 	elif [ "$(pamixer --default-source --get-mute)" == "true" ]; then
-		pamixer --default-source -u && notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone.png" " Microphone:" " Switched ON"
+		pamixer --default-source -u && { osd_toast mic-on "Microphone on" "" || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone.png" " Microphone:" " Switched ON"; }
 	fi
 }
 # Get Mic Icon

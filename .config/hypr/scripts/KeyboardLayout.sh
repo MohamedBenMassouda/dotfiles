@@ -111,7 +111,7 @@ elif [[ "$1" == "switch" ]]; then
     echo "Layout change failed." >&2
     exit 1
   else
-    notify-send -u low -i "$notif_icon" " kb_layout: $new_layout${new_variant:+($new_variant)}"
+    pgrep -x qs >/dev/null || notify-send -u low -i "$notif_icon" " kb_layout: $new_layout${new_variant:+($new_variant)}"  # else Quickshell shows it
     echo "Layout change notification sent."
   fi
 else

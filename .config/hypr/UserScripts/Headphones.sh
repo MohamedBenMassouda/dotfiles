@@ -17,12 +17,10 @@ if [[ "${1:-}" == auto ]]; then
 fi
 
 if connected; then
-  bluetoothctl disconnect "$MAC" >/dev/null && notify-send -e -u low -i "$icon" " Headphones" "Disconnected"
+  bluetoothctl disconnect "$MAC" >/dev/null   # Quickshell shows the flyout
 else
   bluetoothctl power on >/dev/null
-  if bluetoothctl connect "$MAC" >/dev/null; then
-    notify-send -e -u low -i "$icon" " Headphones" "Connected"
-  else
+  if ! bluetoothctl connect "$MAC" >/dev/null; then
     notify-send -e -u low -i "$icon" " Headphones" "Not found - are they on?"
   fi
 fi

@@ -25,7 +25,7 @@ hl.on("window.open", function(w)
         animations = { enabled = false },
         decoration = { blur = { enabled = false }, shadow = { enabled = false } },
     })
-    hl.notification.create({ text = "Game mode on", timeout = 2000 })
+    hl.exec_cmd("qs ipc call osd toast game 'Game mode' 'On while a game is open'")
 end)
 
 hl.on("window.close", function(w)
@@ -35,5 +35,5 @@ hl.on("window.close", function(w)
         decoration = { blur = { enabled = saved.blur }, shadow = { enabled = saved.shadow } },
     })
     saved = nil
-    hl.notification.create({ text = "Game mode off", timeout = 2000 })
+    hl.exec_cmd("qs ipc call osd toast game 'Game mode' 'Off'")
 end)

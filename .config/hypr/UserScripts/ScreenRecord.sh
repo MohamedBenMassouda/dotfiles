@@ -7,7 +7,7 @@ icon="$HOME/.config/swaync/images/ja.png"
 dir="$HOME/Videos/Recordings"
 
 if pkill -SIGINT -x gpu-screen-recorder; then
-  notify-send -e -u low -i "$icon" " Recording saved" "$dir"
+  qs ipc call osd toast record-off "Recording saved" "$dir" >/dev/null 2>&1 || notify-send -e -u low -i "$icon" " Recording saved" "$dir"
   exit 0
 fi
 
@@ -18,5 +18,6 @@ mkdir -p "$dir"
 monitor=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
 out="$dir/$(date +%Y-%m-%d_%H-%M-%S).mp4"
 
-notify-send -e -u low -i "$icon" " Recording $monitor" "Press SUPER+SHIFT+R to stop"
+qs ipc call osd toast record "Recording $monitor" "SUPER+SHIFT+R or the bar's red dot to stop" >/dev/null 2>&1 ||
+  notify-send -e -u low -i "$icon" " Recording $monitor" "Press SUPER+SHIFT+R to stop"
 exec gpu-screen-recorder -w "$monitor" -f 60 -a default_output -o "$out"
