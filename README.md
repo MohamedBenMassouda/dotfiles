@@ -42,6 +42,7 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   taskbar, clock (hover: calendar + weather), privacy dots, recording / focus timers,
   now playing, tray, volume, mic, status pill (Wi-Fi, Bluetooth, phone, updates), keep-awake, battery.
 - **Flyout** (top centre): volume, mic, brightness, media, toggles, and every notification.
+- **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).
 
@@ -170,6 +171,8 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `SUPER+SHIFT+L` | Brightness menu |
 | `SUPER+CTRL+R` | Recording menu |
 | `SUPER+ALT+D` | Dev menu (containers, ports, lazygit) |
+| `SUPER+ALT+N` | New note (nvim, saved in `~/Documents/notes`) |
+| `SUPER+SHIFT+N` | Search notes (titles and contents) |
 | `SUPER+ALT+G` | Switch primary GPU (next login) |
 | `SUPER+ALT+P` | Cycle power profile |
 | `SUPER+SHIFT+R` | Start/stop screen recording |
