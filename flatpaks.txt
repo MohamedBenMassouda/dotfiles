@@ -1,0 +1,8 @@
+# Flathub apps, installed by bootstrap.sh. Spotify is autostarted (UserConfigs/Startup_Apps.lua).
+com.heroicgameslauncher.hgl
+com.notesnook.Notesnook
+com.protonvpn.www
+com.spotify.Client
+com.stremio.Stremio
+org.apache.jmeter
+org.godotengine.Godot
