@@ -792,18 +792,23 @@ Scope {
                                 spacing: 26
 
                                 Repeater {
+                                    // back / forward 10 s only for players that can seek
                                     model: [
-                                        { glyph: 0xF04AE, act: () => root.player?.previous() },
-                                        { glyph: root.player?.isPlaying ? 0xF03E4 : 0xF040A, act: () => root.player?.togglePlaying() },
-                                        { glyph: 0xF04AD, act: () => root.player?.next() }
+                                        { glyph: 0xF0D2A, size: 17, on: root.player?.canSeek ?? false, act: () => root.player?.seek(-10) },
+                                        { glyph: 0xF04AE, size: 20, on: true, act: () => root.player?.previous() },
+                                        { glyph: root.player?.isPlaying ? 0xF03E4 : 0xF040A, size: 24, on: true, act: () => root.player?.togglePlaying() },
+                                        { glyph: 0xF04AD, size: 20, on: true, act: () => root.player?.next() },
+                                        { glyph: 0xF0D71, size: 17, on: root.player?.canSeek ?? false, act: () => root.player?.seek(10) }
                                     ]
 
                                     delegate: Text {
                                         required property var modelData
+                                        visible: modelData.on
+                                        Layout.alignment: Qt.AlignVCenter
                                         text: String.fromCodePoint(modelData.glyph)
                                         color: btn.containsMouse ? Theme.media : Theme.foreground
                                         font.family: Theme.font
-                                        font.pixelSize: 20
+                                        font.pixelSize: modelData.size
 
                                         MouseArea {
                                             id: btn
@@ -815,6 +820,44 @@ Scope {
                                                 parent.modelData.act();
                                                 root.show();
                                             }
+                                        }
+                                    }
+                                }
+
+                                // playback speed: click for the next step, right click back to 1x
+                                // (only players that allow it, e.g. YouTube in Firefox, mpv)
+                                Rectangle {
+                                    id: speed
+                                    readonly property var steps: [0.75, 1, 1.25, 1.5, 2]
+                                        .filter(r => r >= (root.player?.minRate ?? 1) && r <= (root.player?.maxRate ?? 1))
+                                    visible: steps.length > 1
+                                    Layout.alignment: Qt.AlignVCenter
+                                    implicitWidth: speedText.implicitWidth + 14
+                                    implicitHeight: 22
+                                    radius: 11
+                                    color: speedArea.containsMouse ? Qt.alpha(Theme.media, 0.35) : Qt.alpha(Theme.foreground, 0.12)
+
+                                    Text {
+                                        id: speedText
+                                        anchors.centerIn: parent
+                                        text: (Math.round((root.player?.rate ?? 1) * 100) / 100) + "×"
+                                        color: (root.player?.rate ?? 1) !== 1 ? Theme.media : Theme.foreground
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.fontSize - 1
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: speedArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: mouse => {
+                                            const r = root.player.rate, st = speed.steps;
+                                            root.player.rate = mouse.button === Qt.RightButton ? 1
+                                                : st[(st.findIndex(x => x > r + 0.01) + st.length) % st.length] ?? st[0];
+                                            root.show();
                                         }
                                     }
                                 }
