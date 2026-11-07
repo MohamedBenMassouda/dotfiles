@@ -3,9 +3,12 @@
 //@ pragma IconTheme breeze-dark
 import Quickshell
 import Quickshell.Io
+import qs
 import qs.bar
+import qs.panels
 
-// Entry point: one bar per monitor, plus the media/volume flyout.
+// Entry point: one bar per monitor, the top-centre flyout (with notifications),
+// and the side panels.
 ShellRoot {
     id: shell
 
@@ -20,6 +23,24 @@ ShellRoot {
         }
     }
 
+    // qs ipc call panel toggle control|notifications   (SUPER+N / SUPER+H)
+    // qs ipc call panel dnd
+    IpcHandler {
+        target: "panel"
+
+        function toggle(name: string): void {
+            Globals.togglePanel(name);
+        }
+
+        function dnd(): void {
+            Globals.dnd = !Globals.dnd;
+        }
+
+        function clearNotifications(): void {
+            Notifs.clearAll();
+        }
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -28,6 +49,9 @@ ShellRoot {
         }
     }
 
-    // media / volume flyout (qs ipc call osd volume|media)
+    // volume / media / brightness / toast flyout + notification popups
     Osd {}
+
+    ControlCenter {}
+    NotificationCenter {}
 }
