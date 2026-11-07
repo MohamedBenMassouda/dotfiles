@@ -105,7 +105,10 @@ cmd_init() {
 
 case "${1:-}" in
   toggle) cmd_toggle ;;
+  on|off)  # used by Quickshell at sunset / sunrise; only toggles if needed
+    ensure_state
+    [[ "$(cat "$STATE_FILE")" == "$1" ]] || cmd_toggle ;;
   status) cmd_status ;;
   init) cmd_init ;;
-  *) echo "usage: $0 [toggle|status|init]" >&2; exit 2 ;;
+  *) echo "usage: $0 [toggle|on|off|status|init]" >&2; exit 2 ;;
  esac
