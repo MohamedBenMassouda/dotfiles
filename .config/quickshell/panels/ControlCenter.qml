@@ -85,7 +85,7 @@ SidePanel {
 
     Process {
         id: readRecording
-        command: ["pgrep", "-x", "gpu-screen-recorder"]
+        command: ["pgrep", "-f", "^gpu-screen-recorder"]
         onExited: code => cc.recording = code === 0
     }
 

@@ -6,7 +6,8 @@ set -euo pipefail
 icon="$HOME/.config/swaync/images/ja.png"
 dir="$HOME/Videos/Recordings"
 
-if pkill -SIGINT -x gpu-screen-recorder; then
+# match the full command: the process name is cut to 15 chars, so -x never matched
+if pkill -SIGINT -f '^gpu-screen-recorder'; then
   qs ipc call osd toast record-off "Recording saved" "$dir" >/dev/null 2>&1 || notify-send -e -u low -i "$icon" " Recording saved" "$dir"
   exit 0
 fi
