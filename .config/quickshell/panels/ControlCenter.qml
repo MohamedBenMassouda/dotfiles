@@ -37,6 +37,7 @@ SidePanel {
     property bool wifiOpen: false       // drop-down sections, closed each time the panel opens
     property bool btOpen: false
     property bool phoneOpen: false
+    property var btAudio: []            // [{ id, name, active, profiles }] from BtProfile.sh list
     property bool mixerOpen: false
 
     // apps playing sound, for the mixer
@@ -80,6 +81,26 @@ SidePanel {
         stdout: StdioCollector {
             onStreamFinished: cc.brightness = parseInt(text.split(",")[3]) / 100
         }
+    }
+
+    // Bluetooth audio profiles, re-read every 2 s while the list is open
+    // (they also change by themselves when an app starts using the mic)
+    Process {
+        id: readBtAudio
+        command: [cc.scripts + "/BtProfile.sh", "list"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try { cc.btAudio = JSON.parse(text); } catch (e) {}
+            }
+        }
+    }
+
+    Timer {
+        interval: 2000
+        running: cc.visible && cc.btOpen
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: readBtAudio.running = true
     }
 
     Process {
@@ -270,8 +291,18 @@ SidePanel {
         Repeater {
             model: cc.btDevices.slice(0, 10)
 
-            delegate: MenuRow {
-                required property var modelData
+            delegate: ColumnLayout {
+              id: btRow
+
+              required property var modelData
+              // audio profiles of this device, if it's a connected headset (BtProfile.sh list)
+              readonly property var audio: modelData.connected ? cc.btAudio.find(a => a.name === modelData.name) ?? null : null
+
+              Layout.fillWidth: true
+              spacing: 4
+
+              MenuRow {
+                readonly property var modelData: btRow.modelData
                 Layout.fillWidth: true
                 iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", true)
                 label: modelData.name
@@ -288,6 +319,35 @@ SidePanel {
                         d.pair();
                     }
                 }
+              }
+
+              // audio profile: music (best quality) or calls (mic). Switches back to the
+              // best one by itself after a call; this is for choosing by hand.
+              Flow {
+                Layout.fillWidth: true
+                Layout.leftMargin: 34
+                Layout.bottomMargin: 4
+                visible: btRow.audio !== null
+                spacing: 6
+
+                Repeater {
+                  model: btRow.audio ? btRow.audio.profiles.slice().sort((a, b) => b.priority - a.priority) : []
+
+                  delegate: SmallButton {
+                    required property var modelData
+                    readonly property var labels: ({
+                        "a2dp-sink": "Music · AAC", "a2dp-sink-sbc_xq": "Music · SBC-XQ", "a2dp-sink-sbc": "Music · SBC",
+                        "headset-head-unit": "Calls · mSBC", "headset-head-unit-cvsd": "Calls · CVSD"
+                    })
+                    text: labels[modelData.name] ?? modelData.description
+                    on: btRow.audio.active === modelData.name
+                    onClicked: {
+                        cc.run([cc.scripts + "/BtProfile.sh", "set", String(btRow.audio.id), modelData.name]);
+                        readBtAudio.running = true;
+                    }
+                  }
+                }
+              }
             }
         }
 
