@@ -27,7 +27,11 @@ import qs
 //     (a card with buttons stays 6 s; "then" shows another toast after the click)
 // It also pops up by itself for: Bluetooth devices connecting, the charger
 // plugged in / out, low battery (stays until you plug in), monitors connected /
-// disconnected, Wi-Fi connected / lost / no internet, USB drives and SD cards.
+// disconnected, Wi-Fi connected / lost / no internet, USB drives and SD cards,
+// screen sharing starting / stopping, Bluetooth devices low on battery, a disk
+// over 90 % full, and the CPU running too hot.
+//   "timeout": ms in the rich json keeps a card up longer (idle lock warning)
+//   qs ipc call osd dismissKind <kind>   hides the card only if it's that kind
 // Notifications are shown as cards under it (Notifs.qml).
 // Hides after ~2.5 s, stays while the pointer is on it. Click the card (or its
 // x, or SUPER+Escape: qs ipc call osd hide) to dismiss it right away.
@@ -37,7 +41,7 @@ Scope {
     property bool shown: false
     property string mode: "media"          // "media", "mic", "brightness", "keyboard" or "toast"
     property int brightness: 0
-    property var toast: ({ glyph: 0, color: Theme.accent, title: "", subtitle: "", image: "", colors: [], actions: [] })
+    property var toast: ({ kind: "", glyph: 0, color: Theme.accent, title: "", subtitle: "", image: "", colors: [], actions: [] })
     property bool sticky: false            // low battery: stays until plugged in
 
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
@@ -97,7 +101,18 @@ Scope {
         "touchpad": [0xF07F8, Theme.accent],
         "touchpad-off": [0xF07F8, Theme.dim],
         "airplane": [0xF001D, Theme.urgent],
-        "airplane-off": [0xF001E, Theme.dim]
+        "airplane-off": [0xF001E, Theme.dim],
+        "lock": [0xF097F, Theme.accent],
+        "share": [0xF1483, Theme.urgent],
+        "share-off": [0xF1483, Theme.dim],
+        "device-battery": [0xF0083, Theme.urgent],
+        "disk": [0xF02CA, Theme.urgent],
+        "hot": [0xF10C2, Theme.urgent],
+        "done": [0xF05E0, Theme.battery],
+        "failed": [0xF0159, Theme.urgent],
+        "updated": [0xF03D5, Theme.accent],
+        "laptop": [0xF06E7, Theme.dim],
+        "laptop-on": [0xF0322, Theme.accent]
     })
 
     function dismiss() {
@@ -114,11 +129,11 @@ Scope {
         const k = kinds[kind] ?? [0xF009A, Theme.accent];
         const color = kind === "color" && /^#[0-9a-f]{6}$/i.test(title) ? title : k[1];
         const x = extra ?? {};
-        toast = { glyph: k[0], color: color, title: title, subtitle: subtitle ?? "",
+        toast = { kind: kind, glyph: k[0], color: color, title: title, subtitle: subtitle ?? "",
                   image: x.image ?? "", colors: x.colors ?? [], actions: x.actions ?? [] };
         mode = "toast";
         sticky = kind === "battery-low";
-        hideTimer.interval = toast.actions.length ? 6000 : 2500;
+        hideTimer.interval = x.timeout ?? (toast.actions.length ? 6000 : 2500);
         show();
     }
 
@@ -159,6 +174,10 @@ Scope {
         function hide(): void {
             root.dismiss();
             Notifs.popups = [];            // pop-ups only, they stay in the panel
+        }
+
+        function dismissKind(kind: string): void {
+            if (root.mode === "toast" && root.toast.kind === kind) root.dismiss();
         }
 
         function keyboard(percent: int): void {
@@ -204,6 +223,16 @@ Scope {
         delegate: Connections {
             required property var modelData
             target: modelData
+            property bool warned: false
+            function onBatteryChanged() {
+                const d = modelData, pct = Math.round(d.battery * 100);
+                if (!d.connected || !d.batteryAvailable) return;
+                if (pct > 20) warned = false;
+                else if (pct <= 15 && !warned) {
+                    warned = true;
+                    root.showToast("device-battery", d.name + " battery low", pct + "% left");
+                }
+            }
             function onConnectedChanged() {
                 const d = modelData;
                 const audio = /audio|headset|headphone/i.test(d.icon);
@@ -298,6 +327,74 @@ Scope {
             if (c === NetworkConnectivity.Portal) root.showToast("no-internet", "Sign-in needed", root.ssid + " wants you to log in (browser)");
             else if (c === NetworkConnectivity.Limited || c === NetworkConnectivity.None) root.showToast("no-internet", "No internet", "Connected to " + root.ssid + ", but nothing gets through");
         }
+    }
+
+    // screen sharing started / stopped (xdg-desktop-portal-hyprland's video node)
+    readonly property bool sharing: Pipewire.nodes.values.some(n => n.type === PwNodeType.VideoSource && /^xdph/.test(n.name))
+    onSharingChanged: {
+        if (!sharing) { showToast("share-off", "Screen sharing stopped", ""); return; }
+        const link = Pipewire.links.values.find(l => /^xdph/.test(l.source?.name ?? ""));
+        const app = link?.target?.properties?.["application.name"] ?? "";
+        showToast("share", "Sharing your screen", app ? "with " + app : "The red icon in the bar shows while it lasts");
+    }
+
+    // disks over 90 % full (each one warned once, until it drops under 85 %),
+    // checked every 30 min; CPU over 90 °C, checked every 15 s
+    property var diskWarned: ({})
+    Process {
+        id: diskCheck
+        command: ["df", "--output=source,pcent,target", "-x", "tmpfs", "-x", "devtmpfs", "-x", "efivarfs", "-x", "overlay"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const seen = {};
+                for (const line of text.trim().split("\n").slice(1)) {
+                    const [src, pcent, target] = line.trim().split(/\s+/);
+                    if (seen[src] || target.startsWith("/boot") || target.startsWith("/efi")) continue;
+                    seen[src] = true;                       // btrfs: one disk, many mount points
+                    const pct = parseInt(pcent);
+                    if (pct < 85) delete root.diskWarned[src];
+                    else if (pct >= 90 && !root.diskWarned[src]) {
+                        root.diskWarned[src] = true;
+                        root.showToast("disk", (target === "/" ? "System disk" : target) + " is " + pct + "% full", "Clean the package cache and old logs?", { actions: [
+                            { label: "Clean up", glyph: 0xF00E2, cmd: ["kitty", "--class", "updates", "-e", "sh", "-c",
+                              "yay -Sc; sudo journalctl --vacuum-size=200M; echo; df -h " + target + "; read -rp 'Done, press Enter' _"] },
+                            { label: "Open", glyph: 0xF0770, cmd: ["xdg-open", target] }
+                        ] });
+                    }
+                }
+            }
+        }
+    }
+    Timer {
+        running: true
+        interval: 30 * 60 * 1000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: diskCheck.running = true
+    }
+
+    property bool hotWarned: false
+    Process {
+        id: tempCheck
+        // CPU package temperature (Intel coretemp / AMD k10temp), in millidegrees
+        command: ["sh", "-c", "for h in /sys/class/hwmon/*; do case $(cat $h/name) in coretemp|k10temp|zenpower) cat $h/temp1_input; exit;; esac; done"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const c = Math.round(parseInt(text) / 1000);
+                if (isNaN(c)) return;
+                if (c < 80) root.hotWarned = false;
+                else if (c >= 90 && !root.hotWarned) {
+                    root.hotWarned = true;
+                    root.showToast("hot", "CPU is hot: " + c + " °C", "It slows itself down to cool off. Check SUPER+C (btop)");
+                }
+            }
+        }
+    }
+    Timer {
+        running: true
+        interval: 15000
+        repeat: true
+        onTriggered: tempCheck.running = true
     }
 
     // USB drives and SD cards (scripts/Usb.sh watches UDisks)
