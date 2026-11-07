@@ -55,6 +55,7 @@ bind("XF86AudioPlay", "Play/pause", exec(s .. "/MediaCtrl.sh --pause"))
 bind("XF86AudioNext", "Next track", exec(s .. "/MediaCtrl.sh --nxt"))
 bind("XF86AudioPrev", "Previous track", exec(s .. "/MediaCtrl.sh --prv"))
 bind("XF86AudioStop", "Stop media", exec(s .. "/MediaCtrl.sh --stop"))
+bind("Caps_Lock", "Caps Lock flyout", exec(s .. "/CapsLock.sh"), { release = true, non_consuming = true, ignore_mods = true })
 
 -- Screenshots
 bind(m("Print"), "Screenshot", exec(s .. "/ScreenShot.sh --now"))
