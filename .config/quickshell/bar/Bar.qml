@@ -43,7 +43,7 @@ PanelWindow {
         Clock {}
     }
 
-    // right: now playing, app tray, volume + mic, wifi + bluetooth, battery, notifications, power
+    // right: now playing, app tray, volume + mic, bluetooth + wifi, battery, power
     Island {
         anchors.right: parent.right
         anchors.rightMargin: 8
@@ -54,7 +54,7 @@ PanelWindow {
         Volume {}
         Mic {}
         BluetoothStatus {}
-        Tray { network: true }
+        NetworkStatus {}
         Battery {}
         PowerButton {}
     }

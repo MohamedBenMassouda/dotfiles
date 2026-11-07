@@ -1,0 +1,377 @@
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
+import Quickshell.Bluetooth
+import Quickshell.Networking
+import Quickshell.Services.Pipewire
+import qs
+import qs.bar
+
+// Quick settings (Wi-Fi / Bluetooth icons in the bar, SUPER+N):
+// toggles, power profile, volume / mic / brightness sliders,
+// Wi-Fi networks and Bluetooth devices.
+SidePanel {
+    id: cc
+
+    name: "control"
+
+    readonly property string scripts: Quickshell.env("HOME") + "/.config/hypr/scripts"
+    readonly property string userScripts: Quickshell.env("HOME") + "/.config/hypr/UserScripts"
+
+    readonly property var wifi: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
+    readonly property var wifiNetworks: wifi ? wifi.networks.values.slice().sort((a, b) => b.connected - a.connected || b.known - a.known || b.signalStrength - a.signalStrength) : []
+    readonly property var wifiConnected: wifiNetworks.find(n => n.connected) ?? null
+
+    readonly property var adapter: Bluetooth.defaultAdapter
+    readonly property var btDevices: adapter ? adapter.devices.values.filter(d => d.paired || d.name).sort((a, b) => b.connected - a.connected || b.paired - a.paired) : []
+    readonly property var btConnected: btDevices.find(d => d.connected) ?? null
+
+    readonly property var sink: Pipewire.defaultAudioSink
+    readonly property var source: Pipewire.defaultAudioSource
+
+    property real brightness: 0
+    property string profile: ""
+    property bool recording: false
+    property var askPassword: null      // secured Wi-Fi network waiting for its password
+
+    function run(cmd) {
+        Quickshell.execDetached(cmd);
+    }
+
+    // refresh the things that aren't live every time the panel opens
+    onVisibleChanged: {
+        if (!visible) {
+            askPassword = null;
+            return;
+        }
+        readBrightness.running = true;
+        readProfile.running = true;
+        readRecording.running = true;
+    }
+
+    // Wi-Fi scans while the panel is open
+    Binding {
+        target: cc.wifi
+        property: "scannerEnabled"
+        value: cc.visible
+        when: cc.wifi !== null
+    }
+
+    PwObjectTracker {
+        objects: [cc.sink, cc.source]
+    }
+
+    Process {
+        id: readBrightness
+        command: ["brightnessctl", "-m"]
+        stdout: StdioCollector {
+            onStreamFinished: cc.brightness = parseInt(text.split(",")[3]) / 100
+        }
+    }
+
+    Process {
+        id: readProfile
+        command: ["powerprofilesctl", "get"]
+        stdout: StdioCollector {
+            onStreamFinished: cc.profile = text.trim()
+        }
+    }
+
+    Process {
+        id: readRecording
+        command: ["pgrep", "-x", "gpu-screen-recorder"]
+        onExited: code => cc.recording = code === 0
+    }
+
+    FileView {
+        id: nightState
+        path: Quickshell.env("HOME") + "/.cache/.hyprsunset_state"
+        watchChanges: true
+        onFileChanged: reload()
+    }
+
+    // ---- header ----
+    Heading {
+        text: "Quick settings"
+
+        SmallButton {
+            text: String.fromCodePoint(0xF033E) + "  Lock"
+            onClicked: {
+                Globals.closePanel();
+                cc.run(["loginctl", "lock-session"]);
+            }
+        }
+
+        SmallButton {
+            text: String.fromCodePoint(0xF0425) + "  Power"
+            onClicked: {
+                Globals.closePanel();
+                cc.run([cc.userScripts + "/PowerMenu.sh"]);
+            }
+        }
+    }
+
+    // ---- toggles ----
+    GridLayout {
+        Layout.fillWidth: true
+        columns: 2
+        columnSpacing: 8
+        rowSpacing: 8
+
+        Tile {
+            glyph: Networking.wifiEnabled ? 0xF0928 : 0xF05AA
+            label: "Wi-Fi"
+            detail: !Networking.wifiEnabled ? "Off" : cc.wifiConnected?.name ?? "Not connected"
+            on: Networking.wifiEnabled
+            tint: Theme.accent
+            onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
+        }
+
+        Tile {
+            glyph: !(cc.adapter?.enabled) ? 0xF00B2 : cc.btConnected ? 0xF00B1 : 0xF00AF
+            label: "Bluetooth"
+            detail: !(cc.adapter?.enabled) ? "Off" : cc.btConnected?.name ?? "On"
+            on: cc.adapter?.enabled ?? false
+            tint: Theme.bluetooth
+            onClicked: if (cc.adapter) cc.adapter.enabled = !cc.adapter.enabled
+        }
+
+        Tile {
+            glyph: Globals.dnd ? 0xF009B : 0xF009A
+            label: "Do not disturb"
+            detail: Globals.dnd ? "On" : "Off"
+            on: Globals.dnd
+            tint: Theme.notifications
+            onClicked: Globals.dnd = !Globals.dnd
+        }
+
+        Tile {
+            glyph: 0xF0594
+            label: "Night light"
+            detail: on ? "On" : "Off"
+            on: nightState.text().trim() === "on"
+            tint: Theme.brightness
+            onClicked: cc.run([cc.scripts + "/Hyprsunset.sh", "toggle"])
+        }
+
+        Tile {
+            glyph: Globals.keepAwake ? 0xF0176 : 0xF06CA
+            label: "Keep awake"
+            detail: Globals.keepAwake ? "No lock or sleep" : "Off"
+            on: Globals.keepAwake
+            tint: Theme.power
+            onClicked: Globals.keepAwake = !Globals.keepAwake
+        }
+
+        Tile {
+            glyph: 0xF044B
+            label: "Record screen"
+            detail: cc.recording ? "Recording" : "Off"
+            on: cc.recording
+            tint: Theme.urgent
+            onClicked: {
+                Globals.closePanel();
+                cc.run([cc.userScripts + "/ScreenRecord.sh"]);
+            }
+        }
+    }
+
+    // ---- power profile ----
+    RowLayout {
+        Layout.fillWidth: true
+        visible: cc.profile !== ""
+        spacing: 6
+
+        Repeater {
+            model: [
+                { id: "power-saver", glyph: 0xF032A, label: "Saver" },
+                { id: "balanced", glyph: 0xF05D1, label: "Balanced" },
+                { id: "performance", glyph: 0xF14DE, label: "Performance" }
+            ]
+
+            delegate: SmallButton {
+                required property var modelData
+                Layout.fillWidth: true
+                implicitHeight: 32
+                text: String.fromCodePoint(modelData.glyph) + "  " + modelData.label
+                on: cc.profile === modelData.id
+                onClicked: {
+                    cc.profile = modelData.id;
+                    cc.run(["powerprofilesctl", "set", modelData.id]);
+                }
+            }
+        }
+    }
+
+    // ---- sliders ----
+    LevelSlider {
+        Layout.fillWidth: true
+        glyph: cc.sink?.audio?.muted ? 0xF0581 : 0xF057E
+        value: cc.sink?.audio?.volume ?? 0
+        dimmed: cc.sink?.audio?.muted ?? false
+        tint: Theme.volume
+        onMoved: v => { if (cc.sink?.audio) cc.sink.audio.volume = v; }
+        onIconClicked: if (cc.sink?.audio) cc.sink.audio.muted = !cc.sink.audio.muted
+    }
+
+    LevelSlider {
+        Layout.fillWidth: true
+        glyph: cc.source?.audio?.muted ? 0xF036D : 0xF036C
+        value: cc.source?.audio?.volume ?? 0
+        dimmed: cc.source?.audio?.muted ?? false
+        tint: Theme.mic
+        onMoved: v => { if (cc.source?.audio) cc.source.audio.volume = v; }
+        onIconClicked: if (cc.source?.audio) cc.source.audio.muted = !cc.source.audio.muted
+    }
+
+    LevelSlider {
+        Layout.fillWidth: true
+        glyph: 0xF00DF
+        value: cc.brightness
+        tint: Theme.brightness
+        onMoved: v => {
+            cc.brightness = Math.max(0.05, v);
+            cc.run(["brightnessctl", "-q", "set", Math.round(cc.brightness * 100) + "%"]);
+        }
+    }
+
+    // ---- Wi-Fi ----
+    Heading {
+        visible: Networking.wifiEnabled && cc.wifi !== null
+        text: "Wi-Fi"
+
+        SmallButton {
+            text: String.fromCodePoint(0xF0493) + "  Settings"
+            onClicked: {
+                Globals.closePanel();
+                cc.run(["nm-connection-editor"]);
+            }
+        }
+    }
+
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: Networking.wifiEnabled && cc.wifi !== null
+        spacing: 2
+
+        Repeater {
+            model: cc.wifiNetworks.slice(0, 10)
+
+            delegate: ColumnLayout {
+                id: net
+
+                required property var modelData
+                readonly property bool secured: modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
+                readonly property int bars: Math.min(3, Math.floor(modelData.signalStrength * 4))
+
+                Layout.fillWidth: true
+                spacing: 4
+
+                MenuRow {
+                    Layout.fillWidth: true
+                    glyph: String.fromCodePoint([0xF091F, 0xF0922, 0xF0925, 0xF0928][net.bars])
+                    label: net.modelData.name
+                    dimmed: !net.modelData.connected
+                    trailing: net.modelData.stateChanging ? "…"
+                              : net.modelData.connected ? "Connected"
+                              : net.secured ? String.fromCodePoint(0xF033E) : ""
+                    onActivated: {
+                        const n = net.modelData;
+                        if (n.connected) n.disconnect();
+                        else if (n.known || !net.secured) n.connect();
+                        else cc.askPassword = cc.askPassword === n ? null : n;
+                    }
+                }
+
+                // password box for a new secured network
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 34
+                    visible: cc.askPassword === net.modelData
+                    implicitHeight: 32
+                    radius: 6
+                    color: Theme.surface
+                    border.color: Theme.accent
+                    border.width: 1
+
+                    TextInput {
+                        id: password
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        verticalAlignment: TextInput.AlignVCenter
+                        echoMode: TextInput.Password
+                        color: Theme.foreground
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize
+                        onVisibleChanged: if (visible) { text = ""; forceActiveFocus(); }
+                        onAccepted: {
+                            net.modelData.connectWithPsk(text);
+                            cc.askPassword = null;
+                        }
+                        Keys.onEscapePressed: cc.askPassword = null
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: password.text === ""
+                            text: "Password, then Enter"
+                            color: Theme.dim
+                            font: password.font
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ---- Bluetooth ----
+    Heading {
+        visible: cc.adapter?.enabled ?? false
+        text: "Bluetooth"
+
+        SmallButton {
+            text: String.fromCodePoint(0xF0450) + (cc.adapter?.discovering ? "  Scanning…" : "  Scan")
+            on: cc.adapter?.discovering ?? false
+            onClicked: cc.adapter.discovering = !cc.adapter.discovering
+        }
+    }
+
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: cc.adapter?.enabled ?? false
+        spacing: 2
+
+        Repeater {
+            model: cc.btDevices.slice(0, 10)
+
+            delegate: MenuRow {
+                required property var modelData
+                Layout.fillWidth: true
+                iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", true)
+                label: modelData.name
+                dimmed: !modelData.connected
+                trailing: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting ? "…"
+                          : modelData.connected ? (modelData.batteryAvailable ? Math.round(modelData.battery * 100) + "%  " : "") + "Connected"
+                          : modelData.paired ? "" : "Pair"
+                onActivated: {
+                    const d = modelData;
+                    if (d.connected) d.disconnect();
+                    else if (d.paired) d.connect();
+                    else {
+                        d.trusted = true;
+                        d.pair();
+                    }
+                }
+            }
+        }
+
+        Text {
+            visible: cc.btDevices.length === 0
+            text: "No devices, press Scan"
+            color: Theme.dim
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize - 1
+        }
+    }
+}
