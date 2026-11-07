@@ -1,0 +1,13 @@
+# Quickshell: bar, flyouts, notifications, panels, overview (~/.config/quickshell).
+# Started by Hyprland (configs/Startup_Apps.lua) when the session runs under uwsm.
+# If it crashes it comes back after a second, instead of leaving you without a
+# bar and notifications until the next login.
+[Unit]
+Description=Quickshell desktop shell
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/qs
+Restart=on-failure
+RestartSec=1
