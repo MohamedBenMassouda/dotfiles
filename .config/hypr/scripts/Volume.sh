@@ -38,8 +38,15 @@ get_icon() {
     fi
 }
 
+# Quickshell flyout (album art + volume bar); falls back to notifications if quickshell isn't running
+osd() { qs ipc call osd "$1" >/dev/null 2>&1; }
+
 # Notify
 notify_user() {
+    if osd volume; then
+        [[ "$(pamixer --get-mute)" == "false" ]] && "$sDIR/Sounds.sh" --volume
+        return
+    fi
     local muted="$(pamixer --get-mute)"
     local level="$(pamixer --get-volume)"
 
@@ -76,11 +83,12 @@ dec_volume() {
 # Toggle Mute
 toggle_mute() {
 	if [ "$(pamixer --get-mute)" == "false" ]; then
-		pamixer -m && notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/volume-mute.png" " Mute"
-	elif [ "$(pamixer --get-mute)" == "true" ]; then
-		pamixer -u && notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$(get_icon)" " Volume:" " Switched ON"
+		pamixer -m && { osd volume || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/volume-mute.png" " Mute"; }
+	else
+		pamixer -u && { osd volume || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$(get_icon)" " Volume:" " Switched ON"; }
 	fi
 }
+
 
 # Toggle Mic
 toggle_mic() {

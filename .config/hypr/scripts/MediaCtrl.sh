@@ -19,7 +19,8 @@ play_previous() {
 # Toggle play/pause
 toggle_play_pause() {
   playerctl play-pause
-  sleep 0.1
+  osd media && return     # the flyout follows the player live, no need to wait
+  sleep 0.1               # the notification reads the new state, give the player a moment
   show_music_notification
 }
 
@@ -30,7 +31,11 @@ stop_playback() {
 }
 
 # Display notification with song information
+# Quickshell flyout; falls back to notifications if quickshell isn't running
+osd() { qs ipc call osd "$1" >/dev/null 2>&1; }
+
 show_music_notification() {
+  osd media && return
   status=$(playerctl status)
   if [[ "$status" == "Playing" ]]; then
     song_title=$(playerctl metadata title)
