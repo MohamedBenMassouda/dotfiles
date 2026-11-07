@@ -50,8 +50,15 @@ quickshell.target = '~/.config/quickshell/colors.json'
 # waybar.template = 'colors-waybar.css'
 # waybar.target = '~/.config/waybar/wallust/colors-waybar.css'
 #
-# kitty.template = 'colors-kitty.conf'
-# kitty.target = '~/.config/kitty/kitty-colors.conf'
+kitty.template = 'colors-kitty.conf'
+kitty.target = '~/.config/kitty/wallust-colors.conf'
+
+# GTK 3 (adw-gtk3 theme) and GTK 4 / libadwaita: gtk.css in each folder imports colors.css
+gtk3.template = 'colors-gtk.css'
+gtk3.target = '~/.config/gtk-3.0/colors.css'
+
+gtk4.template = 'colors-gtk.css'
+gtk4.target = '~/.config/gtk-4.0/colors.css'
 
 #swaync.template = 'colors-swaync.css'
 #swaync.target = '~/.config/swaync/wallust/colors-wallust.css'

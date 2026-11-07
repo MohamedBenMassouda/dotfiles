@@ -46,6 +46,14 @@ step "Login shell: zsh"
 [[ $(getent passwd "$USER" | cut -d: -f7) == */zsh ]] || chsh -s /usr/bin/zsh
 
 step "Colours (wallust) from a wallpaper"
+# GTK apps: adw-gtk3 theme, coloured by wallust (gtk-3.0/4.0 colors.css)
+mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0
+[[ -f ~/.config/gtk-3.0/gtk.css ]] || echo "@import 'colors.css';" > ~/.config/gtk-3.0/gtk.css
+[[ -f ~/.config/gtk-4.0/gtk.css ]] || echo "@import 'colors.css';" > ~/.config/gtk-4.0/gtk.css
+gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice'
+
 wall=$(find ~/Pictures/wallpapers -type f \( -name '*.png' -o -name '*.jpg' \) 2>/dev/null | head -1 || true)
 if [[ -n $wall ]]; then
   ln -sf "$wall" ~/.config/rofi/.current_wallpaper
