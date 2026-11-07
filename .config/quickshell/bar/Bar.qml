@@ -22,6 +22,12 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell"
     WlrLayershell.layer: WlrLayer.Top
 
+    // keep-awake (coffee icon / quick settings): no idle lock or sleep while on
+    IdleInhibitor {
+        window: bar
+        enabled: Globals.keepAwake
+    }
+
     // left: workspaces, cpu/memory, visualiser, open apps
     Island {
         anchors.left: parent.left
@@ -43,18 +49,23 @@ PanelWindow {
         Clock {}
     }
 
-    // right: now playing, app tray, volume + mic, bluetooth + wifi, battery, power
+    // right: privacy dots, recording timer, now playing, app tray, volume + mic,
+    // bluetooth + wifi, updates, keep-awake, battery, power
     Island {
         anchors.right: parent.right
         anchors.rightMargin: 8
         y: Theme.gap
 
+        Privacy {}
+        Recording {}
         Media {}
         Tray {}
         Volume {}
         Mic {}
         BluetoothStatus {}
         NetworkStatus {}
+        Updates {}
+        KeepAwake {}
         Battery {}
         PowerButton {}
     }
