@@ -14,6 +14,7 @@ Singleton {
     property string panel: ""            // open side panel: "", "control" or "notifications"
 
     property int updates: 0              // pending pacman + AUR updates (bar/Updates.qml)
+    property int news: 0                 // unread Arch news, shown before updating (hypr/scripts/ArchUpdate.py)
 
     // checked once for all bars (two checkupdates at once fight over the db lock)
     function upgrade() {
@@ -30,8 +31,20 @@ Singleton {
 
     Process {
         id: upgradeTerm
-        command: ["kitty", "--class", "updates", "-e", "sh", "-c", "yay -Syu; echo; read -rp 'Done, press Enter to close' _"]
-        onExited: checkUpdates.running = true
+        // unread Arch news first (with a chance to cancel), then yay -Syu
+        command: ["kitty", "--class", "updates", "-e", "sh", "-c", root.scripts + "/ArchUpdate.py; echo; read -rp 'Done, press Enter to close' _"]
+        onExited: {
+            checkUpdates.running = true;
+            checkNews.running = true;
+        }
+    }
+
+    Process {
+        id: checkNews
+        command: [root.scripts + "/ArchUpdate.py", "--unread"]
+        stdout: StdioCollector {
+            onStreamFinished: root.news = parseInt(text.trim()) || 0
+        }
     }
 
     Timer {
@@ -39,7 +52,10 @@ Singleton {
         running: true
         repeat: true
         triggeredOnStart: true
-        onTriggered: checkUpdates.running = true
+        onTriggered: {
+            checkUpdates.running = true;
+            checkNews.running = true;
+        }
     }
 
     // ask the top-centre flyout (Osd.qml) to show: "volume" or "mic"
