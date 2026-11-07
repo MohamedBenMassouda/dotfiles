@@ -2,7 +2,8 @@
 local rule = hl.window_rule
 local half = { "monitor_w*0.7", "monitor_h*0.6" }
 
--- Spotify/Discord go to pop-up workspaces: see UserConfigs/Scratchpads.lua
+-- Spotify on workspace 3
+rule({ match = { class = "^([Ss]potify)$" }, workspace = "3 silent" })
 
 ----------------------------------------------------------------------
 -- Tags: { match, tag }
