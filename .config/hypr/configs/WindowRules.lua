@@ -150,6 +150,7 @@ rule({ match = { title = "^(wind.*)$" }, no_initial_focus = true })
 -- Layer rules
 ----------------------------------------------------------------------
 hl.layer_rule({ match = { namespace = "rofi" }, blur = true })
+hl.layer_rule({ match = { namespace = "quickshell" }, blur = true, ignore_alpha = 0.1 })  -- bar islands, not the gaps
 hl.layer_rule({ match = { namespace = "notifications" }, blur = true })
 hl.layer_rule({ match = { namespace = "quickshell:overview" }, blur = true, ignore_alpha = 0.5 })
 
