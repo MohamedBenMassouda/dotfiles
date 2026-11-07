@@ -327,6 +327,19 @@ SidePanel {
         }
 
         Tile {
+            glyph: 0xF03D5
+            label: "Updates"
+            detail: Globals.updates > 0 ? Globals.updates + " available" : "Up to date"
+            on: Globals.updates > 0
+            tint: Theme.memory
+            onClicked: {
+                Globals.closePanel();
+                Globals.upgrade();
+            }
+        }
+
+        Tile {
+            Layout.columnSpan: 2
             glyph: 0xF044B
             label: "Record screen"
             detail: cc.recording ? "Recording" : "Off"
