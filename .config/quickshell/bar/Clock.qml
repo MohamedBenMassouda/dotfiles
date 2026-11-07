@@ -4,8 +4,9 @@ import QtQuick.Layouts
 import Quickshell
 import qs
 
-// Date and time, e.g. "Fri 06 Nov  23:42". Hover to show a calendar
-// (scroll on it to change month, click the arrows, or the title to go back to today).
+// Date and time, e.g. "Fri 06 Nov  23:42". Hover to show weather, a calendar
+// (scroll on it to change month, click the arrows, or the title to go back to today)
+// and the next events from Google Calendar (Globals.events).
 Item {
     id: root
 
@@ -177,6 +178,8 @@ Item {
 
                 Controls.MonthGrid {
                     id: grid
+                    // days with events get a dot
+                    readonly property var busy: Globals.events.map(e => e.start.slice(0, 10))
                     Layout.fillWidth: true
                     locale: Qt.locale("en_GB")    // weeks start on Monday
                     month: calendar.month.getMonth()
@@ -194,6 +197,93 @@ Item {
                             text: model.day
                             color: model.month === grid.month ? Theme.foreground : Qt.alpha(Theme.foreground, 0.3)
                             font.bold: model.today
+                        }
+
+                        Rectangle {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 2
+                            width: 4
+                            height: 4
+                            radius: 2
+                            color: model.today ? Theme.foreground : Theme.accent
+                            visible: grid.busy.includes(Qt.formatDate(model.date, "yyyy-MM-dd"))
+                        }
+                    }
+                }
+
+                // ---- upcoming events ----
+                ColumnLayout {
+                    id: agenda
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+                    visible: upcoming.length > 0 || Globals.calendarError !== ""
+                    spacing: 4
+
+                    // not finished yet, at most 6
+                    readonly property var upcoming: {
+                        const now = Qt.formatDateTime(clock.date, "yyyy-MM-ddTHH:mm");
+                        return Globals.events.filter(e => e.allDay ? e.end > now.slice(0, 10) : e.end > now).slice(0, 6);
+                    }
+
+                    function dayName(d) {
+                        const today = Qt.formatDate(clock.date, "yyyy-MM-dd");
+                        const tomorrow = Qt.formatDate(new Date(clock.date.getTime() + 86400000), "yyyy-MM-dd");
+                        return d === today ? "Today" : d === tomorrow ? "Tomorrow" : Qt.formatDate(new Date(d + "T00:00"), "dddd");
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 1
+                        color: Qt.alpha(Theme.foreground, 0.12)
+                    }
+
+                    Label {
+                        visible: Globals.calendarError !== ""
+                        text: Globals.calendarError
+                        color: Theme.dim
+                        font.pixelSize: Theme.fontSize - 2
+                    }
+
+                    Repeater {
+                        model: agenda.upcoming
+
+                        delegate: ColumnLayout {
+                            required property var modelData
+                            required property int index
+                            readonly property string day: modelData.start.slice(0, 10)
+                            Layout.fillWidth: true
+                            spacing: 2
+
+                            // day heading when the day changes
+                            Label {
+                                Layout.topMargin: 4
+                                visible: parent.index === 0 || agenda.upcoming[parent.index - 1].start.slice(0, 10) !== parent.day
+                                text: agenda.dayName(parent.day)
+                                color: Theme.accent
+                                font.bold: true
+                                font.pixelSize: Theme.fontSize - 1
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+
+                                Label {
+                                    Layout.preferredWidth: 46
+                                    text: parent.parent.modelData.allDay ? "all day" : parent.parent.modelData.start.slice(11)
+                                    color: Theme.dim
+                                    font.pixelSize: Theme.fontSize - 1
+                                }
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    Layout.maximumWidth: 200
+                                    text: parent.parent.modelData.title
+                                    elide: Text.ElideRight
+                                    font.pixelSize: Theme.fontSize - 1
+                                }
+                            }
                         }
                     }
                 }
