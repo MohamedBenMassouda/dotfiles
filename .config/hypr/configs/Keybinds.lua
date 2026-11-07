@@ -32,9 +32,7 @@ bind(m("H"), "Notification panel", exec("swaync-client -t -sw"))
 bind(m("SHIFT + M"), "Online music (rofi)", exec(us .. "/RofiBeats.sh"))
 bind(m("W"), "Choose wallpaper", exec(us .. "/WallpaperSelect.sh"))
 bind("CTRL + ALT + W", "Random wallpaper", exec(us .. "/WallpaperRandom.sh"))
-bind(m("B"), "Show/hide waybar", exec("killall -SIGUSR1 waybar"))
-bind(m("CTRL + B"), "Waybar style", exec(s .. "/WaybarStyles.sh"))
-bind(m("ALT + B"), "Waybar layout", exec(s .. "/WaybarLayout.sh"))
+bind(m("B"), "Show/hide bar", exec("qs ipc call bar toggle"))
 
 -- Master layout
 bind(m("CTRL + D"), "Remove master", hl.dsp.layout("removemaster"))

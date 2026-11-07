@@ -39,9 +39,11 @@ for pid in $(pidof waybar rofi swaync ags swaybg); do
   sleep 0.1
 done
 
-#Restart waybar
+# Restart waybar, unless the Quickshell bar is in use (it reloads its colours by itself)
 sleep 0.1
-waybar &
+if ! pgrep -x qs >/dev/null; then
+  waybar &
+fi
 
 # relaunch swaync
 sleep 0.3
