@@ -3,7 +3,8 @@ local lib = require("lib")
 local s, us = lib.scriptsDir, lib.UserScripts
 local exec = hl.dsp.exec_cmd
 local bind, app = lib.bind, lib.app
-local rofi = "pkill rofi || rofi -show drun -modi drun,filebrowser,run,window"
+-- same key again closes it (UserScripts/menu-toggle.sh)
+local rofi = "bash -c 'source " .. us .. "/menu-toggle.sh; menu_toggle launcher && rofi -show drun -modi drun,filebrowser,run,window'"
 
 bind("SUPER + Super_L", "App launcher (tap SUPER)", exec(rofi), { release = true })
 bind("SUPER + D", "App launcher", exec(rofi))
