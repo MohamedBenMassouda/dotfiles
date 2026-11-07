@@ -4,6 +4,7 @@ import Quickshell.Services.Pipewire
 import qs
 
 // Output volume. Scroll: ±5%, left click: audio switcher, right click: mute.
+// Scroll and mute show the flyout.
 Label {
     id: root
 
@@ -26,6 +27,7 @@ Label {
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
                 if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted;
+                Globals.flyout("volume");
             } else {
                 Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/UserScripts/AudioSwitch.sh"]);
             }
@@ -34,6 +36,7 @@ Label {
             if (!root.sink?.audio) return;
             const step = wheel.angleDelta.y > 0 ? 0.05 : -0.05;
             root.sink.audio.volume = Math.max(0, Math.min(1, root.sink.audio.volume + step));
+            Globals.flyout("volume");
         }
     }
 }
