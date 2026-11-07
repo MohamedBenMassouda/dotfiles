@@ -94,6 +94,34 @@ Item {
                     }
                 }
 
+                // weather (Globals, wttr.in): ☁️ 19°C Cloudy · Town, sunrise / sunset
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.bottomMargin: 4
+                    visible: Globals.weather !== null
+                    spacing: 2
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Globals.weather ? Globals.weather.icon + "  " + Globals.weather.temp + "  " + Globals.weather.condition : ""
+                        color: Theme.foreground
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize + 2
+                        font.bold: true
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Globals.weather ? Globals.weather.place + "   " + String.fromCodePoint(0xF059C) + " " + Globals.weather.sunrise
+                                                + "   " + String.fromCodePoint(0xF059B) + " " + Globals.weather.sunset : ""
+                        color: Theme.dim
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize - 1
+                    }
+                }
+
                 // ‹  November 2026  ›
                 RowLayout {
                     Layout.fillWidth: true
