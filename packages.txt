@@ -96,9 +96,9 @@ stow
 
 # ---- optional groups (bootstrap.sh asks) ----
 
-[gdm]
-# Login screen (skipped if you already have one)
-gdm
+[greeter]
+# Login screen: greetd + Quickshell, on your monitor layout (greeter/)
+greetd
 
 [nvim]
 # Neovim + its config (.config/nvim submodule)

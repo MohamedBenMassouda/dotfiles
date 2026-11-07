@@ -12,7 +12,7 @@ git clone https://github.com/MohamedBenMassouda/dotfiles ~/dotfiles
 ```
 
 The desktop itself (Hyprland, Quickshell, rofi, wallust, kitty, zsh, tmux) is always
-installed. `bootstrap.sh` asks first about the extras: GDM login screen, Neovim + config,
+installed. `bootstrap.sh` asks first about the extras: login screen (greetd + Quickshell), Neovim + config,
 Docker / lazygit, games (umu), Flathub apps (all or one by one, see
 [`flatpaks.txt`](flatpaks.txt)), Firefox theming, firewall, Timeshift snapshots
 (btrfs + GRUB only), Waybar fallback and zsh as login shell. Then it installs yay and
@@ -30,6 +30,7 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `.config/rofi` | One theme (`config.rasi`), applets (`config-applet.rasi`) |
 | `.config/wallust` | Colour templates for Hyprland, rofi and Quickshell |
 | `.config/uwsm` | Session environment |
+| `greeter/` | Login screen: greetd + Quickshell in its own Hyprland, on your monitor layout (`sudo greeter/install.sh`) |
 | `.config/wireplumber` | Bluetooth headsets start on AAC; headset mode only while the mic is in use |
 | `.config/kitty`, `nvim` (submodule), `.zshrc`, `.tmux.conf` | Terminal and editor |
 
