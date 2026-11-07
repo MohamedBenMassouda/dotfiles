@@ -25,6 +25,24 @@ command = "/etc/greetd/greeter/start-greeter.sh"
 user = "greeter"
 CONF
 
+echo "==> /etc/pam.d/greetd: unlock the GNOME keyring with your login password (old one kept as greetd.orig)"
+[[ -f /etc/pam.d/greetd && ! -f /etc/pam.d/greetd.orig ]] && cp /etc/pam.d/greetd /etc/pam.d/greetd.orig
+cat > /etc/pam.d/greetd <<PAM
+#%PAM-1.0
+# greetd login (greeter/install.sh). The keyring lines unlock the GNOME keyring
+# (saved Wi-Fi, browser and app passwords) with the password you log in with,
+# so it doesn't ask again after login. Needs the keyring password = login password.
+auth       required     pam_securetty.so
+auth       requisite    pam_nologin.so
+auth       include      system-local-login
+-auth      optional     pam_gnome_keyring.so
+account    include      system-local-login
+password   include      system-local-login
+-password  optional     pam_gnome_keyring.so    use_authtok
+session    include      system-local-login
+-session   optional     pam_gnome_keyring.so    auto_start
+PAM
+
 echo "==> keep the login screen in sync (monitors, colours, wallpaper)"
 # watch the real files behind the dotfiles links
 watch=(
