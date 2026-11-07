@@ -16,6 +16,11 @@ Item {
     readonly property string song: player ? [player.trackTitle, player.trackArtist].filter(s => s).join(" - ") : ""
     readonly property string appIcon: player ? (Icons.forApp(player.desktopEntry) || Icons.forApp(player.identity)) : ""
 
+    // the bar shrinks this on narrow screens so the right island never reaches the clock
+    property real maxTextWidth: 240
+    // width the title takes now (with its spacing), for the bar's sum
+    readonly property real textWidth: visible && title.visible ? title.width + row.spacing : 0
+
     visible: song !== ""
     opacity: player?.isPlaying ? 1 : 0.6
     implicitWidth: row.implicitWidth
@@ -40,10 +45,12 @@ Item {
         }
 
         Label {
+            id: title
+            visible: root.maxTextWidth >= 60
             text: root.song
             color: Theme.media
             elide: Text.ElideRight
-            Layout.maximumWidth: 240
+            Layout.maximumWidth: root.maxTextWidth
         }
 
         // pause sign while paused
