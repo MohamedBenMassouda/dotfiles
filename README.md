@@ -30,6 +30,7 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `.config/rofi` | One theme (`config.rasi`), applets (`config-applet.rasi`) |
 | `.config/wallust` | Colour templates for Hyprland, rofi and Quickshell |
 | `.config/uwsm` | Session environment |
+| `.config/wireplumber` | Bluetooth headsets start on AAC; headset mode only while the mic is in use |
 | `.config/kitty`, `nvim` (submodule), `.zshrc`, `.tmux.conf` | Terminal and editor |
 
 `.config/waybar` is kept as a fallback: in `configs/Startup_Apps.lua` swap `app("qs")` for `app("waybar")`.
