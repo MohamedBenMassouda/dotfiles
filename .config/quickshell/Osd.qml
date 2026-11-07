@@ -13,12 +13,15 @@ import qs
 // album art, song, playback buttons and a volume bar. Shown only when asked:
 //   qs ipc call osd volume   (Volume.sh: volume keys / mute)
 //   qs ipc call osd media    (MediaCtrl.sh: next / previous / play-pause)
+//   qs ipc call osd brightness 40   (Brightness.sh: screen brightness keys)
 // so songs that change on their own don't pop it up. Hides after ~2.5 s,
 // stays while the pointer is on it.
 Scope {
     id: root
 
     property bool shown: false
+    property string mode: "media"          // "media" (art + volume) or "brightness"
+    property int brightness: 0
 
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
     readonly property var sink: Pipewire.defaultAudioSink
@@ -38,10 +41,18 @@ Scope {
         target: "osd"
 
         function volume(): void {
+            root.mode = "media";
             root.show();
         }
 
         function media(): void {
+            root.mode = "media";
+            root.show();
+        }
+
+        function brightness(percent: int): void {
+            root.brightness = percent;
+            root.mode = "brightness";
             root.show();
         }
     }
@@ -100,7 +111,7 @@ Scope {
 
                 // ---- media: art, title, artist, buttons ----
                 RowLayout {
-                    visible: root.player !== null
+                    visible: root.mode === "media" && root.player !== null
                     spacing: 14
 
                     ClippingRectangle {
@@ -187,13 +198,20 @@ Scope {
                     }
                 }
 
-                // ---- volume bar ----
+                // ---- level bar: volume, or brightness in brightness mode ----
                 RowLayout {
+                    id: level
                     spacing: 12
 
+                    readonly property bool bright: root.mode === "brightness"
+                    readonly property bool off: !bright && root.muted
+                    readonly property int value: bright ? root.brightness : root.percent
+                    readonly property color tint: off ? Theme.dim : bright ? Theme.brightness : Theme.volume
+
                     Text {
-                        text: String.fromCodePoint(root.muted ? 0xF075F : root.percent > 60 ? 0xF057E : root.percent > 25 ? 0xF0580 : 0xF057F)
-                        color: root.muted ? Theme.dim : Theme.volume
+                        text: String.fromCodePoint(level.bright ? (level.value > 60 ? 0xF00E0 : level.value > 25 ? 0xF00DF : 0xF00DE)
+                                                   : root.muted ? 0xF075F : root.percent > 60 ? 0xF057E : root.percent > 25 ? 0xF0580 : 0xF057F)
+                        color: level.tint
                         font.family: Theme.font
                         font.pixelSize: 18
                     }
@@ -205,10 +223,10 @@ Scope {
                         color: Theme.surface
 
                         Rectangle {
-                            width: parent.width * Math.min(1, root.percent / 100)
+                            width: parent.width * Math.min(1, level.value / 100)
                             height: parent.height
                             radius: 3
-                            color: root.muted ? Theme.dim : Theme.volume
+                            color: level.tint
                             Behavior on width {
                                 NumberAnimation { duration: 120 }
                             }
@@ -218,7 +236,7 @@ Scope {
                     Text {
                         Layout.preferredWidth: 42
                         horizontalAlignment: Text.AlignRight
-                        text: root.muted ? "Muted" : root.percent + "%"
+                        text: level.off ? "Muted" : level.value + "%"
                         color: Theme.foreground
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize

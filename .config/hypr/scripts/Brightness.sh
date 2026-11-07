@@ -48,6 +48,8 @@ change_brightness() {
 
     brightnessctl set "${new}%"
 
+    # Quickshell flyout; falls back to a notification if quickshell isn't running
+    qs ipc call osd brightness "$new" >/dev/null 2>&1 && return
     icon=$(get_icon_path "$new")
     send_notification "$new" "$icon"
 }
