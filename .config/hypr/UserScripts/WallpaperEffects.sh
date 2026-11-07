@@ -66,7 +66,7 @@ main() {
         [[ "$effect" != "No Effects" ]] && options+=("$effect")
     done
 
-    choice=$(printf "%s\n" "${options[@]}" | LC_COLLATE=C sort | rofi -dmenu -i -config $rofi_theme)
+    choice=$(printf "%s\n" "${options[@]}" | LC_COLLATE=C sort | rofi -dmenu -p Effects -i -config $rofi_theme)
 
     # Process user choice
     if [[ -n "$choice" ]]; then
@@ -99,9 +99,8 @@ main() {
 }
 
 # Check if rofi is already running and kill it
-if pidof rofi > /dev/null; then
-    pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle WallpaperEffects || exit 0
 
 main
 

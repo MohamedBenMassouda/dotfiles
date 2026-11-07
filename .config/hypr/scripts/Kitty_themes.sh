@@ -101,7 +101,7 @@ while true; do
   rofi_input_list_trimmed="${rofi_input_list%\\n}"
 
   chosen_index_from_rofi=$(echo -e "$rofi_input_list_trimmed" |
-    rofi -dmenu -i \
+    rofi -dmenu -p Kitty -i \
       -format 'i' \
       -p "Kitty Theme" \
       -mesg "Preview: ${theme_to_preview_now} | Enter: Preview | Ctrl+S: Apply & Exit | Esc: Cancel" \

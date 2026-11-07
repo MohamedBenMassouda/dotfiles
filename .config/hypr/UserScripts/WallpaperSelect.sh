@@ -72,7 +72,7 @@ RANDOM_PIC="${PICS[$((RANDOM % ${#PICS[@]}))]}"
 RANDOM_PIC_NAME=". random"
 
 # Rofi command
-rofi_command="rofi -i -show -dmenu -config $rofi_theme -theme-str $rofi_override"
+rofi_command="rofi -i -show -dmenu -p Wallpaper -config $rofi_theme -theme-str $rofi_override"
 
 # Sorting Wallpapers
 menu() {
@@ -188,8 +188,7 @@ main() {
 }
 
 # Check if rofi is already running
-if pidof rofi >/dev/null; then
-  pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle WallpaperSelect || exit 0
 
 main

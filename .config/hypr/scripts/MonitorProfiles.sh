@@ -3,9 +3,8 @@
 # For applying Pre-configured Monitor Profiles
 
 # Check if rofi is already running
-if pidof rofi > /dev/null; then
-  pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle MonitorProfiles || exit 0
 
 # Variables
 iDIR="$HOME/.config/swaync/images"
@@ -29,7 +28,7 @@ for ignored_file in "${ignore_files[@]}"; do
 done
 
 # Rofi Menu
-chosen_file=$(echo "$mon_profiles_list" | rofi -i -dmenu -config $rofi_theme -mesg "$msg")
+chosen_file=$(echo "$mon_profiles_list" | rofi -i -dmenu -p Monitors -config $rofi_theme -mesg "$msg")
 
 if [[ -n "$chosen_file" ]]; then
     full_path="$monitor_dir/$chosen_file.conf"

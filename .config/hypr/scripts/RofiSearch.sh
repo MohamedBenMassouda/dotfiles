@@ -32,12 +32,11 @@ rofi_theme="$HOME/.config/rofi/config-search.rasi"
 msg='‼️ **note** ‼️ search via default web browser'
 
 # Kill Rofi if already running before execution
-if pgrep -x "rofi" >/dev/null; then
-    pkill rofi
-fi
+source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
+menu_toggle RofiSearch || exit 0
 
 # Open Rofi and pass the selected query to xdg-open for the configured search engine
-query=$(printf '' | rofi -dmenu -config "$rofi_theme" -mesg "$msg")
+query=$(printf '' | rofi -dmenu -p Search -config "$rofi_theme" -mesg "$msg")
 
 if [[ -z "$query" ]]; then
     exit 0

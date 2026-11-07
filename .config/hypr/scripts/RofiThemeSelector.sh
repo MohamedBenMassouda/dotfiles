@@ -122,7 +122,7 @@ while true; do
 
   # Launch Rofi and get user's choice
   chosen_index_from_rofi=$(echo -e "$rofi_input_list_trimmed" |
-    rofi -dmenu -i \
+    rofi -dmenu -p Themes -i \
       -format 'i' \
       -p "Rofi Theme" \
       -mesg "‼️ **note** ‼️ Enter: Preview || Ctrl+S: Apply &amp; Exit || Esc: Cancel" \
