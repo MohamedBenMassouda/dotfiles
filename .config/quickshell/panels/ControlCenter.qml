@@ -36,6 +36,11 @@ SidePanel {
     property var askPassword: null      // secured Wi-Fi network waiting for its password
     property bool wifiOpen: false       // drop-down sections, closed each time the panel opens
     property bool btOpen: false
+    property bool phoneOpen: false
+    property bool mixerOpen: false
+
+    // apps playing sound, for the mixer
+    readonly property var streams: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioOutStream && n.audio)
 
     function run(cmd) {
         Quickshell.execDetached(cmd);
@@ -47,6 +52,8 @@ SidePanel {
             askPassword = null;
             wifiOpen = false;
             btOpen = false;
+            phoneOpen = false;
+            mixerOpen = false;
             if (adapter?.discovering) adapter.discovering = false;
             return;
         }
@@ -64,7 +71,7 @@ SidePanel {
     }
 
     PwObjectTracker {
-        objects: [cc.sink, cc.source]
+        objects: [cc.sink, cc.source].concat(cc.streams)
     }
 
     Process {
@@ -339,12 +346,75 @@ SidePanel {
         }
 
         Tile {
+            glyph: 0xF051B
+            label: "Focus"
+            detail: Globals.focusPhase === "" ? "25 min, no notifications"
+                    : (Globals.focusPhase === "work" ? "Focus " : "Break ") + Math.floor(Globals.focusLeft / 60) + ":" + String(Globals.focusLeft % 60).padStart(2, "0")
+            on: Globals.focusPhase !== ""
+            tint: Theme.notifications
+            onClicked: Globals.toggleFocus()
+        }
+
+        // phone (KDE Connect): click opens the app, arrow: send file / ring
+        Tile {
+            glyph: Globals.phone?.charging ? 0xF1397 : 0xF011C
+            label: Globals.phone?.name ?? "Phone"
+            detail: Globals.phone ? Globals.phone.battery + "%" + (Globals.phone.charging ? " · charging" : "") : "Not connected"
+            on: Globals.phone !== null
+            tint: Theme.bluetooth
+            expandable: Globals.phone !== null
+            expanded: cc.phoneOpen
+            onClicked: {
+                Globals.closePanel();
+                cc.run(["kdeconnect-app"]);
+            }
+            onExpandClicked: cc.phoneOpen = !cc.phoneOpen
+        }
+
+        RowLayout {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            visible: cc.phoneOpen && Globals.phone !== null
+            spacing: 6
+
+            SmallButton {
+                Layout.fillWidth: true
+                implicitHeight: 32
+                text: String.fromCodePoint(0xF0552) + "  Send file"
+                onClicked: {
+                    Globals.closePanel();
+                    cc.run(["sh", "-c", "f=$(zenity --file-selection --multiple --separator='\n' --title='Send to phone') || exit 0; "
+                            + "echo \"$f\" | while read -r x; do kdeconnect-cli -d " + Globals.phone.id + " --share \"$x\"; done"]);
+                }
+            }
+
+            SmallButton {
+                Layout.fillWidth: true
+                implicitHeight: 32
+                text: String.fromCodePoint(0xF009A) + "  Ring"
+                onClicked: Globals.phoneDo(["--ring"])
+            }
+
+            SmallButton {
+                Layout.fillWidth: true
+                implicitHeight: 32
+                text: String.fromCodePoint(0xF014C) + "  Send clipboard"
+                onClicked: Globals.phoneDo(["--send-clipboard"])
+            }
+        }
+
+        Tile {
             Layout.columnSpan: 2
             glyph: 0xF044B
             label: "Record screen"
-            detail: cc.recording ? "Recording" : "Off"
+            detail: cc.recording ? "Recording" : "Screen · arrow for area, window, mic, recordings"
             on: cc.recording
             tint: Theme.urgent
+            expandable: true
+            onExpandClicked: {
+                Globals.closePanel();
+                cc.run([cc.userScripts + "/RecordMenu.sh"]);
+            }
             onClicked: {
                 Globals.closePanel();
                 cc.run([cc.userScripts + "/ScreenRecord.sh"]);
@@ -411,4 +481,47 @@ SidePanel {
         }
     }
 
+    // ---- per-app volume ----
+    MenuRow {
+        Layout.fillWidth: true
+        visible: cc.streams.length > 0
+        glyph: String.fromCodePoint(cc.mixerOpen ? 0xF0140 : 0xF0142)
+        label: "App volume  ·  " + cc.streams.length + (cc.streams.length === 1 ? " app" : " apps")
+        dimmed: true
+        onActivated: cc.mixerOpen = !cc.mixerOpen
+    }
+
+    Repeater {
+        model: cc.mixerOpen ? cc.streams : []
+
+        delegate: ColumnLayout {
+            id: stream
+
+            required property var modelData
+            readonly property string app: modelData.properties["application.name"] || modelData.description || modelData.name
+
+            Layout.fillWidth: true
+            spacing: 0
+
+            Text {
+                Layout.leftMargin: 34
+                text: stream.app + (stream.modelData.properties["media.name"] ? "  ·  " + stream.modelData.properties["media.name"] : "")
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize - 2
+                elide: Text.ElideRight
+                Layout.fillWidth: true
+            }
+
+            LevelSlider {
+                Layout.fillWidth: true
+                glyph: stream.modelData.audio.muted ? 0xF0581 : 0xF057E
+                value: stream.modelData.audio.volume
+                dimmed: stream.modelData.audio.muted
+                tint: Theme.volume
+                onMoved: v => stream.modelData.audio.volume = v
+                onIconClicked: stream.modelData.audio.muted = !stream.modelData.audio.muted
+            }
+        }
+    }
 }
