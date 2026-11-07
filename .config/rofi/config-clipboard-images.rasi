@@ -1,0 +1,40 @@
+/* Clipboard image gallery (SUPER+SHIFT+V): grid of big previews, newest first.
+ * Same colours, border and font as config.rasi. */
+@import "config.rasi"
+
+configuration {
+    show-icons: true;
+}
+
+window {
+    width: 920px;
+}
+
+entry {
+    placeholder: "Filter by size or type (e.g. png, 1920)";
+}
+
+listview {
+    columns:        4;
+    lines:          3;
+    fixed-columns:  true;
+    spacing:        8px;
+}
+
+element {
+    orientation:        vertical;
+    padding:            10px;
+    spacing:            8px;
+    border-radius:      8px;
+    background-color:   @bg1;
+}
+
+element-icon {
+    size:   180px;
+    horizontal-align:   0.5;
+}
+
+element-text {
+    horizontal-align:   0.5;
+    font:               "JetbrainsMono Nerd Font 10";
+}
