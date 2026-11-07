@@ -7,7 +7,7 @@ import qs
 
 // Now playing: the player's app icon (e.g. Spotify) and "title - artist".
 // Left click: previous, right click: next, middle click: play/pause,
-// scroll: volume. Each one shows the flyout; hovering shows it too.
+// scroll: volume. Each one shows the flyout. Hover: now-playing card under it.
 Item {
     id: root
 
@@ -61,12 +61,56 @@ Item {
         }
     }
 
-    // keep the card up while the pointer stays on the song
+    // Hover: a now-playing card drops down under the song (like KDE's media
+    // popup) and stays while the pointer is on the song or the card; a short
+    // delay lets the pointer travel from one to the other.
+    readonly property bool hovered: area.containsMouse || cardHover.hovered
+    onHoveredChanged: hovered ? (closeDelay.stop(), popup.visible = true) : closeDelay.restart()
+
     Timer {
-        running: area.containsMouse
-        interval: 2000
-        repeat: true
-        onTriggered: Globals.flyout("media")
+        id: closeDelay
+        interval: 300
+        onTriggered: popup.visible = false
+    }
+
+    PopupWindow {
+        id: popup
+
+        visible: false
+        color: "transparent"
+        implicitWidth: frame.implicitWidth
+        implicitHeight: frame.implicitHeight
+
+        // centred under the song, below the bar
+        anchor.item: root
+        anchor.rect.x: 0
+        anchor.rect.y: 0
+        anchor.rect.width: root.width
+        anchor.rect.height: root.height + 16
+        anchor.edges: Edges.Bottom
+        anchor.gravity: Edges.Bottom
+
+        Rectangle {
+            id: frame
+            implicitWidth: card.implicitWidth + 2 * Theme.border
+            implicitHeight: card.implicitHeight + 2 * Theme.border
+            radius: Theme.radius
+            color: Theme.popup
+            border.color: Theme.accent
+            border.width: Theme.border
+
+            HoverHandler {
+                id: cardHover
+            }
+
+            MediaCard {
+                id: card
+                anchors.fill: parent
+                anchors.margins: Theme.border
+                radius: Theme.radius - Theme.border
+                player: root.player
+            }
+        }
     }
 
     MouseArea {
@@ -74,10 +118,7 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
-        // hover: the media card (cover, controls, seek, speed) under the bar;
-        // it stays while the pointer is here or on the card
         hoverEnabled: true
-        onContainsMouseChanged: if (containsMouse) Globals.flyout("media")
         onClicked: event => {
             if (!root.player) return;
             if (event.button === Qt.LeftButton) root.player.previous();
