@@ -43,6 +43,7 @@ PanelWindow {
 
     // centre: clock (hover for calendar)
     Island {
+        id: centre
         anchors.horizontalCenter: parent.horizontalCenter
         y: Theme.gap
 
@@ -53,6 +54,7 @@ PanelWindow {
     // right: privacy dots, recording timer, now playing, app tray, volume + mic,
     // status pill (wifi, bluetooth, updates: opens quick settings), keep-awake, battery, power
     Island {
+        id: right
         anchors.right: parent.right
         anchors.rightMargin: 8
         y: Theme.gap
@@ -60,7 +62,29 @@ PanelWindow {
         Privacy {}
         Recording {}
         FocusTimer {}
-        Media {}
+        Media {
+            id: media
+            // the title gets what's left between the clock island and the rest of
+            // this island (8 = screen margin, 12 = gap kept between the islands).
+            // Set from a function, not a binding: the island's width depends on it
+            function fit() {
+                maxTextWidth = Math.min(240, (bar.width - centre.width) / 2 - 8 - 12
+                                             - (right.implicitWidth - textWidth));
+            }
+            Component.onCompleted: Qt.callLater(fit)
+        }
+        Connections {
+            target: right
+            function onImplicitWidthChanged() { Qt.callLater(media.fit) }
+        }
+        Connections {
+            target: centre
+            function onWidthChanged() { Qt.callLater(media.fit) }
+        }
+        Connections {
+            target: bar
+            function onWidthChanged() { Qt.callLater(media.fit) }
+        }
         Tray {}
         Volume {}
         Mic {}
