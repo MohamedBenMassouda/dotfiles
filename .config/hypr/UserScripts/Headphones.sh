@@ -3,7 +3,7 @@
 #   Headphones.sh auto   -> at login: keep trying for ~30s while bluetooth comes up
 #   Headphones.sh        -> toggle (bound to SUPER+ALT+H)
 MAC="00:A4:1C:9D:33:C8"
-icon="$HOME/.config/swaync/images/ja.png"
+icon="$HOME/.config/hypr/assets/images/ja.png"
 
 connected() { bluetoothctl info "$MAC" | grep -q "Connected: yes"; }
 

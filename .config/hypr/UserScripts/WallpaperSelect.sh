@@ -10,8 +10,8 @@ SCRIPTSDIR="$HOME/.config/hypr/scripts"
 wallpaper_current="$HOME/.config/hypr/wallpaper_effects/.wallpaper_current"
 
 # Directory for swaync
-iDIR="$HOME/.config/swaync/images"
-iDIRi="$HOME/.config/swaync/icons"
+iDIR="$HOME/.config/hypr/assets/images"
+iDIRi="$HOME/.config/hypr/assets/icons"
 
 # awww transition config
 FPS=60

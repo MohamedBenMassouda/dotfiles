@@ -7,7 +7,7 @@ source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
 menu_toggle MonitorProfiles || exit 0
 
 # Variables
-iDIR="$HOME/.config/swaync/images"
+iDIR="$HOME/.config/hypr/assets/images"
 SCRIPTSDIR="$HOME/.config/hypr/scripts"
 monitor_dir="$HOME/.config/hypr/Monitor_Profiles"
 target="$HOME/.config/hypr/monitors.lua"

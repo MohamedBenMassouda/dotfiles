@@ -4,7 +4,7 @@
 
 # Local Paths
 local_dir="$HOME/.config/hypr"
-iDIR="$HOME/.config/swaync/images/"
+iDIR="$HOME/.config/hypr/assets/images/"
 local_version=$(find "$local_dir" -maxdepth 1 -name 'v*' -printf '%f\n' 2>/dev/null | sort -V | tail -n 1 | sed 's/^v//')
 KooL_Dots_DIR="$HOME/Hyprland-Dots"
 

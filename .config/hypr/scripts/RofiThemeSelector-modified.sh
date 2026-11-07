@@ -5,7 +5,7 @@
 
 # This code is released in public domain by Dave Davenport <qball@gmpclient.org>
 
-iDIR="$HOME/.config/swaync/images"
+iDIR="$HOME/.config/hypr/assets/images"
 
 
 OS="linux"

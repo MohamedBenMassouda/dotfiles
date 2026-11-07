@@ -2,7 +2,7 @@
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # Game Mode. Turning off all animations
 
-notif="$HOME/.config/swaync/images/ja.png"
+notif="$HOME/.config/hypr/assets/images/ja.png"
 SCRIPTSDIR="$HOME/.config/hypr/scripts"
 
 

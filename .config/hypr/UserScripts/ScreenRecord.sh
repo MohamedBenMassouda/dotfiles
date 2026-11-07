@@ -6,7 +6,7 @@
 #   ... --mic                  also record the microphone
 # Menu with all of these + your recordings: RecordMenu.sh (SUPER+CTRL+R)
 set -euo pipefail
-icon="$HOME/.config/swaync/images/ja.png"
+icon="$HOME/.config/hypr/assets/images/ja.png"
 dir="$HOME/Videos/Recordings"
 toast() { qs ipc call osd toast "$@" >/dev/null 2>&1 || notify-send -e -u low -i "$icon" " $2" "$3"; }
 

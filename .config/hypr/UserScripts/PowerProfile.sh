@@ -11,4 +11,4 @@ esac
 powerprofilesctl set "$next"
 qs ipc call osd toast "$next" "Power profile" "$(sed "s/-/ /; s/^./\U&/" <<<"$next")" >/dev/null 2>&1 && exit 0
 notify-send -e -u low -h string:x-canonical-private-synchronous:power-profile \
-  -i "$HOME/.config/swaync/images/ja.png" " Power profile" "$next"
+  -i "$HOME/.config/hypr/assets/images/ja.png" " Power profile" "$next"
