@@ -1,8 +1,9 @@
 # Packages for this desktop. bootstrap.sh installs them with yay (repo + AUR).
-# Lines starting with # are ignored.
+# Lines starting with # are ignored. A [group] line starts an optional group
+# that bootstrap.sh asks about; everything before the first one is always
+# installed (the [core] desktop).
 
-# Login screen + Hyprland session
-gdm
+# Hyprland session
 hyprland
 xdg-desktop-portal-hyprland
 uwsm
@@ -32,7 +33,6 @@ mpvpaper
 imagemagick
 nwg-look
 adw-gtk-theme
-python-pywalfox
 nwg-displays
 qt6ct
 kvantum
@@ -64,7 +64,6 @@ power-profiles-daemon
 
 # Network, Bluetooth, phone, firewall
 networkmanager
-ufw
 network-manager-applet
 nm-connection-editor
 bluez
@@ -72,27 +71,18 @@ bluez-utils
 bluetui
 kdeconnect
 
-# Terminal and dev
+# Terminal
 kitty
 zsh
 tmux
-neovim
 fzf
 fd
 ripgrep
 bat
 zoxide
-lazygit
 yazi
 btop
 fastfetch
-docker
-
-# Games
-umu-launcher
-
-# Apps from Flathub are in flatpaks.txt
-flatpak
 
 # Scripts
 jq
@@ -104,12 +94,45 @@ python
 pacman-contrib
 stow
 
-# Fallback bar (swap app("qs") for app("waybar") in configs/Startup_Apps.lua)
-waybar
+# ---- optional groups (bootstrap.sh asks) ----
 
-# Snapshots (btrfs + GRUB only, set up by .config/hypr/scripts/SetupSystem.sh)
+[gdm]
+# Login screen (skipped if you already have one)
+gdm
+
+[nvim]
+# Neovim + its config (.config/nvim submodule)
+neovim
+
+[dev]
+# Docker, lazygit (dev menu: SUPER+ALT+D)
+docker
+lazygit
+
+[games]
+# Windows games from /mnt/Data/Games (game launcher: SUPER+CTRL+G)
+umu-launcher
+
+[flatpak]
+# Flathub apps listed in flatpaks.txt
+flatpak
+
+[firefox]
+# Firefox coloured from the wallpaper (+ the Pywalfox add-on)
+python-pywalfox
+
+[firewall]
+# ufw: only LAN access to KDE Connect, LocalSend, Spotify Connect
+ufw
+
+[snapshots]
+# btrfs + GRUB only: Timeshift before every update, snapshots in the boot menu
 timeshift
 timeshift-autosnap
 grub-btrfs
 inotify-tools
 cronie
+
+[waybar]
+# Fallback bar (swap app("qs") for app("waybar") in configs/Startup_Apps.lua)
+waybar
