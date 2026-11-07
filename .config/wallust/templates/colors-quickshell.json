@@ -1,0 +1,7 @@
+{
+  "background": "{{background}}",
+  "foreground": "{{foreground}}",
+  "surface": "{{color8}}",
+  "accent": "{{color12}}",
+  "urgent": "{{color13}}"
+}
