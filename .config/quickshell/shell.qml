@@ -39,6 +39,10 @@ ShellRoot {
         function clearNotifications(): void {
             Notifs.clearAll();
         }
+
+        function clearApp(app: string): void {
+            Notifs.clearApp(app);
+        }
     }
 
     Variants {

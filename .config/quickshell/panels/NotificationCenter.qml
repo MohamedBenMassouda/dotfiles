@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import qs
 
-// Notification history (bell / SUPER+H): newest first, do-not-disturb and clear.
+// Notification history (bell / SUPER+H), grouped by app, newest first.
+// Per app: mute its popups (still listed here) or clear it. Do-not-disturb and clear all on top.
 SidePanel {
     name: "notifications"
 
@@ -35,13 +36,66 @@ SidePanel {
         lineHeight: 1.4
     }
 
-    Repeater {
-        model: Notifs.history.slice().reverse()
+    // grouped by app, the app with the newest notification first
+    readonly property var groups: {
+        const order = [], byApp = {};
+        for (const n of Notifs.history.slice().reverse()) {
+            const app = Notifs.appOf(n);
+            if (!byApp[app]) { byApp[app] = []; order.push(app); }
+            byApp[app].push(n);
+        }
+        return order.map(app => ({ app: app, items: byApp[app] }));
+    }
 
-        delegate: NotificationCard {
+    Repeater {
+        model: groups
+
+        delegate: ColumnLayout {
+            id: group
+
             required property var modelData
+            readonly property bool quiet: Notifs.isQuiet(modelData.app)
+
             Layout.fillWidth: true
-            notification: modelData
+            spacing: 6
+
+            // app header: name, count, mute popups, clear
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+
+                Text {
+                    Layout.fillWidth: true
+                    text: group.modelData.app + "  ·  " + group.modelData.items.length
+                          + (group.quiet ? "  " + String.fromCodePoint(0xF009B) : "")
+                    color: Theme.dim
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize - 1
+                    font.bold: true
+                    elide: Text.ElideRight
+                }
+
+                SmallButton {
+                    text: group.quiet ? "Unmute" : "Mute popups"
+                    on: group.quiet
+                    onClicked: Notifs.toggleQuiet(group.modelData.app)
+                }
+
+                SmallButton {
+                    text: String.fromCodePoint(0xF0156)
+                    onClicked: Notifs.clearApp(group.modelData.app)
+                }
+            }
+
+            Repeater {
+                model: group.modelData.items
+
+                delegate: NotificationCard {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    notification: modelData
+                }
+            }
         }
     }
 }
