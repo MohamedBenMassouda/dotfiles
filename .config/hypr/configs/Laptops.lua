@@ -22,3 +22,7 @@ hl.device({
     name    = "elan0710:01-04f3:30ed-touchpad",
     enabled = true,
 })
+
+-- Lid closed with an external monitor: laptop screen off, open: back on
+bind("switch:on:Lid Switch", "Lid closed", exec(s .. "/Lid.sh close"), { locked = true })
+bind("switch:off:Lid Switch", "Lid opened", exec(s .. "/Lid.sh open"), { locked = true })
