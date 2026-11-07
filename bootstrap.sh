@@ -42,6 +42,9 @@ systemctl is-enabled display-manager.service >/dev/null 2>&1 || sudo systemctl e
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
 
+step "Firewall"
+"$dots/.config/hypr/scripts/SetupFirewall.sh"
+
 step "Login shell: zsh"
 [[ $(getent passwd "$USER" | cut -d: -f7) == */zsh ]] || chsh -s /usr/bin/zsh
 
