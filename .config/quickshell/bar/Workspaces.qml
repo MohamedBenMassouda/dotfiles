@@ -4,8 +4,8 @@ import Quickshell
 import Quickshell.Hyprland
 import qs
 
-// Kanji workspace numbers for one monitor: workspaces that exist on it, plus
-// the active one. Click to switch, scroll to move through them.
+// Kanji workspace numbers: every workspace that exists on any monitor, plus
+// the active one. Workspaces living on the other monitor are faded. Click to switch, scroll to move through them.
 RowLayout {
     id: root
 
@@ -34,7 +34,8 @@ RowLayout {
             readonly property bool active: root.monitor?.activeWorkspace?.id === number
             readonly property bool onThisMonitor: workspace?.monitor?.name === root.screenName
 
-            visible: active || onThisMonitor
+            visible: active || workspace !== undefined
+            opacity: active || onThisMonitor ? 1 : 0.35
             implicitWidth: 26
             implicitHeight: 24
             radius: 6
