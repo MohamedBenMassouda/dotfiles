@@ -60,6 +60,10 @@ gtk3.target = '~/.config/gtk-3.0/colors.css'
 gtk4.template = 'colors-gtk.css'
 gtk4.target = '~/.config/gtk-4.0/colors.css'
 
+# pywal-style colours.json: Firefox reads it through the Pywalfox add-on
+pywal.template = 'colors-pywal.json'
+pywal.target = '~/.cache/wal/colors.json'
+
 #swaync.template = 'colors-swaync.css'
 #swaync.target = '~/.config/swaync/wallust/colors-wallust.css'
 

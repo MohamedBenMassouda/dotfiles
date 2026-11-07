@@ -114,6 +114,8 @@ wait_for_templates "$start_ts" "${wallust_targets[@]}" || true
 
 # open kitty windows pick up the new colours (wallust-colors.conf) without restarting
 pkill -USR1 -x kitty 2>/dev/null || true
+# Firefox (Pywalfox add-on) re-reads ~/.cache/wal/colors.json
+command -v pywalfox >/dev/null && pywalfox update >/dev/null 2>&1 &
 
 # Normalize Ghostty palette syntax in case ':' was used by older files
 if [ -f "$HOME/.config/ghostty/wallust.conf" ]; then

@@ -57,6 +57,11 @@ gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice'
 
+# Firefox: Pywalfox reads ~/.cache/wal/colors.json (written by wallust);
+# the add-on itself is installed from addons.mozilla.org
+mkdir -p ~/.cache/wal
+pywalfox install
+
 wall=$(find ~/Pictures/wallpapers -type f \( -name '*.png' -o -name '*.jpg' \) 2>/dev/null | head -1 || true)
 if [[ -n $wall ]]; then
   ln -sf "$wall" ~/.config/rofi/.current_wallpaper

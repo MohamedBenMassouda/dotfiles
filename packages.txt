@@ -32,6 +32,7 @@ mpvpaper
 imagemagick
 nwg-look
 adw-gtk-theme
+python-pywalfox
 nwg-displays
 qt6ct
 kvantum
