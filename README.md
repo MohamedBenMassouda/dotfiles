@@ -6,16 +6,19 @@ coloured from the wallpaper by wallust. Based on JaKooLit's Hyprland-Dots, heavi
 ## Install (fresh Arch)
 
 ```sh
-git clone --recurse-submodules https://github.com/MohamedBenMassouda/dotfiles ~/dotfiles
-~/dotfiles/bootstrap.sh
+git clone https://github.com/MohamedBenMassouda/dotfiles ~/dotfiles
+~/dotfiles/bootstrap.sh          # asks what to include, then installs
+~/dotfiles/bootstrap.sh --yes    # no questions, defaults
 ```
 
-`bootstrap.sh` installs yay and everything in [`packages.txt`](packages.txt), links the
-configs into `~` with GNU stow (existing files are moved to `*.pre-dotfiles`), enables
-the services, and generates the colours. Then log in to **Hyprland (uwsm-managed)**.
-
-Optional on btrfs + GRUB: `~/.config/hypr/scripts/SetupSystem.sh` adds Timeshift
-snapshots before every update and lists them in the boot menu.
+The desktop itself (Hyprland, Quickshell, rofi, wallust, kitty, zsh, tmux) is always
+installed. `bootstrap.sh` asks first about the extras: GDM login screen, Neovim + config,
+Docker / lazygit, games (umu), Flathub apps (all or one by one, see
+[`flatpaks.txt`](flatpaks.txt)), Firefox theming, firewall, Timeshift snapshots
+(btrfs + GRUB only), Waybar fallback and zsh as login shell. Then it installs yay and
+the chosen groups from [`packages.txt`](packages.txt), links the configs into `~` with
+GNU stow (existing files are moved to `*.pre-dotfiles`), enables the services and
+generates the colours. Log in to **Hyprland (uwsm-managed)**.
 
 ## What's where
 
