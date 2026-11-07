@@ -43,7 +43,11 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   now playing, tray, volume, mic, status pill (Wi-Fi, Bluetooth, phone, updates), keep-awake, battery.
 - **Flyout** (top centre): volume, mic, brightness, keyboard light, media, toggles, and every notification.
   Also: screenshot preview (Edit / Open / Folder / Delete), new wallpaper + palette, charger in/out,
-  USB drives (Open / Eject), monitors connected, Wi-Fi joined / lost / no internet.
+  USB drives (Open / Eject), monitors connected, Wi-Fi joined / lost / no internet,
+  "locking in 30 s", screen sharing, low headphone battery, disk over 90 % (Clean up),
+  CPU over 90 °C, update summary (Restart now after a kernel / driver update),
+  lid closed with a monitor plugged in (laptop screen turns off), and terminal
+  commands over 30 s finishing while you're on another window (Show).
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).
