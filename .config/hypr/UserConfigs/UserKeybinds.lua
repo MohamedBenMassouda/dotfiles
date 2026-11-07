@@ -15,6 +15,7 @@ bind("SUPER + SHIFT + O", "Change oh-my-zsh theme", exec(us .. "/ZshChangeTheme.
 bind("SUPER + SHIFT + D", "Color picker", exec("hyprpicker -a"))
 bind("SUPER + CTRL + H", "Open Hyprland wiki", exec("xdg-open https://wiki.hypr.land/"))
 bind("SUPER + V", "Clipboard history", exec(s .. "/ClipManager.sh"))
+bind("SUPER + SHIFT + V", "Clipboard images", exec(us .. "/ClipImages.sh"))
 bind("ALT + Tab", "Next window", hl.dsp.window.cycle_next())
 bind("ALT + SHIFT + Tab", "Previous window", hl.dsp.window.cycle_next({ next = false }))
 bind("SUPER + L", "Lock screen", exec(s .. "/LockScreen.sh"))
