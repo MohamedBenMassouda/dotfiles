@@ -62,7 +62,12 @@ Scope {
         "awake-off": [0xF06CA, Theme.dim],
         "dnd": [0xF009B, Theme.dim],
         "dnd-off": [0xF009A, Theme.notifications],
-        "battery-low": [0xF10CD, Theme.urgent]
+        "battery-low": [0xF10CD, Theme.urgent],
+        "ocr": [0xF113D, Theme.accent],
+        "color": [0xF020A, Theme.accent],     // tinted with the picked colour itself
+        "dev": [0xF0868, Theme.accent],
+        "focus": [0xF051B, Theme.notifications],
+        "phone": [0xF011C, Theme.bluetooth]
     })
 
     function show() {
@@ -72,7 +77,8 @@ Scope {
 
     function showToast(kind, title, subtitle) {
         const k = kinds[kind] ?? [0xF009A, Theme.accent];
-        toast = { glyph: k[0], color: k[1], title: title, subtitle: subtitle ?? "" };
+        const color = kind === "color" && /^#[0-9a-f]{6}$/i.test(title) ? title : k[1];
+        toast = { glyph: k[0], color: color, title: title, subtitle: subtitle ?? "" };
         mode = "toast";
         sticky = kind === "battery-low";
         show();
@@ -125,6 +131,9 @@ Scope {
         function onFlyout(kind) {
             root.mode = kind === "mic" ? "mic" : "media";
             root.show();
+        }
+        function onToast(kind, title, subtitle) {
+            root.showToast(kind, title, subtitle);
         }
     }
 
