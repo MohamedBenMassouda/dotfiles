@@ -11,8 +11,8 @@ focused_monitor=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
 rofi_theme="$HOME/.config/rofi/config-wallpaper-effect.rasi"
 
 # Directory for swaync
-iDIR="$HOME/.config/swaync/images"
-iDIRi="$HOME/.config/swaync/icons"
+iDIR="$HOME/.config/hypr/assets/images"
+iDIRi="$HOME/.config/hypr/assets/icons"
 
 # awww transition config
 FPS=60

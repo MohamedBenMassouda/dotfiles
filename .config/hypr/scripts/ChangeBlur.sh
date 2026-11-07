@@ -2,7 +2,7 @@
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # Script for changing blurs on the fly
 
-notif="$HOME/.config/swaync/images"
+notif="$HOME/.config/hypr/assets/images"
 
 STATE=$(hyprctl -j getoption decoration:blur:passes | jq ".int")
 

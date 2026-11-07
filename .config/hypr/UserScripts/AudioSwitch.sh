@@ -28,4 +28,4 @@ choice=$(for i in "${!labels[@]}"; do printf '%s\0icon\x1f%s\n' "${labels[$i]}" 
 
 pactl "set-default-${kinds[$choice]}" "${names[$choice]}"
 notify-send -e -u low -h string:x-canonical-private-synchronous:audio-switch \
-  -i "$HOME/.config/swaync/images/ja.png" " Audio" "${labels[$choice]}"
+  -i "$HOME/.config/hypr/assets/images/ja.png" " Audio" "${labels[$choice]}"

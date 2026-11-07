@@ -7,7 +7,7 @@ source "$HOME/.config/hypr/UserScripts/menu-toggle.sh"
 menu_toggle Animations || exit 0
 
 # Variables
-iDIR="$HOME/.config/swaync/images"
+iDIR="$HOME/.config/hypr/assets/images"
 SCRIPTSDIR="$HOME/.config/hypr/scripts"
 animations_dir="$HOME/.config/hypr/animations"
 UserConfigs="$HOME/.config/hypr/UserConfigs"

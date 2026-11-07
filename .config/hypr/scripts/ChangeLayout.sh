@@ -2,7 +2,7 @@
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # for changing Hyprland Layouts (Master or Dwindle) on the fly
 
-notif="$HOME/.config/swaync/images/ja.png"
+notif="$HOME/.config/hypr/assets/images/ja.png"
 
 LAYOUT=$(hyprctl -j getoption general:layout | jq '.str' | sed 's/"//g')
 

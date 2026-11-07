@@ -27,8 +27,8 @@ if [[ ! -f "$rofi_wallust" ]]; then
 fi
 
 # Directory for swaync
-iDIR="$HOME/.config/swaync/images"
-iDIRi="$HOME/.config/swaync/icons"
+iDIR="$HOME/.config/hypr/assets/images"
+iDIRi="$HOME/.config/hypr/assets/icons"
 
 # Parse arguments
 mode="effects" # default
