@@ -50,7 +50,7 @@ PanelWindow {
     }
 
     // right: privacy dots, recording timer, now playing, app tray, volume + mic,
-    // bluetooth + wifi, updates, keep-awake, battery, power
+    // status pill (wifi, bluetooth, updates: opens quick settings), keep-awake, battery, power
     Island {
         anchors.right: parent.right
         anchors.rightMargin: 8
@@ -62,9 +62,7 @@ PanelWindow {
         Tray {}
         Volume {}
         Mic {}
-        BluetoothStatus {}
-        NetworkStatus {}
-        Updates {}
+        ControlPill {}
         KeepAwake {}
         Battery {}
         PowerButton {}

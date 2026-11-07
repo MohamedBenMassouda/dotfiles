@@ -2,7 +2,8 @@ import QtQuick
 import qs
 
 // Pending pacman + AUR updates (checked every 30 min in Globals.qml).
-// Hidden when up to date. Click: update in a terminal (yay -Syu).
+// Hidden when up to date. Sits in the status pill (click opens quick settings,
+// which has the Updates tile); middle click: update right away.
 Label {
     visible: Globals.updates > 0
     text: String.fromCodePoint(0xF03D5) + " " + Globals.updates
@@ -10,7 +11,7 @@ Label {
 
     MouseArea {
         anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
+        acceptedButtons: Qt.MiddleButton
         onClicked: Globals.upgrade()
     }
 }
