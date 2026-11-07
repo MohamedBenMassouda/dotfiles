@@ -18,7 +18,8 @@ Label {
     // is it running, and for how long? (checked every 2 s, cheap)
     Process {
         id: check
-        command: ["ps", "-o", "etimes=", "-C", "gpu-screen-recorder"]
+        // by full command line: the process name is cut to 15 chars ("gpu-screen-reco")
+        command: ["sh", "-c", "pid=$(pgrep -of '^gpu-screen-recorder') && ps -o etimes= -p $pid"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const secs = parseInt(text.trim());
