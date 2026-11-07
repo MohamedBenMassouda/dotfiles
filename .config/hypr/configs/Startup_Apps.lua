@@ -22,7 +22,13 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(s .. "/Polkit.sh")
     hl.exec_cmd(app("nm-applet --indicator"))
     hl.exec_cmd(app("kdeconnectd"))  -- phone: notifications, battery, file sharing (quick settings)
-    hl.exec_cmd(app("qs"))         -- bar, flyouts, notifications, panels, lock (~/.config/quickshell)
+    -- bar, flyouts, notifications, panels (~/.config/quickshell). Under uwsm it runs
+    -- as a service that restarts itself if it crashes (systemd/user/quickshell.service)
+    if lib.uwsm then
+        hl.exec_cmd("systemctl --user start quickshell.service")
+    else
+        hl.exec_cmd("qs")
+    end
     hl.exec_cmd(app("hypridle"))
     hl.exec_cmd(s .. "/Hyprsunset.sh init")
     hl.exec_cmd(app("wl-paste --type text --watch cliphist store"))
