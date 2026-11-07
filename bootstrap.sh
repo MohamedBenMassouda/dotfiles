@@ -101,20 +101,18 @@ if on flatpak && (( ${#picked_flatpaks[@]} )); then
   flatpak install -y --noninteractive flathub "${picked_flatpaks[@]}"
 fi
 
-stow_ignore=()
 if on nvim; then
-  step "Neovim config (submodule)"
-  git submodule update --init --recursive
-else
-  stow_ignore+=(--ignore='nvim')
+  step "Neovim config"
+  # its own repo, cloned straight into place (an existing one is left alone)
+  [[ -e ~/.config/nvim ]] || git clone https://github.com/MohamedBenMassouda/nvim ~/.config/nvim
 fi
 
 step "Link configs into ~ with stow"
 # a fresh install has default files (e.g. ~/.zshrc): move them aside instead of failing
 while read -r target; do
   [[ -e ~/$target && ! -L ~/$target ]] && mv -v ~/"$target" ~/"$target.pre-dotfiles"
-done < <(stow -n -v "${stow_ignore[@]}" -t ~ . 2>&1 | sed -n 's/.*over existing target \(.*\) since.*/\1/p; s/.*existing target is neither a link nor a directory: \(.*\)/\1/p')
-stow -v "${stow_ignore[@]}" -t ~ .
+done < <(stow -n -v -t ~ . 2>&1 | sed -n 's/.*over existing target \(.*\) since.*/\1/p; s/.*existing target is neither a link nor a directory: \(.*\)/\1/p')
+stow -v -t ~ .
 
 step "Services"
 sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon paccache.timer
