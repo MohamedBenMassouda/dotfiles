@@ -41,7 +41,9 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 - **Bar** on every monitor: kanji workspaces (other monitor's faded), CPU/RAM, cava,
   taskbar, clock (hover: calendar + weather), privacy dots, recording / focus timers,
   now playing, tray, volume, mic, status pill (Wi-Fi, Bluetooth, phone, updates), keep-awake, battery.
-- **Flyout** (top centre): volume, mic, brightness, media, toggles, and every notification.
+- **Flyout** (top centre): volume, mic, brightness, keyboard light, media, toggles, and every notification.
+  Also: screenshot preview (Edit / Open / Folder / Delete), new wallpaper + palette, charger in/out,
+  USB drives (Open / Eject), monitors connected, Wi-Fi joined / lost / no internet.
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).
@@ -100,8 +102,8 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `SUPER+CTRL+Print` | Screenshot in 5s |
 | `SUPER+ALT+Print` | Screenshot in 10s |
 | `ALT+Print` | Screenshot active window |
-| `SUPER+SHIFT+S` | Screenshot (hyprshot) |
-| `SUPER+ALT+S` | Screenshot to clipboard |
+| `SUPER+SHIFT+S` | Screenshot area |
+| `SUPER+ALT+S` | Screenshot area to clipboard (not saved) |
 | `SUPER+SHIFT+U` | Move window to scratch workspace |
 | `SUPER+U` | Show/hide scratch workspace |
 | `SUPER+` | Workspace 1 |
