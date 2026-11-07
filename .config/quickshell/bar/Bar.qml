@@ -22,10 +22,11 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell"
     WlrLayershell.layer: WlrLayer.Top
 
-    // keep-awake (coffee icon / quick settings): no idle lock or sleep while on
+    // keep-awake (coffee icon / quick settings) or anything playing:
+    // no idle dim, lock or sleep
     IdleInhibitor {
         window: bar
-        enabled: Globals.keepAwake
+        enabled: Globals.keepAwake || Globals.mediaPlaying
     }
 
     // left: workspaces, cpu/memory, visualiser, open apps
@@ -58,6 +59,7 @@ PanelWindow {
 
         Privacy {}
         Recording {}
+        FocusTimer {}
         Media {}
         Tray {}
         Volume {}
