@@ -6,7 +6,8 @@ import Quickshell.Widgets
 import qs
 
 // Now playing: the player's app icon (e.g. Spotify) and "title - artist".
-// Click: play/pause, right click: media menu (SUPER+P), scroll: next/previous.
+// Left click: previous, right click: next, middle click: play/pause,
+// scroll: volume. Each one shows the flyout.
 Item {
     id: root
 
@@ -55,14 +56,16 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
         onClicked: event => {
-            if (event.button === Qt.RightButton)
-                Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/UserScripts/MediaMenu.sh"]);
-            else
-                root.player?.togglePlaying();   // direct D-Bus call, no script in between
+            if (!root.player) return;
+            if (event.button === Qt.LeftButton) root.player.previous();
+            else if (event.button === Qt.RightButton) root.player.next();
+            else root.player.togglePlaying();          // direct D-Bus call, instant
+            Quickshell.execDetached(["qs", "ipc", "call", "osd", "media"]);
         }
-        onWheel: wheel => wheel.angleDelta.y > 0 ? root.player?.previous() : root.player?.next()
+        onWheel: wheel => Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Volume.sh",
+                                                    wheel.angleDelta.y > 0 ? "--inc" : "--dec"])
     }
 }
