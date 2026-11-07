@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import Quickshell.Widgets
 import Quickshell.Bluetooth
+import Quickshell.Networking
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
@@ -17,18 +18,25 @@ import qs
 //   qs ipc call osd media                     next / previous / play-pause
 //   qs ipc call osd mic                       mic level (Volume.sh mic keys, bar scroll)
 //   qs ipc call osd brightness 40             screen brightness keys
+//   qs ipc call osd keyboard 40               keyboard backlight keys
 //   qs ipc call osd toast <kind> <title> <subtitle>   anything else (see `kinds`)
-// It also pops up by itself for Bluetooth devices
-// connecting, and low battery (that one stays until you plug in).
+//   qs ipc call osd rich <kind> <title> <subtitle> '<json>'   same, plus any of
+//       {"image": "/path.png", "colors": ["#hex", ...],
+//        "actions": [{"label": "Open", "glyph": 0xF0770, "cmd": ["xdg-open", "/path"],
+//                     "then": ["kind", "title", "subtitle"]}]}
+//     (a card with buttons stays 6 s; "then" shows another toast after the click)
+// It also pops up by itself for: Bluetooth devices connecting, the charger
+// plugged in / out, low battery (stays until you plug in), monitors connected /
+// disconnected, Wi-Fi connected / lost / no internet, USB drives and SD cards.
 // Notifications are shown as cards under it (Notifs.qml).
 // Hides after ~2.5 s, stays while the pointer is on it.
 Scope {
     id: root
 
     property bool shown: false
-    property string mode: "media"          // "media", "mic", "brightness" or "toast"
+    property string mode: "media"          // "media", "mic", "brightness", "keyboard" or "toast"
     property int brightness: 0
-    property var toast: ({ glyph: 0, color: Theme.accent, title: "", subtitle: "" })
+    property var toast: ({ glyph: 0, color: Theme.accent, title: "", subtitle: "", image: "", colors: [], actions: [] })
     property bool sticky: false            // low battery: stays until plugged in
 
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
@@ -67,7 +75,28 @@ Scope {
         "dev": [0xF0868, Theme.accent],
         "focus": [0xF051B, Theme.notifications],
         "phone": [0xF011C, Theme.bluetooth],
-        "calendar": [0xF00F0, Theme.accent]
+        "calendar": [0xF00F0, Theme.accent],
+        "charging": [0xF0084, Theme.battery],
+        "on-battery": [0xF06A6, Theme.dim],
+        "screenshot": [0xF0E51, Theme.accent],
+        "screenshot-off": [0xF01B4, Theme.dim],
+        "usb": [0xF129E, Theme.accent],
+        "usb-off": [0xF01EA, Theme.dim],
+        "monitor": [0xF0379, Theme.accent],
+        "monitor-off": [0xF0D90, Theme.dim],
+        "wifi": [0xF05A9, Theme.accent],
+        "wifi-off": [0xF05AA, Theme.dim],
+        "no-internet": [0xF16B5, Theme.urgent],
+        "wallpaper": [0xF03D8, Theme.accent],
+        "mouse": [0xF037D, Theme.accent],
+        "mouse-off": [0xF037E, Theme.dim],
+        "layout": [0xF0574, Theme.accent],
+        "blur": [0xF00B5, Theme.accent],
+        "blur-off": [0xF00B7, Theme.dim],
+        "touchpad": [0xF07F8, Theme.accent],
+        "touchpad-off": [0xF07F8, Theme.dim],
+        "airplane": [0xF001D, Theme.urgent],
+        "airplane-off": [0xF001E, Theme.dim]
     })
 
     function show() {
@@ -75,13 +104,22 @@ Scope {
         hideTimer.restart();
     }
 
-    function showToast(kind, title, subtitle) {
+    function showToast(kind, title, subtitle, extra) {
         const k = kinds[kind] ?? [0xF009A, Theme.accent];
         const color = kind === "color" && /^#[0-9a-f]{6}$/i.test(title) ? title : k[1];
-        toast = { glyph: k[0], color: color, title: title, subtitle: subtitle ?? "" };
+        const x = extra ?? {};
+        toast = { glyph: k[0], color: color, title: title, subtitle: subtitle ?? "",
+                  image: x.image ?? "", colors: x.colors ?? [], actions: x.actions ?? [] };
         mode = "toast";
         sticky = kind === "battery-low";
+        hideTimer.interval = toast.actions.length ? 6000 : 2500;
         show();
+    }
+
+    // "1 h 20 min" from seconds
+    function duration(sec) {
+        const h = Math.floor(sec / 3600), m = Math.round(sec % 3600 / 60);
+        return (h ? h + " h " : "") + m + " min";
     }
 
     PwObjectTracker {
@@ -112,8 +150,20 @@ Scope {
             root.show();
         }
 
+        function keyboard(percent: int): void {
+            root.brightness = percent;
+            root.mode = "keyboard";
+            root.show();
+        }
+
         function toast(kind: string, title: string, subtitle: string): void {
             root.showToast(kind, title, subtitle);
+        }
+
+        function rich(kind: string, title: string, subtitle: string, extra: string): void {
+            let x = {};
+            try { x = JSON.parse(extra); } catch (e) { console.warn("osd rich: bad json", extra); }
+            root.showToast(kind, title, subtitle, x);
         }
     }
 
@@ -169,14 +219,96 @@ Scope {
         }
     }
 
+    // charger plugged in / out: battery % and time to full / empty
     Connections {
         target: UPower
         function onOnBatteryChanged() {
-            if (UPower.onBattery) return;
+            const d = UPower.displayDevice;
+            const pct = Math.round(d.percentage * 100) + "%";
+            if (UPower.onBattery) {
+                root.showToast("on-battery", "On battery", pct + (d.timeToEmpty > 0 ? " · " + root.duration(d.timeToEmpty) + " left" : ""));
+                return;
+            }
             lowBattery.warned = 100;
-            if (root.sticky) {
-                root.sticky = false;
-                root.shown = false;
+            root.sticky = false;
+            root.showToast("charging", "Charging", pct + (d.timeToFull > 0 ? " · full in " + root.duration(d.timeToFull) : ""));
+        }
+    }
+
+    // the network / monitor watchers stay quiet for the first seconds after start
+    property bool settled: false
+    Timer {
+        running: true
+        interval: 5000
+        onTriggered: root.settled = true
+    }
+
+    // monitor connected / disconnected, with its size and where it sits
+    property var screenNames: Quickshell.screens.map(s => s.name)
+    Connections {
+        target: Quickshell
+        function onScreensChanged() { screenTimer.restart(); }   // wait for the layout to settle
+    }
+    Timer {
+        id: screenTimer
+        interval: 1000
+        onTriggered: {
+            const now = Quickshell.screens;
+            const names = now.map(s => s.name);
+            const added = now.filter(s => !root.screenNames.includes(s.name));
+            const removed = root.screenNames.filter(n => !names.includes(n));
+            root.screenNames = names;
+            if (added.length) {
+                const s = added[0], o = now.find(x => x.name !== s.name);
+                const where = !o ? "" : " · " + (s.x < o.x ? "left of " : s.x > o.x ? "right of " : s.y < o.y ? "above " : "below ") + o.name;
+                root.showToast("monitor", s.name + " connected", s.width + "×" + s.height + where);
+            } else if (removed.length) {
+                root.showToast("monitor-off", removed[0] + " disconnected", now.length + " monitor" + (now.length > 1 ? "s" : "") + " left");
+            }
+        }
+    }
+
+    // Wi-Fi network joined / lost, and connected-but-no-internet
+    readonly property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
+    readonly property string ssid: wifiDevice?.networks.values.find(n => n.connected)?.name ?? ""
+    property string lastSsid: ""
+    onSsidChanged: {
+        // airplane mode / Wi-Fi switched off has its own toast
+        const radioOn = Networking.wifiEnabled && Networking.wifiHardwareEnabled;
+        if (settled && ssid !== "") showToast("wifi", ssid, "Connected");
+        else if (settled && lastSsid !== "" && radioOn) showToast("wifi-off", "Wi-Fi disconnected", lastSsid);
+        if (ssid !== "") lastSsid = ssid;
+    }
+    Connections {
+        target: Networking
+        function onConnectivityChanged() {
+            const c = Networking.connectivity;
+            if (!root.settled || root.ssid === "") return;
+            if (c === NetworkConnectivity.Portal) root.showToast("no-internet", "Sign-in needed", root.ssid + " wants you to log in (browser)");
+            else if (c === NetworkConnectivity.Limited || c === NetworkConnectivity.None) root.showToast("no-internet", "No internet", "Connected to " + root.ssid + ", but nothing gets through");
+        }
+    }
+
+    // USB drives and SD cards (scripts/Usb.sh watches UDisks)
+    readonly property string usbScript: Quickshell.env("HOME") + "/.config/hypr/scripts/Usb.sh"
+    property var drives: ({})            // device -> name, to say which one was removed
+    Process {
+        running: true
+        command: [root.usbScript, "watch"]
+        stdout: SplitParser {
+            onRead: line => {
+                const [what, dev, label, size] = line.split("\t");
+                if (what === "add") {
+                    const name = label || "USB drive";
+                    root.drives[dev] = name;
+                    root.showToast("usb", name + " connected", [size, dev].filter(x => x).join(" · "), { actions: [
+                        { label: "Open", glyph: 0xF0770, cmd: [root.usbScript, "open", dev] },
+                        { label: "Eject", glyph: 0xF01EA, cmd: [root.usbScript, "eject", dev] }
+                    ] });
+                } else if (what === "remove" && root.drives[dev]) {
+                    root.showToast("usb-off", root.drives[dev] + " removed", "Safe to unplug");
+                    delete root.drives[dev];
+                }
             }
         }
     }
@@ -236,6 +368,24 @@ Scope {
                     anchors.margins: 14
                     spacing: 12
 
+                    // ---- toast picture (screenshot, wallpaper) ----
+                    ClippingRectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 190
+                        visible: root.mode === "toast" && root.toast.image !== ""
+                        radius: 8
+                        color: Theme.surface
+
+                        Image {
+                            anchors.fill: parent
+                            source: root.toast.image ? "file://" + root.toast.image : ""
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                            cache: false
+                            sourceSize.width: 720
+                        }
+                    }
+
                     // ---- toast: big icon, title, subtitle ----
                     RowLayout {
                         visible: root.mode === "toast"
@@ -270,6 +420,64 @@ Scope {
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize
                                 elide: Text.ElideRight
+                            }
+                        }
+                    }
+
+                    // ---- toast colour strip (new wallpaper's palette) ----
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: root.mode === "toast" && root.toast.colors.length > 0
+                        spacing: 4
+
+                        Repeater {
+                            model: root.toast.colors
+                            delegate: Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                implicitHeight: 14
+                                radius: 4
+                                color: modelData
+                            }
+                        }
+                    }
+
+                    // ---- toast buttons ----
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: root.mode === "toast" && root.toast.actions.length > 0
+                        spacing: 8
+
+                        Repeater {
+                            model: root.toast.actions
+                            delegate: Rectangle {
+                                id: action
+                                required property var modelData
+                                Layout.fillWidth: true
+                                implicitHeight: 32
+                                radius: 8
+                                color: actionArea.containsMouse ? Qt.alpha(Theme.accent, 0.35) : Theme.surface
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: (action.modelData.glyph ? String.fromCodePoint(action.modelData.glyph) + "  " : "") + action.modelData.label
+                                    color: Theme.foreground
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.fontSize
+                                }
+
+                                MouseArea {
+                                    id: actionArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        const a = action.modelData;
+                                        Quickshell.execDetached(a.cmd);
+                                        if (a.then) root.showToast(a.then[0], a.then[1], a.then[2]);
+                                        else root.shown = false;
+                                    }
+                                }
                             }
                         }
                     }
@@ -369,7 +577,8 @@ Scope {
                         visible: root.mode !== "toast"
                         spacing: 12
 
-                        readonly property bool bright: root.mode === "brightness"
+                        readonly property bool keyboard: root.mode === "keyboard"
+                        readonly property bool bright: root.mode === "brightness" || keyboard
                         readonly property bool mic: root.mode === "mic"
                         readonly property bool off: mic ? root.micMuted : !bright && root.muted
                         readonly property int value: bright ? root.brightness : mic ? root.micPercent : root.percent
@@ -377,6 +586,7 @@ Scope {
 
                         Text {
                             text: String.fromCodePoint(level.mic ? (root.micMuted ? 0xF036D : 0xF036C)
+                                                       : level.keyboard ? (level.value > 0 ? 0xF030C : 0xF0310)
                                                        : level.bright ? (level.value > 60 ? 0xF00E0 : level.value > 25 ? 0xF00DF : 0xF00DE)
                                                        : root.muted ? 0xF075F : root.percent > 60 ? 0xF057E : root.percent > 25 ? 0xF0580 : 0xF057F)
                             color: level.tint
