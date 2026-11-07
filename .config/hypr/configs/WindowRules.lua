@@ -122,7 +122,9 @@ rule({ match = { tag = "projects" }, opacity = "0.9 0.8" })
 rule({ match = { tag = "im" }, opacity = "0.94 0.86" })
 rule({ match = { tag = "multimedia" }, opacity = "0.94 0.86" })
 rule({ match = { tag = "file-manager" }, opacity = "0.9 0.8" })
-rule({ match = { tag = "terminal" }, opacity = "0.9 0.7" })
+-- kitty makes only its background transparent (background_opacity); fading the
+-- whole window here would also fade the text and make it look blurry
+rule({ match = { tag = "terminal" }, opacity = "1.0 override 1.0 override" })
 rule({ match = { tag = "settings" }, opacity = "0.8 0.7" })
 rule({ match = { tag = "viewer" }, opacity = "0.82 0.75" })
 rule({ match = { tag = "wallpaper" }, opacity = "0.9 0.7" })
