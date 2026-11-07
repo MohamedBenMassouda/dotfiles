@@ -10,6 +10,7 @@ Arch posts news when an update needs a manual step; reading it before
 What you've read is remembered in ~/.local/state/arch-news-seen.
 """
 import html
+import json
 import re
 import subprocess
 import sys
@@ -76,7 +77,37 @@ def main():
     elif items:
         mark_read(items)
 
+    log = Path("/var/log/pacman.log")
+    start = log.stat().st_size if log.exists() else 0
     subprocess.call(["yay", "-Syu"])
+    report(log, start)
+
+
+# packages that only take effect after a restart
+RESTART = re.compile(r"^(linux(-lts|-zen|-hardened)?|linux-firmware.*|nvidia.*|mesa|systemd|glibc|amd-ucode|intel-ucode)$")
+
+
+def report(log, start):
+    """Flyout: how many packages this run upgraded, and whether to restart."""
+    if not log.exists():
+        return
+    with log.open(errors="replace") as f:
+        f.seek(start)
+        upgraded = re.findall(r"\[ALPM\] (?:upgraded|installed) (\S+) ", f.read())
+    if not upgraded:
+        return
+    restart = sorted({p for p in upgraded if RESTART.match(p)})
+    title = f"{len(upgraded)} package{'s' * (len(upgraded) != 1)} updated"
+    if restart:
+        extra = {"timeout": 15000, "actions": [
+            {"label": "Restart now", "glyph": 0xF0709,
+             "cmd": ["hyprshutdown", "-t", "Restarting...", "--post-cmd", "systemctl reboot"]},
+            {"label": "Later", "cmd": ["true"]}]}
+        sub = "Restart for the new " + ", ".join(restart[:3])
+    else:
+        extra, sub = {}, ", ".join(upgraded[:4]) + (" …" if len(upgraded) > 4 else "")
+    subprocess.call(["qs", "ipc", "call", "osd", "rich", "updated", title, sub, json.dumps(extra)],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":
