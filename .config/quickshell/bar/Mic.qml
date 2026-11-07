@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Services.Pipewire
 import qs
 
-// Microphone. Click: mute/unmute, scroll: ±5%.
+// Microphone. Click: mute/unmute, scroll: ±5%. Both show the flyout.
 Label {
     id: root
 
@@ -22,11 +22,15 @@ Label {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: if (root.source?.audio) root.source.audio.muted = !root.source.audio.muted
+        onClicked: {
+            if (root.source?.audio) root.source.audio.muted = !root.source.audio.muted;
+            Globals.flyout("mic");
+        }
         onWheel: wheel => {
             if (!root.source?.audio) return;
             const step = wheel.angleDelta.y > 0 ? 0.05 : -0.05;
             root.source.audio.volume = Math.max(0, Math.min(1, root.source.audio.volume + step));
+            Globals.flyout("mic");
         }
     }
 }

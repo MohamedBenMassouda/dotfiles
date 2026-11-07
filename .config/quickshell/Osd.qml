@@ -15,6 +15,7 @@ import qs
 // One card that shows what you just changed:
 //   qs ipc call osd volume                    volume keys / mute  (art + volume bar)
 //   qs ipc call osd media                     next / previous / play-pause
+//   qs ipc call osd mic                       mic level (Volume.sh mic keys, bar scroll)
 //   qs ipc call osd brightness 40             screen brightness keys
 //   qs ipc call osd toast <kind> <title> <subtitle>   anything else (see `kinds`)
 // It also pops up by itself for keyboard layout switches, Bluetooth devices
@@ -25,7 +26,7 @@ Scope {
     id: root
 
     property bool shown: false
-    property string mode: "media"          // "media", "brightness" or "toast"
+    property string mode: "media"          // "media", "mic", "brightness" or "toast"
     property int brightness: 0
     property var toast: ({ glyph: 0, color: Theme.accent, title: "", subtitle: "" })
     property bool sticky: false            // low battery: stays until plugged in
@@ -34,6 +35,9 @@ Scope {
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool muted: sink?.audio?.muted ?? false
     readonly property int percent: Math.round((sink?.audio?.volume ?? 0) * 100)
+    readonly property var source: Pipewire.defaultAudioSource
+    readonly property bool micMuted: source?.audio?.muted ?? false
+    readonly property int micPercent: Math.round((source?.audio?.volume ?? 0) * 100)
 
     // icon + colour per toast kind; unknown kinds get a bell
     readonly property var kinds: ({
@@ -75,7 +79,7 @@ Scope {
     }
 
     PwObjectTracker {
-        objects: [root.sink]
+        objects: [root.sink, root.source]
     }
 
     IpcHandler {
@@ -88,6 +92,11 @@ Scope {
 
         function media(): void {
             root.mode = "media";
+            root.show();
+        }
+
+        function mic(): void {
+            root.mode = "mic";
             root.show();
         }
 
@@ -109,6 +118,15 @@ Scope {
     }
 
     // ---- automatic flyouts ----
+
+    // bar volume / mic modules (scroll, mute click)
+    Connections {
+        target: Globals
+        function onFlyout(kind) {
+            root.mode = kind === "mic" ? "mic" : "media";
+            root.show();
+        }
+    }
 
     // keyboard layout switch (any way: keybind, script, Hyprland itself)
     Connections {
@@ -352,12 +370,14 @@ Scope {
                         spacing: 12
 
                         readonly property bool bright: root.mode === "brightness"
-                        readonly property bool off: !bright && root.muted
-                        readonly property int value: bright ? root.brightness : root.percent
-                        readonly property color tint: off ? Theme.dim : bright ? Theme.brightness : Theme.volume
+                        readonly property bool mic: root.mode === "mic"
+                        readonly property bool off: mic ? root.micMuted : !bright && root.muted
+                        readonly property int value: bright ? root.brightness : mic ? root.micPercent : root.percent
+                        readonly property color tint: off ? Theme.dim : bright ? Theme.brightness : mic ? Theme.mic : Theme.volume
 
                         Text {
-                            text: String.fromCodePoint(level.bright ? (level.value > 60 ? 0xF00E0 : level.value > 25 ? 0xF00DF : 0xF00DE)
+                            text: String.fromCodePoint(level.mic ? (root.micMuted ? 0xF036D : 0xF036C)
+                                                       : level.bright ? (level.value > 60 ? 0xF00E0 : level.value > 25 ? 0xF00DF : 0xF00DE)
                                                        : root.muted ? 0xF075F : root.percent > 60 ? 0xF057E : root.percent > 25 ? 0xF0580 : 0xF057F)
                             color: level.tint
                             font.family: Theme.font

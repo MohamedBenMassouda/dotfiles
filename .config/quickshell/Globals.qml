@@ -41,6 +41,9 @@ Singleton {
         onTriggered: checkUpdates.running = true
     }
 
+    // ask the top-centre flyout (Osd.qml) to show: "volume" or "mic"
+    signal flyout(string kind)
+
     property string lastClosed: ""
     property double lastClosedAt: 0
 

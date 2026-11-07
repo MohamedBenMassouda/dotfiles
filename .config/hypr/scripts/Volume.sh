@@ -128,6 +128,7 @@ get_mic_volume() {
 
 # Notify for Microphone
 notify_mic_user() {
+    osd mic && return
     local muted="$(pamixer --default-source --get-mute)"
     local level="$(pamixer --default-source --get-volume)"
     local icon message
