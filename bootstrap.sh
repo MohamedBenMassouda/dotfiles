@@ -68,7 +68,6 @@ if [[ $(findmnt -no FSTYPE /) == btrfs && -d /boot/grub ]]; then
 else
   want[snapshots]=0
 fi
-ask waybar n "Waybar as a fallback bar?"
 if [[ $(getent passwd "$USER" | cut -d: -f7) != */zsh ]]; then
   ask zsh y "Make zsh your login shell?"
 else
