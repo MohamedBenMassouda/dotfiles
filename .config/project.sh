@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base_directory="/mnt/AA4C6EDE4C6EA4B3/Programming"
+base_directory="/mnt/Data/Programming"
 selected_directory=$(ls -a $base_directory | fzf)
 
 if [ -n "$selected_directory" ]; then
