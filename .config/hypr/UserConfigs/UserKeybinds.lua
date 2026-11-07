@@ -23,7 +23,8 @@ bind("SUPER + L", "Lock screen", exec(s .. "/LockScreen.sh"))
 bind("SUPER + J", "Toggle focus-follows-mouse", function()
     local on = hl.get_config("input.follow_mouse") ~= 0
     hl.config({ input = { follow_mouse = on and 0 or 1 } })
-    hl.notification.create({ text = "Focus follows mouse: " .. (on and "off" or "on"), timeout = 1500 })
+    hl.exec_cmd(on and "qs ipc call osd toast mouse-off 'Focus follows mouse: off' 'Click a window to focus it'"
+                   or "qs ipc call osd toast mouse 'Focus follows mouse: on' ''")
 end)
 bind("SUPER + K", "Keybind cheat sheet", exec(s .. "/KeyBinds.sh"))
 bind("SUPER + SHIFT + W", "Random wallpaper", exec(us .. "/WallpaperRandom.sh"))

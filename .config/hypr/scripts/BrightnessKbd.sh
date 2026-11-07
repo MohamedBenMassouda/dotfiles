@@ -31,7 +31,10 @@ notify_user() {
 
 # Change brightness
 change_kbd_backlight() {
-	brightnessctl -d *::kbd_backlight set "$1" && get_icon && notify_user
+	brightnessctl -d '*::kbd_backlight' set "$1" >/dev/null || return
+	current=$(get_kbd_backlight | sed 's/%//')
+	qs ipc call osd keyboard "$current" >/dev/null 2>&1 && return
+	get_icon && notify_user
 }
 
 # Execute accordingly
