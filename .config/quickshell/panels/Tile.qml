@@ -11,9 +11,12 @@ Rectangle {
     property string detail: ""
     property bool on: false
     property color tint: Theme.accent
+    property bool expandable: false      // arrow on the right that opens a list
+    property bool expanded: false
 
     signal clicked
     signal rightClicked
+    signal expandClicked
 
     Layout.fillWidth: true
     implicitHeight: 58
@@ -29,7 +32,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 12
-        anchors.rightMargin: 10
+        anchors.rightMargin: tile.expandable ? 0 : 10
         spacing: 10
 
         Text {
@@ -63,10 +66,50 @@ Rectangle {
                 elide: Text.ElideRight
             }
         }
+
+        // drop-down arrow, its own click target
+        Item {
+            visible: tile.expandable
+            Layout.fillHeight: true
+            implicitWidth: 36
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: 1
+                height: parent.height * 0.5
+                color: Qt.alpha(Theme.foreground, 0.15)
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 4
+                anchors.leftMargin: 5
+                radius: Theme.radius - 4
+                color: arrow.containsMouse ? Qt.alpha(Theme.foreground, 0.08) : "transparent"
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: String.fromCodePoint(tile.expanded ? 0xF0140 : 0xF0142)
+                color: tile.expanded ? tile.tint : Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize + 3
+            }
+
+            MouseArea {
+                id: arrow
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: tile.expandClicked()
+            }
+        }
     }
 
     MouseArea {
         id: mouse
+        z: -1                                // under the arrow
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
