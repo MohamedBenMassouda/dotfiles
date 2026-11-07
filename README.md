@@ -32,7 +32,7 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `.config/uwsm` | Session environment |
 | `greeter/` | Login screen: greetd + Quickshell in its own Hyprland, on your monitor layout (`sudo greeter/install.sh`) |
 | `.config/wireplumber` | Bluetooth headsets start on AAC; headset mode only while the mic is in use |
-| `.config/kitty`, `nvim` (submodule), `.zshrc`, `.tmux.conf` | Terminal and editor |
+| `.config/kitty`, `.zshrc`, `.tmux.conf` | Terminal (the Neovim config is its own repo, cloned to `~/.config/nvim` by bootstrap) |
 
 
 ## Desktop
