@@ -104,7 +104,7 @@ textbox {
 listview {
     lines:          8;
     columns:        1;
-    fixed-height:   false;
+    fixed-height:   true;       // keep the window the same size while typing filters the list
     scrollbar:      false;
     spacing:        2px;
     cycle:          true;
