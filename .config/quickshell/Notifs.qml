@@ -36,7 +36,7 @@ Singleton {
 
         onNotification: n => {
             n.tracked = !n.transient;
-            if (State.dnd && n.urgency !== NotificationUrgency.Critical) return;
+            if (Globals.dnd && n.urgency !== NotificationUrgency.Critical) return;
             // a replaced notification (same id) is the same object: just move it to the top
             root.popups = [n].concat(root.popups.filter(p => p !== n)).slice(0, 4);
         }
