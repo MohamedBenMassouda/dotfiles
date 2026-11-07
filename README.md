@@ -70,7 +70,6 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `SUPER+S` | Web search (rofi) |
 | `SUPER+SHIFT+B` | Toggle blur strength |
 | `SUPER+SHIFT+G` | Game mode on/off |
-| `SUPER+ALT+K` | Next keyboard layout |
 | `SUPER+ALT+L` | Switch master/dwindle layout |
 | `SUPER+H` | Notification panel |
 | `SUPER+N` | Quick settings |
