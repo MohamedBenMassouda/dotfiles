@@ -3,16 +3,37 @@
 #   git clone https://github.com/MohamedBenMassouda/dotfiles ~/dotfiles
 #   ~/dotfiles/bootstrap.sh          asks what to include, then installs
 #   ~/dotfiles/bootstrap.sh --yes    no questions, take the defaults
+#   ~/dotfiles/bootstrap.sh --check  only show which files it would link or move aside
 # All questions come first, so you can leave it running afterwards.
 # Safe to run again: packages are --needed, links already in place are skipped.
+# Files already in the way of a link are moved to ~/dotfiles-backup/<date>/
+# (same folder layout), never deleted.
 set -euo pipefail
 cd "$(dirname "$(realpath "$0")")"
 dots=$PWD
 
-assume_yes=false
-[[ ${1:-} == --yes || ${1:-} == -y ]] && assume_yes=true
+assume_yes=false check=false
+for arg in "$@"; do
+  case $arg in
+    --yes|-y) assume_yes=true ;;
+    --check) check=true ;;
+  esac
+done
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
+
+# what stow would do: new links, and existing files in the way of one
+stow_links()     { stow -n -v -t ~ . 2>&1 | sed -n 's/^LINK: \(.*\) => .*/\1/p'; }
+stow_conflicts() { stow -n -v -t ~ . 2>&1 | sed -n 's/.*over existing target \(.*\) since.*/\1/p; s/.*existing target is neither a link nor a directory: \(.*\)/\1/p'; }
+backup=~/dotfiles-backup/$(date +%Y-%m-%d_%H%M%S)
+
+if $check; then
+  echo "Would link into ~:"
+  stow_links | sed 's/^/  /' | grep . || echo "  (nothing new, everything is linked already)"
+  echo "Would move aside to $backup:"
+  stow_conflicts | sed 's/^/  /' | grep . || echo "  (nothing)"
+  exit 0
+fi
 
 # ---- questions ----------------------------------------------------------
 declare -A want
@@ -108,11 +129,18 @@ if on nvim; then
 fi
 
 step "Link configs into ~ with stow"
-# a fresh install has default files (e.g. ~/.zshrc): move them aside instead of failing
+# a fresh install has default files (e.g. ~/.zshrc): move them into one backup
+# folder instead of failing (they stay there, nothing is deleted)
+moved=0
 while read -r target; do
-  [[ -e ~/$target && ! -L ~/$target ]] && mv -v ~/"$target" ~/"$target.pre-dotfiles"
-done < <(stow -n -v -t ~ . 2>&1 | sed -n 's/.*over existing target \(.*\) since.*/\1/p; s/.*existing target is neither a link nor a directory: \(.*\)/\1/p')
+  if [[ -e ~/$target && ! -L ~/$target ]]; then
+    mkdir -p "$backup/$(dirname "$target")"
+    mv -v ~/"$target" "$backup/$target"
+    moved=$((moved + 1))
+  fi
+done < <(stow_conflicts)
 stow -v -t ~ .
+(( moved )) && echo "Moved $moved existing file(s) out of the way: $backup"
 
 step "Services"
 sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon paccache.timer

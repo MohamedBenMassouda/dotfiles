@@ -9,6 +9,7 @@ coloured from the wallpaper by wallust. Based on JaKooLit's Hyprland-Dots, heavi
 git clone https://github.com/MohamedBenMassouda/dotfiles ~/dotfiles
 ~/dotfiles/bootstrap.sh          # asks what to include, then installs
 ~/dotfiles/bootstrap.sh --yes    # no questions, defaults
+~/dotfiles/bootstrap.sh --check  # only list what it would link or move aside
 ```
 
 The desktop itself (Hyprland, Quickshell, rofi, wallust, kitty, zsh, tmux) is always
@@ -17,7 +18,7 @@ Docker / lazygit, games (umu), Flathub apps (all or one by one, see
 [`flatpaks.txt`](flatpaks.txt)), Firefox theming, firewall, Timeshift snapshots
 (btrfs + GRUB only) and zsh as login shell. Then it installs yay and
 the chosen groups from [`packages.txt`](packages.txt), links the configs into `~` with
-GNU stow (existing files are moved to `*.pre-dotfiles`), enables the services and
+GNU stow (existing files are moved to `~/dotfiles-backup/<date>/`, never deleted; `--check` shows what would change), enables the services and
 generates the colours. Log in to **Hyprland (uwsm-managed)**.
 
 ## What's where
