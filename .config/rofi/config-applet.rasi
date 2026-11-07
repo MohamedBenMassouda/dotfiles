@@ -1,164 +1,46 @@
-/**
- *
- * Author : Aditya Shakya (adi1090x)
- * Github : @adi1090x
- * 
- * Rofi Theme File
- * Rofi Version: 1.7.3
- **/
+/* Applets (power, media, screenshot, brightness): a header line and a row of
+ * big icon buttons. Same colours, border, rounding and font as config.rasi.
+ * Layout idea from adi1090x/rofi applets (GPL-3.0); written from scratch here.
+ * The applet scripts set the number of columns and the window width. */
+@import "config.rasi"
 
-/*****----- Configuration -----*****/
-configuration {
-    show-icons:                 false;
-}
-
-/*****----- Global Properties -----*****/
-* {
-    font:                        "JetBrains Mono Nerd Font 10";
-    background:                  #2D1B14;
-    background-alt:              #462D23;
-    foreground:                  #FFFFFF;
-    selected:                    #E25F3E;
-    active:                      #716251;
-    urgent:                      #934A1C;
-}
-
-/*
-USE_ICON=YES
-*/
-
-/*****----- Main Window -----*****/
 window {
-    transparency:                "real";
-    location:                    center;
-    anchor:                      center;
-    fullscreen:                  false;
-    width:                       800px;
-    x-offset:                    0px;
-    y-offset:                    0px;
-    margin:                      0px;
-    padding:                     0px;
-    border:                      0px solid;
-    border-radius:               20px;
-    border-color:                @selected;
-    cursor:                      "default";
-    background-color:            @background;
+    width: 560px;
 }
 
-/*****----- Main Box -----*****/
+/* no search bar: pick with arrows/Enter, the mouse, or by typing a label */
 mainbox {
-    enabled:                     true;
-    spacing:                     20px;
-    margin:                      0px;
-    padding:                     20px;
-    background-color:            transparent;
-    children:                    [ "inputbar", "listview", "message" ];
+    padding:    10px;
+    spacing:    10px;
+    children:   [ message, listview ];
 }
 
-/*****----- Inputbar -----*****/
-inputbar {
-    enabled:                     true;
-    spacing:                     25px;
-    padding:                     100px 50px;
-    border:                      0px;
-    border-radius:               20px;
-    border-color:                @selected;
-    background-color:            transparent;
-    // background-image:            url("~/.config/rofi/images/d.png", width);
-    text-color:                  @foreground;
-    children:                    [ "dummy", "textbox-prompt-colon", "prompt", "dummy"];
-}
-
-dummy{
-    background-color:            transparent;
-}
-textbox-prompt-colon {
-    enabled:                     true;
-    expand:                      false;
-    str:                         "";
-    padding:                     10px 13px;
-    border-radius:               10px;
-    background-color:            @urgent;
-    text-color:                  @background;
-}
-prompt {
-    enabled:                     true;
-    padding:                     10px;
-    border-radius:               10px;
-    background-color:            @active;
-    text-color:                  @background;
-}
-
-/*****----- Message -----*****/
 message {
-    enabled:                     true;
-    margin:                      0px;
-    padding:                     10px;
-    border:                      0px solid;
-    border-radius:               10px;
-    border-color:                @selected;
-    background-color:            @background-alt;
-    text-color:                  @foreground;
+    padding:            10px 14px;
+    background-color:   @bg1;
 }
+
 textbox {
-    background-color:            inherit;
-    text-color:                  inherit;
-    vertical-align:              0.5;
-    horizontal-align:            0.5;
+    horizontal-align:   0.5;
 }
 
-/*****----- Listview -----*****/
 listview {
-    enabled:                     true;
-    columns:                     6;
-    lines:                       1;
-    cycle:                       true;
-    scrollbar:                   false;
-    layout:                      vertical;
-    
-    spacing:                     20px;
-    background-color:            transparent;
-    cursor:                      "default";
+    lines:          1;
+    columns:        5;
+    fixed-columns:  true;
+    spacing:        8px;
+    cycle:          true;
 }
 
-/*****----- Elements -----*****/
 element {
-    enabled:                     true;
-    padding:                     30px 10px;
-    border:                      0px solid;
-    border-radius:               20px;
-    border-color:                @selected;
-    background-color:            transparent;
-    text-color:                  @foreground;
-    cursor:                      pointer;
-}
-element-text {
-    font:                        "feather 28";
-    background-color:            transparent;
-    text-color:                  inherit;
-    cursor:                      inherit;
-    vertical-align:              0.5;
-    horizontal-align:            0.5;
+    orientation:        vertical;
+    padding:            16px 6px;
+    border-radius:      8px;
+    background-color:   @bg1;
+    children:           [ element-text ];
 }
 
-element normal.normal,
-element alternate.normal {
-    background-color:            var(background-alt);
-    text-color:                  var(foreground);
-}
-element normal.urgent,
-element alternate.urgent,
-element selected.active {
-    background-color:            var(urgent);
-    text-color:                  var(background);
-}
-element normal.active,
-element alternate.active,
-element selected.urgent {
-    background-color:            var(active);
-    text-color:                  var(background);
-}
-element selected.normal {
-    background-color:            var(selected);
-    text-color:                  var(background);
+element-text {
+    horizontal-align:   0.5;
+    vertical-align:     0.5;
 }
