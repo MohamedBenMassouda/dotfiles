@@ -63,8 +63,8 @@ bind(m("SHIFT + Print"), "Screenshot area", exec(s .. "/ScreenShot.sh --area"))
 bind(m("CTRL + Print"), "Screenshot in 5s", exec(s .. "/ScreenShot.sh --in5"))
 bind(m("ALT + Print"), "Screenshot in 10s", exec(s .. "/ScreenShot.sh --in10"))
 bind("ALT + Print", "Screenshot active window", exec(s .. "/ScreenShot.sh --active"))
-bind(m("SHIFT + S"), "Screenshot (hyprshot)", exec(s .. "/HyprShot.sh"))
-bind(m("ALT + S"), "Screenshot to clipboard", exec(s .. "/HyprShot.sh --clipboard"))
+bind(m("SHIFT + S"), "Screenshot area", exec(s .. "/ScreenShot.sh --area"))
+bind(m("ALT + S"), "Screenshot area to clipboard (not saved)", exec(s .. "/ScreenShot.sh --swappy"))
 
 -- Resize / move / focus with arrows
 local dirs = { left = { -50, 0 }, right = { 50, 0 }, up = { 0, -50 }, down = { 0, 50 } }
