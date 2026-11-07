@@ -30,7 +30,6 @@ configuration {
 /* ---- Colors ---- */
 /* Drop rofi's built-in theme, else its defaults override everything below. */
 @theme "/dev/null"
-/* NOTE: rofi 2.0 does not expand "~" in @import - keep this path relative. */
 @import "colors-shared.rasi"
 
 /* ---- Window ---- */
@@ -41,9 +40,9 @@ window {
     spacing:                      0px;
     padding:                      0px;
     margin:                       0px; 
-    color:                        #FFFFFF;
-    border:                       3px;
-    border-color:                 #FFFFFF;
+    color:                        @foreground;
+    border:                       2px;
+    border-color:                 @active-background;
     cursor:                       "default";
     transparency:                 "real";
     location:                     center;
