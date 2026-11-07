@@ -1,14 +1,19 @@
-/* Shared palette for rofi configs that used to import the pywal cache.
- * pywal is not installed here, so those imports resolved to nothing and rofi
- * fell back to its built-in theme. Values mirror config.rasi.
+/* Shared palette for the KooL menus (search, music, wallpaper picker).
+ * Static values are a fallback; the wallust import below replaces them with
+ * colours from the current wallpaper. Names match what those configs use.
  * Do not write a slash-star sequence in these comments - rofi does not nest
  * comments and the rest of the file gets swallowed. */
 
 * {
-    background:     #242424E6;
-    foreground:     #DEDEDE;
-
-    color0:         #242424E6;
-    color1:         #7E7E7E80;
-    color11:        #0860f2E6;
+    background:                  #242424E6;
+    foreground:                  #DEDEDE;
+    color0:                      #242424E6;
+    color1:                      #7E7E7E80;
+    color11:                     #0860f2E6;
+    active-background:           #0860f2;
+    selected-normal-background:  #0860f2;
+    selected-active-background:  #7E7E7E;
+    selected-urgent-background:  #0860f2;
 }
+
+@import "wallust/colors-rofi.rasi"

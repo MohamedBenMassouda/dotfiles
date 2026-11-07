@@ -1,21 +1,21 @@
-/*******************************************************************************
- * MACOS SPOTLIGHT LIKE DARK THEME FOR ROFI 
- * User                 : LR-Tech               
- * Theme Repo           : https://github.com/lr-tech/rofi-themes-collection
- *******************************************************************************/
+/* Main rofi theme: Spotlight-style list, translucent over Hyprland blur,
+ * rounded and bordered like your windows. Every menu imports this file.
+ * Colours come from wallust (wallust/colors-rofi.rasi); the values below are
+ * only a fallback when that file is missing. */
 
 @theme "/dev/null"
 
 * {
     font:   "JetbrainsMono Nerd Font 12";
 
-    bg0:    #242424E6;
-    bg1:    #7E7E7E80;
+    bg0:    #242424CC;
+    bg1:    #7E7E7E40;
     bg2:    #0860f2E6;
-
     fg0:    #DEDEDE;
     fg1:    #FFFFFF;
     fg2:    #DEDEDE80;
+    accent: #0860f2;
+    urgent: #E06C75;
 
     background-color:   transparent;
     text-color:         @fg0;
@@ -25,15 +25,17 @@
     spacing:    0;
 }
 
+@import "wallust/colors-rofi.rasi"
+
 configuration {
     modi:                       "drun,run";
-    // font:                       "Fira Sans Bold 12";
     show-icons:                 true;
-    icon-theme:                 "kora";
-    display-drun:               "APPS";
-    display-run:                "RUN";
-    display-filebrowser:        "FILES";
-    display-window:             "WINDOW";
+    icon-theme:                 "breeze-dark";
+    display-drun:               "Apps";
+    display-run:                "Run";
+    display-filebrowser:        "Files";
+    display-window:             "Windows";
+    display-dmenu:              "";
     drun-display-format:        "{name}";
     hover-select:               true;
     me-select-entry:            "";
@@ -41,78 +43,104 @@ configuration {
     window-format:              "{w} · {c} · {t}";
 }
 
-
+/* Same look as a Hyprland window: rounding 10, 2px accent border.
+ * Translucency shows the blur from the rofi layer rule in WindowRules.lua. */
 window {
+    location:           center;
+    width:              640px;
+    transparency:       "real";
     background-color:   @bg0;
-
-    location:       center;
-    width:          640;
-    border-radius:  10;
+    border:             2px;
+    border-color:       @accent;
+    border-radius:      10px;
 }
 
+mainbox {
+    padding:    8px;
+    spacing:    8px;
+    children:   [ inputbar, message, listview ];
+}
+
+/* search icon, text box, then the menu name (the -p text, e.g. "Games") as a tag on the right */
 inputbar {
-    padding:    12px;
-    spacing:    12px;
-    children:   [ icon-search, entry ];
+    padding:            10px 12px;
+    spacing:            10px;
+    border-radius:      8px;
+    background-color:   @bg1;
+    children:           [ icon-search, entry, prompt ];
 }
 
 icon-search {
     expand:     false;
     filename:   "search";
-    size: 25px;
+    size:       22px;
 }
 
-icon-search, entry, element-icon, element-text {
+prompt {
+    font:       "JetbrainsMono Nerd Font Bold 10";
+    text-color: @accent;
+}
+
+icon-search, prompt, entry, element-icon, element-text {
     vertical-align: 0.5;
 }
 
 entry {
-    font:   inherit;
-
-    placeholder         : "Search";
-    placeholder-color   : @fg2;
+    font:               inherit;
+    placeholder:        "Search";
+    placeholder-color:  @fg2;
 }
 
 message {
-    border:             2px 0 0;
-    border-color:       @bg1;
+    padding:            8px 12px;
+    border-radius:      8px;
     background-color:   @bg1;
 }
 
 textbox {
-    padding:    8px 24px;
+    text-color: @fg0;
 }
 
 listview {
-    lines:      10;
-    columns:    1;
-
-    fixed-height:   true;
-    border:         1px 0 0;
-    border-color:   @bg1;
+    lines:          8;
+    columns:        1;
+    fixed-height:   false;
+    scrollbar:      false;
+    spacing:        2px;
+    cycle:          true;
 }
 
 element {
-    padding:            8px 16px;
-    spacing:            16px;
-    background-color:   transparent;
+    padding:        8px 12px;
+    spacing:        12px;
+    border-radius:  8px;
 }
 
-element normal active {
-    text-color: @bg2;
+/* active = marked rows, e.g. the current audio device */
+element normal active, element alternate active {
+    text-color: @accent;
 }
 
-element selected normal, element selected active {
+element normal urgent, element alternate urgent {
+    text-color: @urgent;
+}
+
+element selected normal, element selected active, element selected urgent {
     background-color:   @bg2;
     text-color:         @fg1;
 }
 
 element-icon {
-    size:   1em;
+    size:   1.3em;
 }
 
 element-text {
     text-color: inherit;
 }
 
-
+scrollbar {
+    handle-width:       4px;
+    handle-color:       @accent;
+    border-radius:      4px;
+    background-color:   @bg1;
+}
