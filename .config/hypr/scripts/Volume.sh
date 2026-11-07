@@ -44,10 +44,7 @@ osd_toast() { qs ipc call osd toast "$@" >/dev/null 2>&1; }
 
 # Notify
 notify_user() {
-    if osd volume; then
-        [[ "$(pamixer --get-mute)" == "false" ]] && "$sDIR/Sounds.sh" --volume
-        return
-    fi
+    osd volume && return
     local muted="$(pamixer --get-mute)"
     local level="$(pamixer --get-volume)"
 
@@ -58,8 +55,7 @@ notify_user() {
     else
         notify-send -e -h int:value:"$level" -h string:x-canonical-private-synchronous:volume_notif \
             -h boolean:SWAYNC_BYPASS_DND:true -u low -i "$(get_icon)" \
-            " Volume Level:" " ${level}%" &&
-            "$sDIR/Sounds.sh" --volume
+            " Volume Level:" " ${level}%"
     fi
 }
 
