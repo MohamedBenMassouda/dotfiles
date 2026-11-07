@@ -29,7 +29,8 @@ import qs
 // plugged in / out, low battery (stays until you plug in), monitors connected /
 // disconnected, Wi-Fi connected / lost / no internet, USB drives and SD cards.
 // Notifications are shown as cards under it (Notifs.qml).
-// Hides after ~2.5 s, stays while the pointer is on it.
+// Hides after ~2.5 s, stays while the pointer is on it. Click the card (or its
+// x, or SUPER+Escape: qs ipc call osd hide) to dismiss it right away.
 Scope {
     id: root
 
@@ -99,6 +100,11 @@ Scope {
         "airplane-off": [0xF001E, Theme.dim]
     })
 
+    function dismiss() {
+        sticky = false;
+        shown = false;
+    }
+
     function show() {
         shown = true;
         hideTimer.restart();
@@ -148,6 +154,11 @@ Scope {
             root.brightness = percent;
             root.mode = "brightness";
             root.show();
+        }
+
+        function hide(): void {
+            root.dismiss();
+            Notifs.popups = [];            // pop-ups only, they stay in the panel
         }
 
         function keyboard(percent: int): void {
@@ -358,6 +369,35 @@ Scope {
 
                 HoverHandler {
                     id: cardHover
+                }
+
+                // click anywhere on the card that isn't a button: dismiss
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: root.dismiss()
+                }
+
+                // close button, top right, while the pointer is on the card
+                Text {
+                    z: 2
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: 6
+                    visible: cardHover.hovered
+                    text: String.fromCodePoint(0xF0156)
+                    color: closeArea.containsMouse ? Theme.urgent : Theme.dim
+                    font.family: Theme.font
+                    font.pixelSize: 16
+
+                    MouseArea {
+                        id: closeArea
+                        anchors.fill: parent
+                        anchors.margins: -4
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.dismiss()
+                    }
                 }
 
                 ColumnLayout {

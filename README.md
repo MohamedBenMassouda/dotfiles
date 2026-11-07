@@ -162,6 +162,7 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
 | `SUPER+L` | Lock screen |
 | `SUPER+J` | Toggle focus-follows-mouse |
 | `SUPER+K` | Keybind cheat sheet |
+| `SUPER+Escape` | Dismiss flyout and pop-ups |
 | `SUPER+SHIFT+W` | Random wallpaper |
 | `SUPER+T` | Open project (tmux) |
 | `SUPER+X` | Switch to window |
