@@ -34,6 +34,8 @@ SidePanel {
     property string profile: ""
     property bool recording: false
     property var askPassword: null      // secured Wi-Fi network waiting for its password
+    property bool wifiOpen: false       // drop-down sections, closed each time the panel opens
+    property bool btOpen: false
 
     function run(cmd) {
         Quickshell.execDetached(cmd);
@@ -43,6 +45,9 @@ SidePanel {
     onVisibleChanged: {
         if (!visible) {
             askPassword = null;
+            wifiOpen = false;
+            btOpen = false;
+            if (adapter?.discovering) adapter.discovering = false;
             return;
         }
         readBrightness.running = true;
@@ -54,7 +59,7 @@ SidePanel {
     Binding {
         target: cc.wifi
         property: "scannerEnabled"
-        value: cc.visible
+        value: cc.visible && cc.wifiOpen
         when: cc.wifi !== null
     }
 
@@ -240,6 +245,10 @@ SidePanel {
     Heading {
         visible: Networking.wifiEnabled && cc.wifi !== null
         text: "Wi-Fi"
+        summary: cc.wifiConnected?.name ?? "Not connected"
+        collapsible: true
+        expanded: cc.wifiOpen
+        onToggled: cc.wifiOpen = !cc.wifiOpen
 
         SmallButton {
             text: String.fromCodePoint(0xF0493) + "  Settings"
@@ -252,7 +261,7 @@ SidePanel {
 
     ColumnLayout {
         Layout.fillWidth: true
-        visible: Networking.wifiEnabled && cc.wifi !== null
+        visible: Networking.wifiEnabled && cc.wifi !== null && cc.wifiOpen
         spacing: 2
 
         Repeater {
@@ -329,6 +338,10 @@ SidePanel {
     Heading {
         visible: cc.adapter?.enabled ?? false
         text: "Bluetooth"
+        summary: cc.btDevices.filter(d => d.connected).map(d => d.name).join(", ") || "No device connected"
+        collapsible: true
+        expanded: cc.btOpen
+        onToggled: cc.btOpen = !cc.btOpen
 
         SmallButton {
             text: String.fromCodePoint(0xF0450) + (cc.adapter?.discovering ? "  Scanning…" : "  Scan")
@@ -339,7 +352,7 @@ SidePanel {
 
     ColumnLayout {
         Layout.fillWidth: true
-        visible: cc.adapter?.enabled ?? false
+        visible: (cc.adapter?.enabled ?? false) && cc.btOpen
         spacing: 2
 
         Repeater {
