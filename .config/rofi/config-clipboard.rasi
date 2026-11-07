@@ -1,11 +1,20 @@
-@theme "~/.config/rofi/config.rasi"
+@import "config.rasi"
 
+/* Clipboard history (SUPER+V): image entries show a preview as their icon */
 configuration {
-    show-icons: false;
+    show-icons: true;
+}
+
+window {
+    width: 720px;
 }
 
 entry {
     font:   inherit;
     placeholder         : "Clipboard";
     placeholder-color   : @fg2;
+}
+
+element-icon {
+    size:   2.6em;
 }
