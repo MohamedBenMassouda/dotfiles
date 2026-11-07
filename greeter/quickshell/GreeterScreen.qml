@@ -6,7 +6,8 @@ import Quickshell.Wayland
 import qs
 
 // One monitor of the login screen: blurred wallpaper, clock, and (on the main
-// monitor) user, password, session and power buttons.
+// monitor) user, password, session and power buttons. Click the user name or
+// the session to pick from a list.
 PanelWindow {
     id: win
 
@@ -18,6 +19,9 @@ PanelWindow {
         const s = Quickshell.screens.slice().sort((a, b) => a.x - b.x || a.y - b.y);
         return s.length === 0 || s[0].name === modelData.name;
     }
+
+    // which picker list is open under the form: "", "user" or "session"
+    property string picker: ""
 
     screen: modelData
     anchors { top: true; bottom: true; left: true; right: true }
@@ -123,7 +127,18 @@ PanelWindow {
                 anchors.fill: parent
                 enabled: win.greeter.users.length > 1
                 cursorShape: Qt.PointingHandCursor
-                onClicked: win.greeter.userIndex = (win.greeter.userIndex + 1) % win.greeter.users.length
+                onClicked: win.picker = win.picker === "user" ? "" : "user"
+            }
+        }
+
+        Picker {
+            visible: win.picker === "user"
+            items: win.greeter.users.map(u => u.full)
+            current: win.greeter.userIndex
+            onPicked: i => {
+                win.greeter.userIndex = i;
+                win.picker = "";
+                input.forceActiveFocus();
             }
         }
 
@@ -169,7 +184,11 @@ PanelWindow {
                     win.greeter.login(text);
                     text = "";
                 }
-                Keys.onEscapePressed: win.greeter.preview ? Qt.quit() : text = ""
+                Keys.onEscapePressed: {
+                    if (win.picker !== "") win.picker = "";
+                    else if (win.greeter.preview) Qt.quit();
+                    else text = "";
+                }
 
                 Text {
                     anchors.centerIn: parent
@@ -195,7 +214,18 @@ PanelWindow {
                 anchors.margins: -6
                 enabled: win.greeter.sessions.length > 1
                 cursorShape: Qt.PointingHandCursor
-                onClicked: win.greeter.sessionIndex = (win.greeter.sessionIndex + 1) % win.greeter.sessions.length
+                onClicked: win.picker = win.picker === "session" ? "" : "session"
+            }
+        }
+
+        Picker {
+            visible: win.picker === "session"
+            items: win.greeter.sessions.map(x => x.name)
+            current: win.greeter.sessionIndex
+            onPicked: i => {
+                win.greeter.sessionIndex = i;
+                win.picker = "";
+                input.forceActiveFocus();
             }
         }
 
