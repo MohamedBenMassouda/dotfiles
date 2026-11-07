@@ -130,7 +130,13 @@ SidePanel {
             detail: !Networking.wifiEnabled ? "Off" : cc.wifiConnected?.name ?? "Not connected"
             on: Networking.wifiEnabled
             tint: Theme.accent
+            expandable: Networking.wifiEnabled
+            expanded: cc.wifiOpen
             onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
+            onExpandClicked: {
+                cc.wifiOpen = !cc.wifiOpen;
+                cc.btOpen = false;
+            }
         }
 
         Tile {
@@ -139,8 +145,159 @@ SidePanel {
             detail: !(cc.adapter?.enabled) ? "Off" : cc.btConnected?.name ?? "On"
             on: cc.adapter?.enabled ?? false
             tint: Theme.bluetooth
+            expandable: cc.adapter?.enabled ?? false
+            expanded: cc.btOpen
             onClicked: if (cc.adapter) cc.adapter.enabled = !cc.adapter.enabled
+            onExpandClicked: {
+                cc.btOpen = !cc.btOpen;
+                cc.wifiOpen = false;
+            }
         }
+
+    }
+
+    // ---- Wi-Fi ----
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: Networking.wifiEnabled && cc.wifi !== null && cc.wifiOpen
+        spacing: 2
+
+        Heading {
+            text: "Wi-Fi networks"
+
+            SmallButton {
+                text: String.fromCodePoint(0xF0493) + "  Settings"
+                onClicked: {
+                    Globals.closePanel();
+                    cc.run(["nm-connection-editor"]);
+                }
+            }
+        }
+
+        Repeater {
+            model: cc.wifiNetworks.slice(0, 10)
+
+            delegate: ColumnLayout {
+                id: net
+
+                required property var modelData
+                readonly property bool secured: modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
+                readonly property int bars: Math.min(3, Math.floor(modelData.signalStrength * 4))
+
+                Layout.fillWidth: true
+                spacing: 4
+
+                MenuRow {
+                    Layout.fillWidth: true
+                    glyph: String.fromCodePoint([0xF091F, 0xF0922, 0xF0925, 0xF0928][net.bars])
+                    label: net.modelData.name
+                    dimmed: !net.modelData.connected
+                    trailing: net.modelData.stateChanging ? "…"
+                              : net.modelData.connected ? "Connected"
+                              : net.secured ? String.fromCodePoint(0xF033E) : ""
+                    onActivated: {
+                        const n = net.modelData;
+                        if (n.connected) n.disconnect();
+                        else if (n.known || !net.secured) n.connect();
+                        else cc.askPassword = cc.askPassword === n ? null : n;
+                    }
+                }
+
+                // password box for a new secured network
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 34
+                    visible: cc.askPassword === net.modelData
+                    implicitHeight: 32
+                    radius: 6
+                    color: Theme.surface
+                    border.color: Theme.accent
+                    border.width: 1
+
+                    TextInput {
+                        id: password
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        verticalAlignment: TextInput.AlignVCenter
+                        echoMode: TextInput.Password
+                        color: Theme.foreground
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize
+                        onVisibleChanged: if (visible) { text = ""; forceActiveFocus(); }
+                        onAccepted: {
+                            net.modelData.connectWithPsk(text);
+                            cc.askPassword = null;
+                        }
+                        Keys.onEscapePressed: cc.askPassword = null
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: password.text === ""
+                            text: "Password, then Enter"
+                            color: Theme.dim
+                            font: password.font
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ---- Bluetooth ----
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: (cc.adapter?.enabled ?? false) && cc.btOpen
+        spacing: 2
+
+        Heading {
+            text: "Bluetooth devices"
+
+            SmallButton {
+                text: String.fromCodePoint(0xF0450) + (cc.adapter?.discovering ? "  Scanning…" : "  Scan")
+                on: cc.adapter?.discovering ?? false
+                onClicked: cc.adapter.discovering = !cc.adapter.discovering
+            }
+        }
+
+        Repeater {
+            model: cc.btDevices.slice(0, 10)
+
+            delegate: MenuRow {
+                required property var modelData
+                Layout.fillWidth: true
+                iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", true)
+                label: modelData.name
+                dimmed: !modelData.connected
+                trailing: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting ? "…"
+                          : modelData.connected ? (modelData.batteryAvailable ? Math.round(modelData.battery * 100) + "%  " : "") + "Connected"
+                          : modelData.paired ? "" : "Pair"
+                onActivated: {
+                    const d = modelData;
+                    if (d.connected) d.disconnect();
+                    else if (d.paired) d.connect();
+                    else {
+                        d.trusted = true;
+                        d.pair();
+                    }
+                }
+            }
+        }
+
+        Text {
+            visible: cc.btDevices.length === 0
+            text: "No devices, press Scan"
+            color: Theme.dim
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize - 1
+        }
+    }
+
+    GridLayout {
+        Layout.fillWidth: true
+        columns: 2
+        columnSpacing: 8
+        rowSpacing: 8
 
         Tile {
             glyph: Globals.dnd ? 0xF009B : 0xF009A
@@ -241,150 +398,4 @@ SidePanel {
         }
     }
 
-    // ---- Wi-Fi ----
-    Heading {
-        visible: Networking.wifiEnabled && cc.wifi !== null
-        text: "Wi-Fi"
-        summary: cc.wifiConnected?.name ?? "Not connected"
-        collapsible: true
-        expanded: cc.wifiOpen
-        onToggled: cc.wifiOpen = !cc.wifiOpen
-
-        SmallButton {
-            text: String.fromCodePoint(0xF0493) + "  Settings"
-            onClicked: {
-                Globals.closePanel();
-                cc.run(["nm-connection-editor"]);
-            }
-        }
-    }
-
-    ColumnLayout {
-        Layout.fillWidth: true
-        visible: Networking.wifiEnabled && cc.wifi !== null && cc.wifiOpen
-        spacing: 2
-
-        Repeater {
-            model: cc.wifiNetworks.slice(0, 10)
-
-            delegate: ColumnLayout {
-                id: net
-
-                required property var modelData
-                readonly property bool secured: modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
-                readonly property int bars: Math.min(3, Math.floor(modelData.signalStrength * 4))
-
-                Layout.fillWidth: true
-                spacing: 4
-
-                MenuRow {
-                    Layout.fillWidth: true
-                    glyph: String.fromCodePoint([0xF091F, 0xF0922, 0xF0925, 0xF0928][net.bars])
-                    label: net.modelData.name
-                    dimmed: !net.modelData.connected
-                    trailing: net.modelData.stateChanging ? "…"
-                              : net.modelData.connected ? "Connected"
-                              : net.secured ? String.fromCodePoint(0xF033E) : ""
-                    onActivated: {
-                        const n = net.modelData;
-                        if (n.connected) n.disconnect();
-                        else if (n.known || !net.secured) n.connect();
-                        else cc.askPassword = cc.askPassword === n ? null : n;
-                    }
-                }
-
-                // password box for a new secured network
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 34
-                    visible: cc.askPassword === net.modelData
-                    implicitHeight: 32
-                    radius: 6
-                    color: Theme.surface
-                    border.color: Theme.accent
-                    border.width: 1
-
-                    TextInput {
-                        id: password
-                        anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        verticalAlignment: TextInput.AlignVCenter
-                        echoMode: TextInput.Password
-                        color: Theme.foreground
-                        font.family: Theme.font
-                        font.pixelSize: Theme.fontSize
-                        onVisibleChanged: if (visible) { text = ""; forceActiveFocus(); }
-                        onAccepted: {
-                            net.modelData.connectWithPsk(text);
-                            cc.askPassword = null;
-                        }
-                        Keys.onEscapePressed: cc.askPassword = null
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: password.text === ""
-                            text: "Password, then Enter"
-                            color: Theme.dim
-                            font: password.font
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // ---- Bluetooth ----
-    Heading {
-        visible: cc.adapter?.enabled ?? false
-        text: "Bluetooth"
-        summary: cc.btDevices.filter(d => d.connected).map(d => d.name).join(", ") || "No device connected"
-        collapsible: true
-        expanded: cc.btOpen
-        onToggled: cc.btOpen = !cc.btOpen
-
-        SmallButton {
-            text: String.fromCodePoint(0xF0450) + (cc.adapter?.discovering ? "  Scanning…" : "  Scan")
-            on: cc.adapter?.discovering ?? false
-            onClicked: cc.adapter.discovering = !cc.adapter.discovering
-        }
-    }
-
-    ColumnLayout {
-        Layout.fillWidth: true
-        visible: (cc.adapter?.enabled ?? false) && cc.btOpen
-        spacing: 2
-
-        Repeater {
-            model: cc.btDevices.slice(0, 10)
-
-            delegate: MenuRow {
-                required property var modelData
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", true)
-                label: modelData.name
-                dimmed: !modelData.connected
-                trailing: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting ? "…"
-                          : modelData.connected ? (modelData.batteryAvailable ? Math.round(modelData.battery * 100) + "%  " : "") + "Connected"
-                          : modelData.paired ? "" : "Pair"
-                onActivated: {
-                    const d = modelData;
-                    if (d.connected) d.disconnect();
-                    else if (d.paired) d.connect();
-                    else {
-                        d.trusted = true;
-                        d.pair();
-                    }
-                }
-            }
-        }
-
-        Text {
-            visible: cc.btDevices.length === 0
-            text: "No devices, press Scan"
-            color: Theme.dim
-            font.family: Theme.font
-            font.pixelSize: Theme.fontSize - 1
-        }
-    }
 }
