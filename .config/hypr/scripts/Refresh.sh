@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
-# Scripts for refreshing ags, waybar, rofi, swaync, wallust
+# Scripts for refreshing waybar (if used instead of Quickshell), rofi, wallust
 
 SCRIPTSDIR=$HOME/.config/hypr/scripts
 UserScripts=$HOME/.config/hypr/UserScripts
@@ -15,7 +15,7 @@ file_exists() {
 }
 
 # Kill already running processes
-_ps=(waybar rofi ags)
+_ps=(waybar rofi)
 for _prs in "${_ps[@]}"; do
   if pidof "${_prs}" >/dev/null; then
     pkill "${_prs}"
@@ -27,14 +27,11 @@ killall -SIGUSR2 waybar
 # Added sleep for GameMode causing multiple waybar
 sleep 0.1
 
-# quit ags & relaunch ags
-#ags -q && ags &
-
 # quit quickshell & relaunch quickshell
 #pkill qs && qs &
 
 # some process to kill
-for pid in $(pidof waybar rofi ags swaybg); do
+for pid in $(pidof waybar rofi swaybg); do
   kill -SIGUSR1 "$pid"
   sleep 0.1
 done

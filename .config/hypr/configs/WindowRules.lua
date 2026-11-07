@@ -18,8 +18,6 @@ local tags = {
     { { class = "^([Tt]horium-browser|[Cc]achy-browser)$" }, "browser" },
     { { class = "^(zen-alpha|zen)$" }, "browser" },
 
-    { { class = "^(swaync-control-center|swaync-notification-window|swaync-client|class)$" }, "notif" },
-
     { { title = "^(KooL Quick Cheat Sheet)$" }, "KooL_Cheat" },
     { { title = "^(KooL Hyprland Settings)$" }, "KooL_Settings" },
     { { class = "^(nwg-displays|nwg-look)$" }, "KooL-Settings" },
