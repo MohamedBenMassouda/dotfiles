@@ -18,7 +18,7 @@ import qs
 //   qs ipc call osd mic                       mic level (Volume.sh mic keys, bar scroll)
 //   qs ipc call osd brightness 40             screen brightness keys
 //   qs ipc call osd toast <kind> <title> <subtitle>   anything else (see `kinds`)
-// It also pops up by itself for keyboard layout switches, Bluetooth devices
+// It also pops up by itself for Bluetooth devices
 // connecting, and low battery (that one stays until you plug in).
 // Notifications are shown as cards under it (Notifs.qml).
 // Hides after ~2.5 s, stays while the pointer is on it.
@@ -43,7 +43,6 @@ Scope {
     readonly property var kinds: ({
         "mic-off": [0xF036D, Theme.urgent],
         "mic-on": [0xF036C, Theme.mic],
-        "layout": [0xF030C, Theme.accent],
         "caps-on": [0xF030E, Theme.accent],
         "caps-off": [0xF030E, Theme.dim],
         "power-saver": [0xF032A, Theme.battery],
@@ -135,15 +134,6 @@ Scope {
         }
         function onToast(kind, title, subtitle) {
             root.showToast(kind, title, subtitle);
-        }
-    }
-
-    // keyboard layout switch (any way: keybind, script, Hyprland itself)
-    Connections {
-        target: Hyprland
-        function onRawEvent(event) {
-            if (event.name === "activelayout")
-                root.showToast("layout", "Keyboard layout", event.data.split(",").slice(1).join(","));
         }
     }
 
