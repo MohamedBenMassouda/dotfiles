@@ -15,6 +15,7 @@ hl.config({
     animations = { enabled = false },
     decoration = { blur = { enabled = false }, shadow = { enabled = false } },
     cursor = { inactive_timeout = 0 },
+    xwayland = { enabled = false },   -- no X11 apps on the login screen
 })
 
 hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
