@@ -39,7 +39,6 @@ bind(m("ALT + B"), "Waybar layout", exec(s .. "/WaybarLayout.sh"))
 -- Master layout
 bind(m("CTRL + D"), "Remove master", hl.dsp.layout("removemaster"))
 bind(m("I"), "Add master", hl.dsp.layout("addmaster"))
-bind(m("P"), "Pseudotile (dwindle)", hl.dsp.window.pseudo())
 bind(m("CTRL + Return"), "Swap with master", hl.dsp.layout("swapwithmaster"))
 
 -- Groups
