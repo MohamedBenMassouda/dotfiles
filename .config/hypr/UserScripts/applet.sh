@@ -16,7 +16,11 @@ applet() {
   for item in "$@"; do
     rows+="<span size=\"xx-large\">${item%%|*}</span>"$'\n'"<span size=\"small\">${item#*|}</span>|"
   done
+  # Left/Right step through the buttons and wrap around (e.g. Left on the first
+  # one jumps to the last); there's no text box, so they aren't needed for typing
   printf '%s' "${rows%|}" | rofi -dmenu -i -no-custom -markup-rows -sep '|' -eh 3 -format i -selected-row "${APPLET_ROW:-0}" \
+    -kb-move-char-back "Control+b" -kb-move-char-forward "Control+f" \
+    -kb-element-prev "Left,ISO_Left_Tab" -kb-element-next "Right,Tab" \
     -config "$HOME/.config/rofi/config-applet.rasi" -mesg "$mesg" \
     -theme-str "listview { columns: $n; } window { width: ${width}px; } ${APPLET_THEME:-}"
 }
