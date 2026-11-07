@@ -36,6 +36,9 @@ sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon croni
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
 
+step "Login shell: zsh"
+[[ $(getent passwd "$USER" | cut -d: -f7) == */zsh ]] || chsh -s /usr/bin/zsh
+
 step "Colours (wallust) from a wallpaper"
 wall=$(find ~/Pictures/wallpapers -type f \( -name '*.png' -o -name '*.jpg' \) 2>/dev/null | head -1 || true)
 if [[ -n $wall ]]; then
