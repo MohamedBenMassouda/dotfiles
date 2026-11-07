@@ -26,13 +26,13 @@ status_file="${XDG_RUNTIME_DIR:-/tmp}/touchpad.status"
 
 enable_touchpad() {
     printf "true" >"$status_file"
-    notify-send -u low -i "$notif" " Enabling" " touchpad"
+    qs ipc call osd toast touchpad "Touchpad on" "" >/dev/null 2>&1 || notify-send -u low "Touchpad on"
     hyprctl eval "hl.device({ name = \"$touchpad_device\", enabled = true })"
 }
 
 disable_touchpad() {
     printf "false" >"$status_file"
-    notify-send -u low -i "$notif" " Disabling" " touchpad"
+    qs ipc call osd toast touchpad-off "Touchpad off" "Fn key again to turn it back on" >/dev/null 2>&1 || notify-send -u low "Touchpad off"
     hyprctl eval "hl.device({ name = \"$touchpad_device\", enabled = false })"
 }
 

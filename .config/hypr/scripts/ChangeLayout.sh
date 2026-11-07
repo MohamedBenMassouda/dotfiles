@@ -2,7 +2,6 @@
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
 # for changing Hyprland Layouts (Master or Dwindle) on the fly
 
-notif="$HOME/.config/hypr/assets/images/ja.png"
 
 LAYOUT=$(hyprctl -j getoption general:layout | jq '.str' | sed 's/"//g')
 
@@ -19,19 +18,14 @@ case $LAYOUT in
 "master")
   hyprctl eval '
     hl.config({ general = { layout = "dwindle" } })
-    hl.unbind("SUPER + J"); hl.unbind("SUPER + K")
-    hl.bind("SUPER + J", hl.dsp.window.cycle_next())
-    hl.bind("SUPER + K", hl.dsp.window.cycle_next({ next = false }))
     hl.bind("SUPER + O", hl.dsp.layout("togglesplit"))'
-  notify-send -e -u low -i "$notif" " Dwindle Layout"
+  qs ipc call osd toast layout "Dwindle layout" "SUPER+O flips the split" >/dev/null 2>&1
   ;;
 "dwindle")
   hyprctl eval '
     hl.config({ general = { layout = "master" } })
-    hl.unbind("SUPER + J"); hl.unbind("SUPER + K"); hl.unbind("SUPER + O")
-    hl.bind("SUPER + J", hl.dsp.layout("cyclenext"))
-    hl.bind("SUPER + K", hl.dsp.layout("cycleprev"))'
-  notify-send -e -u low -i "$notif" " Master Layout"
+    hl.unbind("SUPER + O")'
+  qs ipc call osd toast layout "Master layout" "SUPER+I / SUPER+CTRL+D add / remove a master" >/dev/null 2>&1
   ;;
 *) ;;
 
