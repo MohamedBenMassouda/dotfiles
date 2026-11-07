@@ -79,6 +79,7 @@ umu-launcher
 
 # Scripts
 jq
+python-recurring-ical-events
 libnotify
 python
 pacman-contrib
