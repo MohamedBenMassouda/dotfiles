@@ -79,6 +79,54 @@ Singleton {
         onTriggered: fetchWeather.running = true
     }
 
+    // ---- calendar (hypr/scripts/Calendar.py: Google via private iCal address) ----
+    // events: [{ title, start, end, allDay, calendar, location }], next 7 days
+    property var events: []
+    property string calendarError: ""
+    property var reminded: ({})          // "title|start" already announced
+
+    Process {
+        id: fetchCalendar
+        command: [root.scripts + "/Calendar.py"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const data = JSON.parse(text);
+                    root.calendarError = data.error ?? "";
+                    root.events = Array.isArray(data) ? data : [];
+                } catch (e) {}
+            }
+        }
+    }
+
+    Timer {
+        interval: 5 * 60 * 1000          // the script caches downloads for 15 min
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: fetchCalendar.running = true
+    }
+
+    // flyout 10 minutes before each timed event
+    Timer {
+        interval: 30 * 1000
+        running: root.events.length > 0
+        repeat: true
+        onTriggered: {
+            const now = Date.now();
+            for (const e of root.events) {
+                if (e.allDay) continue;
+                const mins = (new Date(e.start).getTime() - now) / 60000;
+                const key = e.title + "|" + e.start;
+                if (mins > 0 && mins <= 10 && !root.reminded[key]) {
+                    root.reminded[key] = true;
+                    root.toast("calendar", e.title, "In " + Math.ceil(mins) + " min · " + e.start.slice(11)
+                               + (e.location ? " · " + e.location : ""));
+                }
+            }
+        }
+    }
+
     // ---- night light follows the sun: on at sunset, off at sunrise ----
     // (a manual toggle in between stays until the next sunrise / sunset)
     property string sunPhase: ""

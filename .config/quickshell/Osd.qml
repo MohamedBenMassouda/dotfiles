@@ -67,7 +67,8 @@ Scope {
         "color": [0xF020A, Theme.accent],     // tinted with the picked colour itself
         "dev": [0xF0868, Theme.accent],
         "focus": [0xF051B, Theme.notifications],
-        "phone": [0xF011C, Theme.bluetooth]
+        "phone": [0xF011C, Theme.bluetooth],
+        "calendar": [0xF00F0, Theme.accent]
     })
 
     function show() {
