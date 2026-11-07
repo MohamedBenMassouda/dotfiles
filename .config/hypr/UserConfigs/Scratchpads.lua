@@ -10,7 +10,11 @@ for _, p in ipairs(pads) do
     local ws = "special:" .. p.name
     lib.bind(p.key, "Show/hide " .. p.desc, hl.dsp.workspace.toggle_special(p.name))
     -- launch the app the first time the empty pad is opened
-    hl.workspace_rule({ workspace = ws, on_created_empty = lib.app(p.cmd) })
+    hl.on("workspace.created", function(w)
+        if w and w.name == ws and w.is_empty then
+            hl.exec_cmd(lib.app(p.cmd))
+        end
+    end)
     hl.window_rule({ match = { class = p.class }, workspace = ws .. " silent" })
 end
 

@@ -3,8 +3,7 @@ local c = require("lib").colors
 
 hl.config({
     dwindle = {
-        preserve_split       = true,
-        special_scale_factor = 0.8,
+        preserve_split = true,
     },
 
     master = {
@@ -101,3 +100,7 @@ hl.config({
         force_zero_scaling = true,
     },
 })
+
+-- Special workspaces (scratch / pop-ups): windows sit inset from the screen edges,
+-- about 80% of it (replaces the deprecated dwindle.special_scale_factor = 0.8)
+hl.workspace_rule({ workspace = "s[true]", gaps_out = { top = 90, bottom = 90, left = 170, right = 170 } })
