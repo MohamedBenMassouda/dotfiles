@@ -1,7 +1,8 @@
 # Packages for this desktop. bootstrap.sh installs them with yay (repo + AUR).
 # Lines starting with # are ignored.
 
-# Hyprland session
+# Login screen + Hyprland session
+gdm
 hyprland
 xdg-desktop-portal-hyprland
 uwsm
@@ -12,6 +13,7 @@ hyprsunset
 hyprshutdown
 hyprshot
 polkit-gnome
+gnome-keyring
 
 # Shell: bar, flyouts, notifications, lock screen, overview
 quickshell
@@ -20,14 +22,16 @@ ttf-jetbrains-mono-nerd
 ttf-droid
 noto-fonts-emoji
 breeze-icons
+bibata-cursor-theme-bin
 
 # Launcher, theme, wallpaper
 rofi
-wallust
+wallust-git
 awww
 mpvpaper
 imagemagick
 nwg-look
+nwg-displays
 qt6ct
 kvantum
 
@@ -43,9 +47,16 @@ tesseract-data-eng
 zenity
 
 # Audio, media, brightness, power
+pipewire
+wireplumber
+pipewire-pulse
+pipewire-alsa
+pipewire-audio
+alsa-utils
 pamixer
 pavucontrol
 playerctl
+mpv
 brightnessctl
 power-profiles-daemon
 
@@ -77,13 +88,21 @@ docker
 # Games
 umu-launcher
 
+# Apps from Flathub are in flatpaks.txt
+flatpak
+
 # Scripts
 jq
+bc
+libqalculate
 python-recurring-ical-events
 libnotify
 python
 pacman-contrib
 stow
+
+# Fallback bar (swap app("qs") for app("waybar") in configs/Startup_Apps.lua)
+waybar
 
 # Snapshots (btrfs + GRUB only, set up by .config/hypr/scripts/SetupSystem.sh)
 timeshift

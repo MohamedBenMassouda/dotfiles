@@ -21,6 +21,10 @@ fi
 step "Packages (packages.txt)"
 grep -vE '^\s*(#|$)' packages.txt | yay -S --needed -
 
+step "Flatpak apps (flatpaks.txt)"
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+grep -vE '^\s*(#|$)' flatpaks.txt | xargs -r flatpak install -y --noninteractive flathub
+
 step "Neovim config (submodule)"
 git submodule update --init --recursive
 
@@ -33,6 +37,8 @@ stow -v -t ~ .
 
 step "Services"
 sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon cronie paccache.timer
+# login screen, unless another one is already set up
+systemctl is-enabled display-manager.service >/dev/null 2>&1 || sudo systemctl enable gdm
 sudo systemctl enable docker
 sudo usermod -aG docker "$USER"
 
