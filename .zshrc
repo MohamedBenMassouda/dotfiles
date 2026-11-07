@@ -132,3 +132,26 @@ fastfetch
 
 # Turso
 export PATH="$PATH:/home/monarch/.turso"
+
+# Long commands (30 s+): a flyout when they end if you're on another window
+# (~/.config/hypr/scripts/CmdDone.sh). Full-screen programs aren't counted.
+if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
+  zmodload zsh/datetime
+  _cmd_done_start=0
+  _cmd_done_preexec() { _cmd_done_start=$EPOCHSECONDS; _cmd_done_cmd=$1; }
+  _cmd_done_precmd() {
+    local st=$? took=$(( EPOCHSECONDS - _cmd_done_start ))
+    (( _cmd_done_start )) || return
+    _cmd_done_start=0
+    (( took >= 30 )) || return
+    case ${_cmd_done_cmd%% *} in
+      nvim|vim|vi|ssh|tmux|less|man|htop|btop|top|lazygit|lazydocker|yazi|claude|fzf|watch|tail|journalctl|python|python3|node) return ;;
+    esac
+    local pid=$$
+    [[ -n $TMUX ]] && pid=$(tmux display -p '#{client_pid}' 2>/dev/null || echo $$)
+    ~/.config/hypr/scripts/CmdDone.sh $st $took $pid "$_cmd_done_cmd" &!
+  }
+  autoload -Uz add-zsh-hook
+  add-zsh-hook preexec _cmd_done_preexec
+  precmd_functions=(_cmd_done_precmd $precmd_functions)   # first, so $? is the command's
+fi
