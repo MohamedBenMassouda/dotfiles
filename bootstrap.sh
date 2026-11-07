@@ -35,9 +35,9 @@ echo "Choose the extras:"
 echo
 
 if systemctl is-enabled display-manager.service >/dev/null 2>&1; then
-  want[gdm]=0
+  want[greeter]=0
 else
-  ask gdm y "No login screen found. Install GDM?"
+  ask greeter y "No login screen found. Install the Quickshell login screen (greetd)?"
 fi
 ask nvim y "Neovim and its config?"
 ask dev y "Dev tools: Docker and lazygit (dev menu)?"
@@ -119,7 +119,10 @@ stow -v "${stow_ignore[@]}" -t ~ .
 
 step "Services"
 sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon paccache.timer
-on gdm && sudo systemctl enable gdm
+if on greeter; then
+  sudo "$dots/greeter/install.sh"
+  sudo systemctl enable greetd
+fi
 if on dev; then
   sudo systemctl enable docker
   sudo usermod -aG docker "$USER"
