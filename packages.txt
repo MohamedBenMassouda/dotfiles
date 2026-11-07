@@ -1,0 +1,92 @@
+# Packages for this desktop. bootstrap.sh installs them with yay (repo + AUR).
+# Lines starting with # are ignored.
+
+# Hyprland session
+hyprland
+xdg-desktop-portal-hyprland
+uwsm
+hypridle
+hyprlock
+hyprpicker
+hyprsunset
+hyprshutdown
+hyprshot
+polkit-gnome
+
+# Shell: bar, flyouts, notifications, lock screen, overview
+quickshell
+cava
+ttf-jetbrains-mono-nerd
+ttf-droid
+noto-fonts-emoji
+breeze-icons
+
+# Launcher, theme, wallpaper
+rofi
+wallust
+awww
+mpvpaper
+imagemagick
+nwg-look
+qt6ct
+kvantum
+
+# Clipboard, screenshots, recording, OCR
+wl-clipboard
+cliphist
+grim
+slurp
+swappy
+gpu-screen-recorder
+tesseract
+tesseract-data-eng
+zenity
+
+# Audio, media, brightness, power
+pamixer
+pavucontrol
+playerctl
+brightnessctl
+power-profiles-daemon
+
+# Network, Bluetooth, phone
+networkmanager
+network-manager-applet
+nm-connection-editor
+bluez
+bluez-utils
+bluetui
+kdeconnect
+
+# Terminal and dev
+kitty
+zsh
+tmux
+neovim
+fzf
+fd
+ripgrep
+bat
+zoxide
+lazygit
+yazi
+btop
+fastfetch
+docker
+
+# Games
+umu-launcher
+
+# Scripts
+jq
+libnotify
+python
+pacman-contrib
+stow
+
+# Snapshots (btrfs + GRUB only, set up by .config/hypr/scripts/SetupSystem.sh)
+timeshift
+timeshift-autosnap
+grub-btrfs
+inotify-tools
+cronie

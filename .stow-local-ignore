@@ -1,0 +1,8 @@
+# Repo files that must not be linked into ~
+\.git
+\.gitignore
+\.gitmodules
+\.stow-local-ignore
+README\.md
+bootstrap\.sh
+packages\.txt
