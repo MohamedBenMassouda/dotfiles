@@ -137,9 +137,17 @@ Scope {
                   image: x.image ?? "", colors: x.colors ?? [], actions: x.actions ?? [] };
         mode = "toast";
         sticky = kind === "battery-low";
+        if (senseKinds.includes(kind)) {
+            sense.restart();
+            Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Sounds.sh", "--error"]);
+        }
         hideTimer.interval = x.timeout ?? (toast.actions.length ? 6000 : 2500);
         show();
     }
+
+    // warnings that set off the spider-sense: jagged lines flicker out from both
+    // sides of the card for a second
+    readonly property var senseKinds: ["battery-low", "hot", "failed", "disk", "no-internet", "device-battery", "share"]
 
     // "1 h 20 min" from seconds
     function duration(sec) {
@@ -435,16 +443,79 @@ Scope {
         anchors.top: true
         margins.top: Theme.gap     // the bar's reserved space already puts this under it
         exclusiveZone: 0
-        implicitWidth: 380
+        // room on both sides for the spider-sense lines; only the cards take clicks
+        implicitWidth: 380 + 2 * 44
         implicitHeight: stack.implicitHeight
         color: "transparent"
+        mask: Region { item: stack }
 
         WlrLayershell.namespace: "quickshell-osd"
         WlrLayershell.layer: WlrLayer.Overlay
 
+        // spider-sense: three jagged lines fanning out from each side of the card
+        Repeater {
+            model: [-1, 1]
+
+            delegate: Canvas {
+                id: tingle
+                required property int modelData
+                readonly property int side: modelData
+                x: side < 0 ? 0 : parent.width - 44
+                y: 4
+                width: 44
+                height: 70
+                opacity: 0
+                scale: 0.6
+                transformOrigin: side < 0 ? Item.Right : Item.Left
+
+                onPaint: {
+                    const ctx = getContext("2d");
+                    ctx.reset();
+                    ctx.strokeStyle = Theme.urgent;
+                    ctx.lineWidth = 2.5;
+                    ctx.lineCap = "round";
+                    ctx.lineJoin = "round";
+                    // each line: zigzag from the card edge outwards, at an angle
+                    for (const angle of [-0.55, 0, 0.55]) {
+                        const sx = side < 0 ? 42 : 2, sy = 30 + angle * 26;
+                        ctx.beginPath();
+                        ctx.moveTo(sx, sy);
+                        for (let i = 1; i <= 4; i++) {
+                            const d = i * 9, zig = (i % 2 ? 4 : -4);
+                            ctx.lineTo(sx + side * d, sy + angle * d * 0.9 + zig);
+                        }
+                        ctx.stroke();
+                    }
+                }
+
+                Component.onCompleted: requestPaint()
+                Connections {
+                    target: Theme
+                    function onUrgentChanged() { tingle.requestPaint(); }
+                }
+
+                SequentialAnimation {
+                    running: sense.running
+                    loops: 2
+                    ParallelAnimation {
+                        NumberAnimation { target: tingle; property: "opacity"; from: 0; to: 1; duration: 120 }
+                        NumberAnimation { target: tingle; property: "scale"; from: 0.6; to: 1.05; duration: 220; easing.type: Easing.OutBack }
+                    }
+                    NumberAnimation { target: tingle; property: "opacity"; to: 0; duration: 280 }
+                }
+            }
+        }
+
+        // drives the spider-sense lines (restarted by showToast)
+        Timer {
+            id: sense
+            interval: 1300
+        }
+
         ColumnLayout {
             id: stack
-            width: parent.width
+            x: 44
+            width: 380
             spacing: Theme.gap
 
             Rectangle {
@@ -481,6 +552,22 @@ Scope {
                     visible: root.mediaCard
                     player: root.player
                     onUsed: root.show()
+                }
+
+                // web in two corners, like the bar's islands
+                WebCorner {
+                    z: 1
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.margins: Theme.border
+                    corner: 0
+                }
+                WebCorner {
+                    z: 1
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    anchors.margins: Theme.border
+                    corner: 3
                 }
 
                 // click anywhere on the card that isn't a button: dismiss
