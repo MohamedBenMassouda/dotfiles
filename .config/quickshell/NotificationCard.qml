@@ -45,6 +45,35 @@ Rectangle {
 
     HoverHandler { id: hover }
 
+    // popup: drops in on a web thread from above and bounces, the thread then
+    // fades. Only the first time it shows (Notifs.dropped), not each time the
+    // popup list around it changes.
+    transform: Translate { id: dropIn }
+
+    Rectangle {
+        id: thread
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.top
+        width: 1.5
+        height: card.y + 12 - dropIn.y      // up to the top of the screen area
+        color: Qt.alpha(Theme.foreground, 0.7)
+        opacity: 0
+    }
+
+    SequentialAnimation {
+        id: dropAnim
+        PropertyAction { target: thread; property: "opacity"; value: 1 }
+        NumberAnimation { target: dropIn; property: "y"; from: -90; to: 0; duration: 700; easing.type: Easing.OutBounce }
+        PauseAnimation { duration: 450 }
+        NumberAnimation { target: thread; property: "opacity"; to: 0; duration: 350 }
+    }
+
+    Component.onCompleted: {
+        if (!popup || Notifs.dropped[notification.id]) return;
+        Notifs.dropped[notification.id] = true;
+        dropAnim.start();
+    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: {

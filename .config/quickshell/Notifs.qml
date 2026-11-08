@@ -16,6 +16,7 @@ Singleton {
 
     readonly property list<Notification> history: server.trackedNotifications.values
     property list<Notification> popups: []   // newest first
+    property var dropped: ({})               // ids whose popup already did its drop-in
 
     function hidePopup(n) {
         popups = popups.filter(p => p !== n);
