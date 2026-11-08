@@ -4,6 +4,7 @@
 
   "buttonMascot": true,
   "workspaceMascot": true,
+  "hanger": "Hanger.qml",
   "desktopMascot": true,
   "corners": true,
   "lockEmblem": false,
