@@ -51,6 +51,7 @@ watch=(
   "$(realpath "$here/quickshell/GreeterScreen.qml")"
   "$(realpath "$here/quickshell/shell.qml")"
   "$(realpath "$here/hyprland.lua")"
+  "$(realpath "$here/start-greeter.sh")"
   "$home/.local/state/desktop-pack"        # theme pack choice (doesn't have to exist)
 )
 cat > /etc/systemd/system/greeter-sync.service <<UNIT
