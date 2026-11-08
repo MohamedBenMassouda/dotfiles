@@ -65,7 +65,8 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = ${ws.number} })`])
+                onClicked: ws.active ? root.trick()
+                                     : Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = ${ws.number} })`])
             }
         }
     }
@@ -89,7 +90,29 @@ Item {
     property var path: []           // x of each stop: the old workspace, the ones on the way, the new one
     property real t: 0              // 0 .. path.length - 1 while swinging
 
-    onActiveIndexChanged: {
+    // Hyprland can report a workspace change that isn't one (clicking the
+    // workspace you're on blips it for a moment): act only once it settles
+    onActiveIndexChanged: settle.restart()
+    Timer {
+        id: settle
+        interval: 40
+        onTriggered: root.travel()
+    }
+
+    // clicking the workspace you're already on: a flip around the thread instead
+    function trick() {
+        if (swing.running || flip.running) return;
+        flip.restart();
+    }
+    property real spin: 0
+    SequentialAnimation {
+        id: flip
+        NumberAnimation { target: root; property: "spin"; from: 0; to: 360; duration: 520; easing.type: Easing.InOutQuad }
+        PropertyAction { target: root; property: "spin"; value: 0 }
+        ScriptAction { script: { root.landing = true; landTimer.restart(); } }
+    }
+
+    function travel() {
         const from = lastIndex, to = activeIndex, step = to > from ? 1 : -1;
         lastIndex = to;
         const xs = [];
@@ -171,7 +194,7 @@ Item {
         transform: Rotation {
             origin.x: hanger.width * hanger.attach
             origin.y: 0
-            angle: -root.pose.angle * 180 / Math.PI
+            angle: -root.pose.angle * 180 / Math.PI + root.spin
         }
         source: !Pack.flag("workspaceMascot") ? "" : root.hasHanger ? Pack.url(Pack.info.hanger) : Pack.url("Mascot.qml")
         visible: buttons.count > 0 && Pack.flag("workspaceMascot")
@@ -179,7 +202,7 @@ Item {
         Binding {
             target: hanger.item
             property: "pose"
-            value: root.path.length >= 2 ? "swing" : root.landing ? "land" : "hang"
+            value: root.path.length >= 2 || flip.running ? "swing" : root.landing ? "land" : "hang"
             when: root.hasHanger && hanger.item !== null
         }
     }

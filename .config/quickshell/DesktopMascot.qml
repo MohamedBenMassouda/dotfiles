@@ -4,10 +4,13 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs
 
-// The pack's crawler (Spider-Man: a pixel Spider-Man) or mascot lives on empty workspaces: it crawls along the top edge of the
-// screen (just under the bar), stops now and then, and drops down on a thread
-// when you hover it (or sometimes by itself), then climbs back up.
-// Sits under all windows and only the spider itself takes the mouse.
+// The pack's crawler (Spider-Man: a pixel Spider-Man) or mascot lives on empty
+// workspaces. It clings under the bar's islands: crawls along one, and at its
+// end web-swings across the gap to the next; at the edge of the screen it
+// turns around and works its way back to the start, and so on. Hover it (or
+// wait, it does it by itself sometimes) and it drops down on a thread, then
+// climbs back up. Sits under all windows; only the figure takes the mouse.
+// Without island info (bar hidden) it just wanders along the top edge.
 PanelWindow {
     id: win
 
@@ -19,25 +22,28 @@ PanelWindow {
 
     visible: empty && Pack.flag("desktopMascot")
     anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Normal        // starts under the bar, not behind it
+    exclusionMode: ExclusionMode.Normal        // top edge = the islands' bottom edge
     exclusiveZone: 0
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "quickshell-spider"
     mask: Region { item: spider }
 
+    // the islands he clings to, left to right
+    readonly property var spans: (Globals.islands[modelData.name] ?? []).slice().sort((a, b) => a[0] - b[0])
+    property int seg: -1                       // island he's on
+    property int dir: 1                        // 1 heading right, -1 heading left
+
     property real drop: 0                      // thread length while hanging
     property bool walking: false
     property bool hanging: false
-    property int facing: 1                     // 1 right, -1 left
+    property bool swinging: false
+    property int facing: 1                     // plain mascot: 1 right, -1 left
 
     function rand(a, b) { return a + Math.random() * (b - a); }
+    function later(ms) { pause.interval = ms; pause.restart(); }
 
-    // walk to a random spot, or (sometimes) drop down for a look around
-    function next() {
-        if (hanging) return;
-        if (Math.random() < 0.15) { dropDown(); return; }
-        const to = rand(20, win.width - spider.width - 20);
+    function walkTo(to) {
         facing = to > spider.x ? 1 : -1;
         walk.to = to;
         walk.duration = Math.abs(to - spider.x) / 55 * 1000;
@@ -45,8 +51,85 @@ PanelWindow {
         walk.restart();
     }
 
+    function next() {
+        if (hanging || swinging) return;
+        if (Math.random() < 0.12) { dropDown(); return; }
+        if (spans.length === 0) {                       // no bar: wander
+            walkTo(rand(20, win.width - spider.width - 20));
+            return;
+        }
+        if (seg < 0 || seg >= spans.length) {           // start on the first island
+            seg = 0;
+            dir = 1;
+            spider.x = spans[0][0] + 6;
+        }
+        const lo = spans[seg][0] + 6, hi = spans[seg][1] - spider.width - 6;
+        const end = dir > 0 ? hi : lo;
+        if (Math.abs(spider.x - end) > 2) {
+            // crawl to the end of this island, sometimes stopping on the way
+            const stop = Math.random() < 0.35 ? spider.x + (end - spider.x) * rand(0.3, 0.7) : end;
+            walkTo(stop);
+        } else if (seg + dir >= 0 && seg + dir < spans.length) {
+            swingTo(seg + dir);
+        } else {
+            dir = -dir;                                 // edge of the screen: head back
+            later(rand(600, 1500));
+        }
+    }
+
+    // ---- web-swing to the next island: the hand moves on an arc under a
+    // point above the gap, starting and ending flush with the islands ----
+    readonly property real arc: 58 * Math.PI / 180
+    property real hx0: 0
+    property real hx1: 0
+    property real swingT: 0
+    property real handX: 0
+    property real handY: 0
+    property real swingAngle: 0                // radians, 0 = straight down
+    property int target: 0
+
+    function swingTo(n) {
+        target = n;
+        const w = spider.width;
+        hx0 = spider.x + w / 2;
+        const xb = dir > 0 ? spans[n][0] + 6 : spans[n][1] - w - 6;
+        hx1 = xb + w / 2;
+        swinging = true;
+        swingT = 0;
+        swingAnim.duration = 650 + Math.abs(hx1 - hx0) * 0.7;
+        swingAnim.restart();
+    }
+
+    readonly property real swingL: Math.max(40, Math.abs(hx1 - hx0) / 2 / Math.sin(arc))
+    readonly property real anchorX: (hx0 + hx1) / 2
+    readonly property real anchorY: -swingL * Math.cos(arc)
+
+    onSwingTChanged: {
+        if (!swinging) return;
+        const ease = (1 - Math.cos(Math.PI * swingT)) / 2;
+        swingAngle = (-arc + 2 * arc * ease) * Math.sign(hx1 - hx0);
+        handX = anchorX + swingL * Math.sin(swingAngle);
+        handY = anchorY + swingL * Math.cos(swingAngle);
+        spider.x = handX - spider.width * body.attach;
+    }
+
+    NumberAnimation {
+        id: swingAnim
+        target: win
+        property: "swingT"
+        from: 0
+        to: 1
+        onFinished: {
+            win.swinging = false;
+            win.swingAngle = 0;
+            win.seg = win.target;
+            spider.x = win.hx1 - spider.width / 2;
+            win.later(win.rand(500, 1400));
+        }
+    }
+
     function dropDown() {
-        if (hanging) return;
+        if (hanging || swinging) return;
         walk.stop();
         walking = false;
         hanging = true;
@@ -61,8 +144,7 @@ PanelWindow {
         property: "x"
         onFinished: {
             win.walking = false;
-            pause.interval = win.rand(1200, 4500);
-            pause.restart();
+            win.later(win.spans.length ? win.rand(500, 2200) : win.rand(1200, 4500));
         }
     }
 
@@ -97,12 +179,11 @@ PanelWindow {
         easing.type: Easing.InOutQuad
         onFinished: {
             win.hanging = false;
-            pause.interval = 1500;
-            pause.restart();
+            win.later(1500);
         }
     }
 
-    // thread
+    // thread while hanging
     Rectangle {
         x: spider.x + spider.width / 2
         y: 0
@@ -112,8 +193,20 @@ PanelWindow {
         color: Qt.alpha(Theme.foreground, 0.55)
     }
 
-    // a pack crawler figure (pack.json "crawler": poses, no turning) or the
-    // pack mascot (a head-up drawing that is turned to face the way it walks)
+    // web line while swinging: from the point above the gap to his hand
+    Rectangle {
+        x: win.anchorX
+        y: win.anchorY
+        width: 1.5
+        height: win.swingL
+        transformOrigin: Item.Top
+        rotation: -win.swingAngle * 180 / Math.PI
+        visible: win.swinging
+        color: Qt.alpha(Theme.foreground, 0.75)
+    }
+
+    // a pack crawler figure (pack.json "crawler": poses) or the pack mascot
+    // (a head-up drawing, turned to face the way it walks)
     readonly property bool hasCrawler: Pack.on && !!Pack.info.crawler
     property bool stepA: false
     Timer {
@@ -126,7 +219,7 @@ PanelWindow {
     Item {
         id: spider
         x: 60
-        y: win.drop
+        y: win.swinging ? win.handY : win.drop
         width: win.hasCrawler ? (body.item?.implicitWidth ?? 28) : 28
         height: win.hasCrawler ? (body.item?.implicitHeight ?? 28) : 28
 
@@ -137,11 +230,17 @@ PanelWindow {
 
         Loader {
             id: body
+            readonly property real attach: (item && item.attachX !== undefined) ? item.attachX : 0.5
             anchors.fill: parent
             source: !Pack.flag("desktopMascot") ? "" : win.hasCrawler ? Pack.url(Pack.info.crawler) : Pack.url("Mascot.qml")
-            // a plain mascot faces the way it walks along the ceiling, and points
-            // down while hanging; a crawler figure only sways
-            rotation: (win.hasCrawler ? 0 : win.hanging ? 180 : win.facing * 90) + wobble
+            // a plain mascot faces the way it walks along the ceiling and points
+            // down while hanging or swinging; a crawler figure only sways
+            rotation: (win.hasCrawler ? 0 : (win.hanging || win.swinging) ? 180 : win.facing * 90) + wobble
+            transform: Rotation {
+                origin.x: body.width * body.attach
+                origin.y: 0
+                angle: win.hasCrawler ? -win.swingAngle * 180 / Math.PI : 0
+            }
             property real wobble: 0
             Behavior on rotation {
                 enabled: !win.walking
@@ -159,7 +258,7 @@ PanelWindow {
             Binding {
                 target: body.item
                 property: "pose"
-                value: win.hanging ? "hang" : win.walking ? (win.stepA ? "step1" : "step2") : "cling"
+                value: win.hanging ? "hang" : win.swinging ? "swing" : win.walking ? (win.stepA ? "step1" : "step2") : "cling"
                 when: win.hasCrawler && body.item !== null
             }
         }

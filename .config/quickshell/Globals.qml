@@ -10,6 +10,9 @@ Singleton {
     id: root
 
     property bool keepAwake: false       // idle inhibitor (bar coffee icon)
+    // each monitor's bar islands as [left, right] x ranges, left to right (bar/Bar.qml);
+    // the desktop crawler clings under them and swings across the gaps
+    property var islands: ({})
     property bool dnd: false             // do not disturb: no notification popups
     property string panel: ""            // open side panel: "", "control" or "notifications"
 
