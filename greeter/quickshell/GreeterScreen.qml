@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import qs
 
@@ -84,6 +85,22 @@ PanelWindow {
             font.family: Theme.font
             font.pixelSize: Theme.fontSize + 6
         }
+
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 4
+            visible: hostname.text().trim() !== ""
+            text: "Your friendly neighborhood " + hostname.text().trim()
+            color: "#E23636"
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize
+            font.italic: true
+
+            FileView {
+                id: hostname
+                path: "/etc/hostname"
+            }
+        }
     }
 
     // ---- login form (main monitor only) ----
@@ -94,24 +111,21 @@ PanelWindow {
         anchors.topMargin: 10
         spacing: 12
 
-        // avatar: first letter of the name; click the name for the next user
-        Rectangle {
+        // the mask squints while checking the password and blinks now and then
+        Mask {
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: 72
-            implicitHeight: 72
-            radius: 36
-            color: Theme.accent
-            border.color: Qt.alpha(Theme.foreground, 0.3)
-            border.width: 2
+            implicitHeight: 88
+            open: win.greeter.busy ? 0.35 : win.greeter.failed ? 0.5 : 1
+        }
 
-            Text {
-                anchors.centerIn: parent
-                text: (win.greeter.users[win.greeter.userIndex]?.full ?? "?").charAt(0).toUpperCase()
-                color: Theme.foreground
-                font.family: Theme.font
-                font.pixelSize: 32
-                font.bold: true
-            }
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 4
+            text: "Welcome back,"
+            color: Theme.dim
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize
         }
 
         Text {
