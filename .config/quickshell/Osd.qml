@@ -544,8 +544,11 @@ Scope {
                 }
 
                 // media mode: the shared now-playing card (MediaCard.qml) fills the card
+                // above the click-to-dismiss area so its buttons and bars work
+                // (× or SUPER+Escape still dismiss it)
                 MediaCard {
                     id: mediaCard
+                    z: 1
                     anchors.fill: parent
                     anchors.margins: Theme.border
                     radius: Theme.radius - Theme.border
