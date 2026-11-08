@@ -140,7 +140,7 @@ Item {
         transformOrigin: Item.Top
         rotation: -root.pose.angle * 180 / Math.PI
         color: Qt.alpha(Theme.foreground, 0.6)
-        visible: buttons.count > 0
+        visible: buttons.count > 0 && Globals.spidey
     }
 
     Spider {
@@ -151,7 +151,7 @@ Item {
         transformOrigin: Item.Top
         rotation: -root.pose.angle * 180 / Math.PI
         color: "#E23636"
-        visible: buttons.count > 0
+        visible: buttons.count > 0 && Globals.spidey
     }
 
     WheelHandler {

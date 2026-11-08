@@ -3,7 +3,8 @@
 #   Sounds.sh --screenshot   web-shooter "thwip"
 #   Sounds.sh --notify       softer thwip (Quickshell plays it for new notifications)
 #   Sounds.sh --error        spider-sense tingle (also warnings in the flyout)
-# Set mute=true to silence them all.
+# Set mute=true to silence them all. With the Spider-Man touches off (quick
+# settings) the plain system sounds play instead.
 mute=false
 $mute && exit 0
 
@@ -19,4 +20,14 @@ case $1 in
   *) echo "Available sounds: --screenshot, --notify, --error"; exit 0 ;;
 esac
 [[ -f $own/$f ]] && dir=$own
+
+# Spider-Man touches off (quick settings): plain system sounds, silent notifications
+if [[ -e $HOME/.local/state/spidey-off ]]; then
+  sys=/usr/share/sounds/freedesktop/stereo
+  case $1 in
+    --screenshot) exec pw-play --volume "$vol" "$sys/screen-capture.oga" ;;
+    --error) exec pw-play --volume "$vol" "$sys/dialog-error.oga" ;;
+    *) exit 0 ;;
+  esac
+fi
 exec pw-play --volume "$vol" "$dir/$f"

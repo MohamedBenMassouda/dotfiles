@@ -26,3 +26,5 @@ copy "$home/.config/hypr/monitors.lua" "$dst/monitors.lua" 644
 copy "$home/.config/quickshell/Theme.qml" "$dst/quickshell/Theme.qml" 644
 copy "$home/.config/quickshell/colors.json" "$dst/quickshell/colors.json" 644
 copy "$home/.config/rofi/.current_wallpaper" "$dst/quickshell/wallpaper" 644
+# Spider-Man touches off: the greeter hides its "friendly neighborhood" line
+if [[ -e $home/.local/state/spidey-off ]]; then touch "$dst/spidey-off"; else rm -f "$dst/spidey-off"; fi

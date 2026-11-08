@@ -22,6 +22,7 @@ Rectangle {
         implicitWidth: 16
         implicitHeight: 16
         corner: 0
+        visible: Globals.spidey
     }
     WebCorner {
         anchors.bottom: parent.bottom
@@ -30,6 +31,7 @@ Rectangle {
         implicitWidth: 16
         implicitHeight: 16
         corner: 3
+        visible: Globals.spidey
     }
 
     RowLayout {
