@@ -53,7 +53,9 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   emblem, sounds, a warning effect, dropping notifications and greeting lines. Ships with
   **Spider-Man**; the **Theme pack** tile in quick settings (or `qs ipc call panel pack`) cycles
   through the packs and *None*. To make one, copy `packs/spiderman` and change `pack.json`, the
-  three QML drawings and `sounds/` (see the top of `Pack.qml`).
+  three QML drawings and `sounds/` (see the top of `Pack.qml`). Packs can have **suits**
+  (colours of the figures); Spider-Man has Advanced, Classic, Gwen, Miles, Miguel (2099) and
+  Amazing: the **Suit** tile in quick settings, or `qs ipc call panel suit`.
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).

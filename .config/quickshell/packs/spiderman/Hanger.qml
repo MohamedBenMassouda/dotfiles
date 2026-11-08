@@ -20,8 +20,11 @@ Canvas {
     onPoseChanged: requestPaint()
     onWidthChanged: requestPaint()
 
-    // R suit red, D shading, B suit blue, W eye white, K black
-    readonly property var colors: ({ R: "#D3202A", D: "#8C121A", B: "#2347A8", W: "#F5F5F5", K: "#0F0F12" })
+    // R suit main colour, D shading, B second colour, E eye lenses, K black.
+    // The chosen suit (pack.json "suits", Pack.suit) overrides these.
+    readonly property var base: ({ R: "#C8102E", D: "#7A0A1C", B: "#1B2A57", N: "#1B2A57", W: "#F2F2F2", E: "#F5F5F5", K: "#0F0F12" })
+    readonly property var colors: Object.assign({}, base, Pack.suitColors)
+    onColorsChanged: requestPaint()
     readonly property var poses: ({
         hang: [
             ".....R.....",
@@ -34,8 +37,8 @@ Canvas {
             "..RBBRBBR..",
             "..R.RDR.R..",
             "..RKRRRKR..",
-            "..KWKRKWK..",
-            "..RWRRRWR..",
+            "..KEKRKEK..",
+            "..RERRRER..",
             "...KRRRK...",
             "..R.RRR.R..",
             "..R.....R.."
@@ -45,8 +48,8 @@ Canvas {
             "........R..",
             "..RRRRR.R..",
             ".RKRRRKRR..",
-            ".KWKRKWKR..",
-            ".RWRRRWRR..",
+            ".KEKRKEKR..",
+            ".RERRRERR..",
             "..KRRRK.R..",
             "..BRDRBRR..",
             ".RBBRBBR...",
@@ -62,8 +65,8 @@ Canvas {
             ".....R.....",
             "...RRRRR...",
             "..RKRRRKR..",
-            "..KWKRKWK..",
-            "..RWRRRWR..",
+            "..KEKRKEK..",
+            "..RERRRER..",
             "...KRRRK...",
             ".R.BRDRB.R.",
             ".RBBRBBRBR.",

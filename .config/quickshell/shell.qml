@@ -37,6 +37,11 @@ ShellRoot {
             Pack.paused = on;
         }
 
+        // next suit of the theme pack (Spider-Man: Advanced, Classic, Gwen, ...)
+        function suit(): void {
+            Pack.nextSuit();
+        }
+
         // next desktop theme pack (none -> spiderman -> ... -> none)
         function pack(): void {
             Pack.next();

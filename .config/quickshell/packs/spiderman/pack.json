@@ -1,7 +1,6 @@
 {
   "title": "Spider-Man",
   "color": "#E23636",
-
   "buttonMascot": true,
   "workspaceMascot": true,
   "hanger": "Hanger.qml",
@@ -11,7 +10,65 @@
   "lockEmblem": false,
   "warningTingle": true,
   "notificationDrop": true,
-
   "greeting": "Your friendly neighborhood %h",
-  "terminal": "Your friendly neighborhood %u"
+  "terminal": "Your friendly neighborhood %u",
+  "suit": "advanced",
+  "suits": {
+    "advanced": {
+      "title": "Advanced (2018)",
+      "colors": {}
+    },
+    "classic": {
+      "title": "Classic",
+      "colors": {
+        "R": "#D3202A",
+        "D": "#8C121A",
+        "B": "#2347A8",
+        "N": "#2347A8",
+        "W": "#1A1A1E"
+      }
+    },
+    "gwen": {
+      "title": "Gwen",
+      "colors": {
+        "R": "#FF69B4",
+        "D": "#C2185B",
+        "B": "#F4F4F8",
+        "N": "#F4F4F8",
+        "W": "#141418"
+      }
+    },
+    "miles": {
+      "title": "Miles",
+      "colors": {
+        "R": "#17171B",
+        "D": "#D3202A",
+        "B": "#17171B",
+        "N": "#17171B",
+        "W": "#E3262E"
+      }
+    },
+    "miguel": {
+      "title": "Miguel (2099)",
+      "colors": {
+        "R": "#1F2C6E",
+        "D": "#D7263D",
+        "B": "#0E1430",
+        "N": "#0E1430",
+        "W": "#D7263D",
+        "E": "#FF3B4E"
+      }
+    },
+    "amazing": {
+      "title": "Amazing",
+      "colors": {
+        "R": "#C8102E",
+        "D": "#5E0815",
+        "B": "#1F4FBF",
+        "N": "#1F4FBF",
+        "W": "#141418",
+        "E": "#F5D76E"
+      }
+    }
+  }
 }
