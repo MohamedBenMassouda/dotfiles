@@ -106,7 +106,6 @@ PanelWindow {
                 printErrors: false
             }
         }
-        }
     }
 
     // ---- login form (main monitor only) ----

@@ -25,5 +25,7 @@ hl.env("QT_QPA_PLATFORM", "wayland")
 -- the login screen; when it quits (you logged in, or it crashed) close this
 -- compositor so greetd can start your session / the fallback
 hl.on("hyprland.start", function()
-    hl.exec_cmd("sh -c 'qs -p " .. dir .. "quickshell/shell.qml; hyprctl dispatch \"hl.dsp.exit()\"'")
+    -- qs failing (e.g. a QML error) leaves a flag: start-greeter.sh then falls
+    -- back to the text login instead of starting this again and again
+    hl.exec_cmd("sh -c 'qs -p " .. dir .. "quickshell/shell.qml || touch \"$HOME/greeter-failed\"; hyprctl dispatch \"hl.dsp.exit()\"'")
 end)
