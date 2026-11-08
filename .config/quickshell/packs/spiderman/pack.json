@@ -6,7 +6,7 @@
   "workspaceMascot": true,
   "desktopMascot": true,
   "corners": true,
-  "lockEmblem": true,
+  "lockEmblem": false,
   "warningTingle": true,
   "notificationDrop": true,
 
