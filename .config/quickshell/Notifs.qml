@@ -74,7 +74,9 @@ Singleton {
             n.tracked = !n.transient;
             if (n.urgency !== NotificationUrgency.Critical && (Globals.dnd || root.isQuiet(root.appOf(n)))) return;
             // a replaced notification (same id) is the same object: just move it to the top
+            const replaced = root.popups.includes(n);
             root.popups = [n].concat(root.popups.filter(p => p !== n)).slice(0, 4);
+            if (!replaced) Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Sounds.sh", "--notify"]);
         }
     }
 }
