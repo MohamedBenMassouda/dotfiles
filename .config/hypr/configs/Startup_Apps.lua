@@ -24,10 +24,13 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(app("kdeconnectd"))  -- phone: notifications, battery, file sharing (quick settings)
     -- bar, flyouts, notifications, panels (~/.config/quickshell). Under uwsm it runs
     -- as a service that restarts itself if it crashes (systemd/user/quickshell.service)
+    -- After a Hyprland crash the watchdog restarts it (without uwsm's
+    -- environment) while the service copy may still be running: reuse that one
+    -- instead of starting a second bar.
     if lib.uwsm then
-        hl.exec_cmd("systemctl --user start quickshell.service")
+        hl.exec_cmd("systemctl --user restart quickshell.service")
     else
-        hl.exec_cmd("qs")
+        hl.exec_cmd("sh -c 'if systemctl --user is-active -q quickshell.service; then systemctl --user restart quickshell.service; else pgrep -x qs >/dev/null || qs; fi'")
     end
     hl.exec_cmd(app("hypridle"))
     hl.exec_cmd(s .. "/Hyprsunset.sh init")
