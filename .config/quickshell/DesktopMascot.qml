@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import Quickshell.Services.UPower
 import qs
 
 // The pack's crawler (Spider-Man: a pixel Spider-Man) or mascot lives on empty
@@ -9,7 +10,8 @@ import qs
 // end web-swings across the gap to the next; at the edge of the screen it
 // turns around and works its way back to the start, and so on. Hover it (or
 // wait, it does it by itself sometimes) and it drops down on a thread, then
-// climbs back up. Sits under all windows; only the figure takes the mouse.
+// climbs back up; hovering also shows a speech bubble (a line from the pack,
+// the time, the next calendar event, the battery). Sits under all windows; only the figure takes the mouse.
 // Without island info (bar hidden) it just wanders along the top edge.
 PanelWindow {
     id: win
@@ -218,6 +220,73 @@ PanelWindow {
         color: Qt.alpha(Theme.foreground, 0.75)
     }
 
+    // ---- speech bubble while hovered: a line from the pack, then the time,
+    // the next calendar event and the battery ----
+    property bool bubbleShown: false
+    property string bubbleQuip: ""
+    Timer {
+        id: bubbleHold
+        interval: 2500
+        onTriggered: win.bubbleShown = false
+    }
+    SystemClock {
+        id: clock
+        precision: SystemClock.Minutes
+    }
+    readonly property string bubbleInfo: {
+        const parts = [Qt.formatTime(clock.date, "HH:mm")];
+        const next = Globals.events.find(e => !e.allDay && Date.parse(e.start) > clock.date.getTime());
+        if (next) {
+            const mins = Math.round((Date.parse(next.start) - clock.date.getTime()) / 60000);
+            parts.push(next.title + (mins < 60 ? " in " + mins + " min" : " at " + next.start.slice(11, 16)));
+        }
+        const b = UPower.displayDevice;
+        if (b.isLaptopBattery) parts.push(Math.round(b.percentage * 100) + "%" + (UPower.onBattery ? "" : " ⚡"));
+        return parts.join("  ·  ");
+    }
+
+    Rectangle {
+        id: bubble
+        visible: win.bubbleShown && !win.swinging
+        readonly property bool leftSide: spider.x + spider.width + width + 20 > win.width
+        x: leftSide ? spider.x - width - 10 : spider.x + spider.width + 10
+        y: spider.y + 6
+        width: Math.min(360, Math.max(quipText.implicitWidth, infoText.implicitWidth) + 24)
+        height: bubbleCol.implicitHeight + 16
+        radius: Theme.radius
+        color: Theme.popup
+        border.color: Pack.on ? (Pack.suitColors.R ?? Pack.color) : Theme.accent
+        border.width: Theme.border
+
+        Column {
+            id: bubbleCol
+            anchors.centerIn: parent
+            width: parent.width - 24
+            spacing: 4
+
+            Text {
+                id: quipText
+                width: parent.width
+                visible: text !== ""
+                text: win.bubbleQuip
+                wrapMode: Text.WordWrap
+                color: Theme.foreground
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize
+                font.bold: true
+            }
+            Text {
+                id: infoText
+                width: parent.width
+                text: win.bubbleInfo
+                wrapMode: Text.WordWrap
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize - 1
+            }
+        }
+    }
+
     // a pack crawler figure (pack.json "crawler": poses) or the pack mascot
     // (a head-up drawing, turned to face the way it walks)
     readonly property bool hasCrawler: Pack.on && !!Pack.info.crawler
@@ -232,7 +301,12 @@ PanelWindow {
 
         HoverHandler {
             id: spiderHover
-            onHoveredChanged: if (hovered) win.dropDown()
+            onHoveredChanged: {
+                if (!hovered) { bubbleHold.restart(); return; }
+                win.bubbleQuip = Pack.quip("hover");
+                win.bubbleShown = true;
+                win.dropDown();
+            }
         }
 
         Loader {

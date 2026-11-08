@@ -70,5 +70,51 @@
         "E": "#F5D76E"
       }
     }
+  },
+  "quips": {
+    "hover": [
+      "Just hanging around. Literally.",
+      "Your friendly neighborhood desktop, all clear.",
+      "Quiet up here. Too quiet. Want me to open a terminal?",
+      "I'd wave, but I'm holding on with that hand.",
+      "Fun fact: this web holds about a gigabyte. Of web.",
+      "No windows, no villains. I'll take it.",
+      "Rent's due, homework's due, and I'm on a wallpaper.",
+      "Ceiling's my favourite floor.",
+      "If you need me, I'll be upside down.",
+      "Okay, who keeps closing all the windows on me?"
+    ],
+    "cpu": [
+      "Something's chewing the CPU and it isn't me.",
+      "My spider-sense is tingling... and so is your fan.",
+      "That process has been lifting weights for minutes. Suspicious.",
+      "Either a tab's stuck in a loop or it's mining something. Bad vibes either way.",
+      "It's getting hot in here. Wasn't the suit."
+    ],
+    "ram": [
+      "Memory's almost full. Even my web has limits.",
+      "RAM is tighter than my suit after laundry day.",
+      "Running out of memory. Close a few things before it gets messy."
+    ],
+    "service": [
+      "Something in the background just fell over.",
+      "A service went down. Not on my watch... well, kind of on my watch.",
+      "Background service failed. Want me to look the other way? Kidding, check it."
+    ],
+    "focusStart": [
+      "Mission started. I'll keep the notifications off your back.",
+      "Focus mode. No villains, no pings, just you.",
+      "Lowering in slowly. When I hit the bottom, take a break."
+    ],
+    "focusEnd": [
+      "Mission accomplished! Stretch those legs, hero.",
+      "Time's up. Even I take breaks between rooftops.",
+      "Nice work. Go grab a snack, I'll guard the desk."
+    ],
+    "tracer": [
+      "Found it!",
+      "Spider-tracer locked on.",
+      "There it is. Thwip!"
+    ]
   }
 }

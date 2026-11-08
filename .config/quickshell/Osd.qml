@@ -113,7 +113,10 @@ Scope {
         "failed": [0xF0159, Theme.urgent],
         "updated": [0xF03D5, Theme.accent],
         "laptop": [0xF06E7, Theme.dim],
-        "laptop-on": [0xF0322, Theme.accent]
+        "laptop-on": [0xF0322, Theme.accent],
+        "runaway": [0xF04C5, Theme.urgent],
+        "memory": [0xF035B, Theme.urgent],
+        "service": [0xF0028, Theme.urgent]
     })
 
     // media mode with something to show: MediaCard instead of the level bar
@@ -147,7 +150,7 @@ Scope {
 
     // warnings that set off the pack's warning effect (spider-sense: jagged
     // lines flicker out from both sides of the card for a second)
-    readonly property var senseKinds: ["battery-low", "hot", "failed", "disk", "no-internet", "device-battery", "share"]
+    readonly property var senseKinds: ["battery-low", "hot", "failed", "disk", "no-internet", "device-battery", "share", "runaway", "memory", "service"]
 
     // "1 h 20 min" from seconds
     function duration(sec) {
@@ -407,6 +410,82 @@ Scope {
         interval: 15000
         repeat: true
         onTriggered: tempCheck.running = true
+    }
+
+    // ---- spider-sense for the system, every 30 s ----
+    //  - a process using a full CPU core for 2 minutes: Show / End it
+    //  - memory almost full (under 8 % available; again once it went over 20 %)
+    //  - a system or user service that failed
+    // each said once (per process / service)
+    readonly property string runaway: Quickshell.env("HOME") + "/.config/hypr/scripts/Runaway.sh"
+    property var cpuPrev: ({})            // pid -> cpu seconds at the last check
+    property var cpuStreak: ({})          // pid -> checks in a row at a full core
+    property var cpuWarned: ({})
+    property bool memWarned: false
+    property var failedSeen: ({})
+    property bool sysFirst: true          // first check: remember failed services, say nothing
+    readonly property int sysInterval: 30
+
+    function procName(comm) {
+        if (/^(Isolated Web Co|Web Content|WebExtensions)/.test(comm)) return "A Firefox tab";
+        return comm;
+    }
+
+    Process {
+        id: sysCheck
+        command: ["sh", "-c", "ps -eo pid=,times=,comm=; echo MEM $(awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{print int(a*100/t)}' /proc/meminfo); echo FAIL $(systemctl --failed --no-legend --plain 2>/dev/null | awk '{print $1}') $(systemctl --user --failed --no-legend --plain 2>/dev/null | awk '{print $1}')"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const now = {}, lines = text.trim().split("\n");
+                let mem = 100, failed = [];
+                for (const l of lines) {
+                    if (l.startsWith("MEM ")) { mem = parseInt(l.slice(4)); continue; }
+                    if (l.startsWith("FAIL")) { failed = l.slice(4).trim().split(/\s+/).filter(x => x); continue; }
+                    const m = l.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/);
+                    if (m) now[m[1]] = { t: parseInt(m[2]), comm: m[3] };
+                }
+                // CPU: used ≥ 90 % of a core since the last check, 4 checks in a row
+                const streak = {};
+                for (const pid in now) {
+                    const prev = root.cpuPrev[pid];
+                    if (prev === undefined) continue;
+                    const busy = (now[pid].t - prev) / root.sysInterval >= 0.9;
+                    streak[pid] = busy ? (root.cpuStreak[pid] ?? 0) + 1 : 0;
+                    if (streak[pid] >= 4 && !root.cpuWarned[pid]) {
+                        root.cpuWarned[pid] = true;
+                        root.showToast("runaway", root.procName(now[pid].comm) + " is maxing out a CPU core",
+                                       Pack.quip("cpu") || "For 2 minutes now", { actions: [
+                            { label: "Show", glyph: 0xF0349, cmd: [root.runaway, "show", pid] },
+                            { label: "End it", glyph: 0xF0156, cmd: [root.runaway, "stop", pid] }
+                        ] });
+                    }
+                }
+                const times = {};
+                for (const pid in now) times[pid] = now[pid].t;
+                root.cpuPrev = times;
+                root.cpuStreak = streak;
+                // memory
+                if (mem > 20) root.memWarned = false;
+                else if (mem < 8 && !root.memWarned) {
+                    root.memWarned = true;
+                    root.showToast("memory", "Memory almost full: " + mem + "% left", Pack.quip("ram") || "Close a few apps or tabs");
+                }
+                // failed services (new ones only)
+                for (const f of failed) {
+                    if (!root.failedSeen[f] && !root.sysFirst)
+                        root.showToast("service", f + " failed", Pack.quip("service") || "systemctl status " + f);
+                    root.failedSeen[f] = true;
+                }
+                root.sysFirst = false;
+            }
+        }
+    }
+    Timer {
+        running: true
+        interval: root.sysInterval * 1000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: sysCheck.running = true
     }
 
     // USB drives and SD cards (scripts/Usb.sh watches UDisks)

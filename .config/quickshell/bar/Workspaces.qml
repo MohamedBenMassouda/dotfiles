@@ -78,7 +78,11 @@ Item {
     // thread to the top of the island halfway across and swings under it ----
     readonly property real ceiling: -(Theme.barHeight - root.height) / 2      // the island's top edge
     readonly property int activeIndex: (monitor?.activeWorkspace?.id ?? 1) - 1
-    readonly property real restLen: 10                                    // thread length at rest
+    // thread length at rest; during a focus session he starts tucked at the top
+    // and lowers as the time runs out (a progress bar you can read at a glance)
+    readonly property real focusProgress: Globals.focusPhase === "work" && Globals.focusMinutes > 0
+                                          ? 1 - Globals.focusLeft / (Globals.focusMinutes * 60) : -1
+    readonly property real restLen: focusProgress < 0 ? 10 : 1 + 17 * focusProgress
     readonly property real swingAngle: 55 * Math.PI / 180                 // half the arc of a swing
 
     function restX(i) {
@@ -97,6 +101,12 @@ Item {
         id: settle
         interval: 40
         onTriggered: root.travel()
+    }
+
+    // focus session over: a celebratory flip
+    Connections {
+        target: Globals
+        function onFocusPhaseChanged() { if (Globals.focusPhase === "break") root.trick(); }
     }
 
     // clicking the workspace you're already on: a flip around the thread instead
