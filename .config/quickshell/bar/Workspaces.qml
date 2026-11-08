@@ -143,15 +143,45 @@ Item {
         visible: buttons.count > 0 && Pack.flag("workspaceMascot")
     }
 
+    // the pack's hanger figure (pack.json "hanger", e.g. a pixel Spider-Man with
+    // poses), or its mascot. A hanger has `pose` and `attachX` (where the thread
+    // ties on); a plain mascot hangs from its top centre.
+    readonly property bool hasHanger: Pack.on && !!Pack.info.hanger
+    property bool landing: false
+    Timer {
+        id: landTimer
+        interval: 260
+        onTriggered: root.landing = false
+    }
+    Connections {
+        target: swing
+        function onFinished() {
+            root.landing = true;
+            landTimer.restart();
+        }
+    }
+
     Loader {
-        x: root.pose.sx - width / 2
-        y: root.pose.sy - 2
-        width: 12
-        height: 12
-        transformOrigin: Item.Top
-        rotation: -root.pose.angle * 180 / Math.PI
-        source: Pack.flag("workspaceMascot") ? Pack.url("Mascot.qml") : ""
+        id: hanger
+        readonly property real attach: (item && item.attachX !== undefined) ? item.attachX : 0.5
+        x: root.pose.sx - width * attach
+        y: root.pose.sy - (root.hasHanger ? 0 : 2)
+        width: root.hasHanger ? 11 : 12
+        height: root.hasHanger ? 15 : 12
+        transform: Rotation {
+            origin.x: hanger.width * hanger.attach
+            origin.y: 0
+            angle: -root.pose.angle * 180 / Math.PI
+        }
+        source: !Pack.flag("workspaceMascot") ? "" : root.hasHanger ? Pack.url(Pack.info.hanger) : Pack.url("Mascot.qml")
         visible: buttons.count > 0 && Pack.flag("workspaceMascot")
+
+        Binding {
+            target: hanger.item
+            property: "pose"
+            value: root.path.length >= 2 ? "swing" : root.landing ? "land" : "hang"
+            when: root.hasHanger && hanger.item !== null
+        }
     }
 
     WheelHandler {
