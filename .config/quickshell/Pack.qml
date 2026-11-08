@@ -16,6 +16,8 @@ import Quickshell.Io
 //                 spider-sense.wav (warnings)
 // The chosen pack's name is in ~/.local/state/desktop-pack; "none" is the plain
 // desktop, no file means spiderman. Quick settings tile, or: qs ipc call panel pack
+// Game mode pauses it (scripts/Pack.sh pause / resume): a flag in the runtime
+// dir, so a crash mid-game can't leave it off after the next login.
 Singleton {
     id: root
 
@@ -23,7 +25,9 @@ Singleton {
     property string name: "spiderman"
     property var info: null                 // pack.json of the chosen pack
     property var available: []              // pack folder names
-    readonly property bool on: name !== "none" && info !== null
+    readonly property string pauseFile: Quickshell.env("XDG_RUNTIME_DIR") + "/desktop-pack-paused"
+    property bool paused: false
+    readonly property bool on: name !== "none" && info !== null && !paused
     readonly property string dir: Quickshell.shellPath("packs/" + name)
     readonly property string title: on ? (info.title ?? name) : "None"
     readonly property color color: on && info.color ? info.color : Theme.accent
@@ -60,6 +64,13 @@ Singleton {
         }
         onLoadFailed: root.info = null
         onPathChanged: if (path === "") root.info = null
+    }
+
+    FileView {
+        path: root.pauseFile
+        printErrors: false
+        onLoaded: root.paused = true
+        onLoadFailed: root.paused = false
     }
 
     Process {
