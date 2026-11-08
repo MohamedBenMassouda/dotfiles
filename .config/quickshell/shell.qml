@@ -32,8 +32,9 @@ ShellRoot {
             Globals.togglePanel(name);
         }
 
-        function spidey(): void {
-            Globals.toggleSpidey();
+        // next desktop theme pack (none -> spiderman -> ... -> none)
+        function pack(): void {
+            Pack.next();
         }
 
         function dnd(): void {
@@ -57,11 +58,11 @@ ShellRoot {
         }
     }
 
-    // a spider that crawls along the top of empty workspaces
+    // the pack mascot crawls along the top of empty workspaces
     Variants {
         model: Quickshell.screens
 
-        DesktopSpider {}
+        DesktopMascot {}
     }
 
     // volume / media / brightness / toast flyout + notification popups

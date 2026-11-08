@@ -86,27 +86,26 @@ PanelWindow {
             font.pixelSize: Theme.fontSize + 6
         }
 
+        // the theme pack's greeting line (greeter-sync writes greeting.json)
         Text {
+            readonly property var greeting: {
+                try { return JSON.parse(greetingFile.text()); } catch (e) { return {}; }
+            }
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 4
-            // hidden with the Spider-Man touches off (greeter-sync copies the flag)
-            visible: hostname.text().trim() !== "" && !spideyOff.loaded
-            text: "Your friendly neighborhood " + hostname.text().trim()
-            color: "#E23636"
+            visible: text !== ""
+            text: greeting.text ?? ""
+            color: greeting.color || Theme.accent
             font.family: Theme.font
             font.pixelSize: Theme.fontSize
             font.italic: true
 
             FileView {
-                id: hostname
-                path: "/etc/hostname"
-            }
-
-            FileView {
-                id: spideyOff
-                path: "/etc/greetd/greeter/spidey-off"
+                id: greetingFile
+                path: "/etc/greetd/greeter/greeting.json"
                 printErrors: false
             }
+        }
         }
     }
 

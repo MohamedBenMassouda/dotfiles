@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs
 
-// A spider that lives on empty workspaces: it crawls along the top edge of the
+// The pack's mascot (a spider for Spider-Man) lives on empty workspaces: it crawls along the top edge of the
 // screen (just under the bar), stops now and then, and drops down on a thread
 // when you hover it (or sometimes by itself), then climbs back up.
 // Sits under all windows and only the spider itself takes the mouse.
@@ -17,7 +17,7 @@ PanelWindow {
     readonly property var monitor: Hyprland.monitors.values.find(m => m.name === modelData.name)
     readonly property bool empty: (monitor?.activeWorkspace?.toplevels?.values.length ?? 1) === 0
 
-    visible: empty && Globals.spidey
+    visible: empty && Pack.flag("desktopMascot")
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Normal        // starts under the bar, not behind it
     exclusiveZone: 0
@@ -124,10 +124,10 @@ PanelWindow {
             onHoveredChanged: if (hovered) win.dropDown()
         }
 
-        Spider {
+        Loader {
             id: body
             anchors.fill: parent
-            color: "#E23636"
+            source: Pack.flag("desktopMascot") ? Pack.url("Mascot.qml") : ""
             // head-up drawing: walking along the ceiling it faces the way it goes,
             // hanging it points down
             rotation: (win.hanging ? 180 : win.facing * 90) + wobble

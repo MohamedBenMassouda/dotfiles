@@ -6,8 +6,8 @@ import qs
 
 // Kanji workspace numbers: every workspace that exists on any monitor, plus
 // the active one. Workspaces living on the other monitor are faded. Click to switch, scroll to move through them.
-// A little spider hangs on a thread over the active one and web-swings
-// across when you switch.
+// The pack's mascot (a spider for Spider-Man) hangs on a thread over the
+// active one and swings across when you switch.
 Item {
     id: root
 
@@ -140,18 +140,18 @@ Item {
         transformOrigin: Item.Top
         rotation: -root.pose.angle * 180 / Math.PI
         color: Qt.alpha(Theme.foreground, 0.6)
-        visible: buttons.count > 0 && Globals.spidey
+        visible: buttons.count > 0 && Pack.flag("workspaceMascot")
     }
 
-    Spider {
+    Loader {
         x: root.pose.sx - width / 2
         y: root.pose.sy - 2
         width: 12
         height: 12
         transformOrigin: Item.Top
         rotation: -root.pose.angle * 180 / Math.PI
-        color: "#E23636"
-        visible: buttons.count > 0 && Globals.spidey
+        source: Pack.flag("workspaceMascot") ? Pack.url("Mascot.qml") : ""
+        visible: buttons.count > 0 && Pack.flag("workspaceMascot")
     }
 
     WheelHandler {

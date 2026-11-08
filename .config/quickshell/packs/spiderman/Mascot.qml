@@ -1,11 +1,12 @@
 import QtQuick
+import qs
 
-// A spider emblem (head, body, eight bent legs), drawn so it scales to any
-// size. Used by the bar's launcher button and the workspace spider.
+// Spider-Man pack mascot: a spider (head, body, eight bent legs), facing up,
+// drawn so it scales to any size.
 Canvas {
     id: root
 
-    property color color: "#C1121F"
+    property color color: Pack.color
 
     implicitWidth: 18
     implicitHeight: 18
