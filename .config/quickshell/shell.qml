@@ -84,6 +84,13 @@ ShellRoot {
     // SUPER+A: qs ipc call overview toggle
     Overview {}
 
-    ControlCenter {}
-    NotificationCenter {}
+    // side panels are only built while open (memory, and their polling stops)
+    LazyLoader {
+        active: Globals.panel === "control"
+        ControlCenter {}
+    }
+    LazyLoader {
+        active: Globals.panel === "notifications"
+        NotificationCenter {}
+    }
 }

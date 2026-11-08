@@ -23,7 +23,11 @@ PanelWindow {
     readonly property bool empty: (monitor?.activeWorkspace?.toplevels?.values.length ?? 1) === 0
 
     visible: empty && Pack.flag("desktopMascot")
-    anchors { top: true; bottom: true; left: true; right: true }
+    // a strip under the bar, not the whole screen: his deepest drop (230 px)
+    // plus his height and the speech bubble fit, and the window's buffers are
+    // a third of the size
+    anchors { top: true; left: true; right: true }
+    implicitHeight: 340
     exclusionMode: ExclusionMode.Normal        // top edge = the islands' bottom edge
     exclusiveZone: 0
     color: "transparent"
