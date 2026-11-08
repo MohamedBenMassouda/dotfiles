@@ -59,18 +59,37 @@ Item {
         font.pixelSize: Theme.fontSize + 2
     }
 
-    // ---- clock + password ----
+    // ---- mask, clock + password ----
     ColumnLayout {
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: -60
+        anchors.verticalCenterOffset: -30
         spacing: 6
+
+        // squints while checking, narrows and shakes on a wrong password, blinks
+        Mask {
+            id: mask
+            Layout.alignment: Qt.AlignHCenter
+            Layout.bottomMargin: 10
+            implicitWidth: 130
+            implicitHeight: 160
+            open: root.lock.busy ? 0.35 : root.lock.failed ? 0.5 : 1
+
+            transform: Translate { id: maskShake }
+            SequentialAnimation {
+                id: maskShakeAnim
+                loops: 2
+                NumberAnimation { target: maskShake; property: "x"; to: -8; duration: 50 }
+                NumberAnimation { target: maskShake; property: "x"; to: 8; duration: 80 }
+                NumberAnimation { target: maskShake; property: "x"; to: 0; duration: 50 }
+            }
+        }
 
         Text {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatTime(clock.date, "HH:mm")
             color: Theme.foreground
             font.family: Theme.font
-            font.pixelSize: 120
+            font.pixelSize: 96
             font.bold: true
         }
 
@@ -104,7 +123,11 @@ Item {
             }
             Connections {
                 target: root.lock
-                function onFailedChanged() { if (root.lock.failed) shakeAnim.restart(); }
+                function onFailedChanged() {
+                    if (!root.lock.failed) return;
+                    shakeAnim.restart();
+                    maskShakeAnim.restart();
+                }
             }
 
             TextInput {
