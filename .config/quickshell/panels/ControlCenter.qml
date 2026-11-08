@@ -402,6 +402,17 @@ SidePanel {
             onClicked: Pack.next()
         }
 
+        // the pack's suits (colours of its figures), when it has more than one
+        Tile {
+            visible: Pack.suitNames.length > 1
+            glyph: 0xF0A7B                  // t-shirt: suit
+            label: "Suit"
+            detail: Pack.suitTitle
+            on: true
+            tint: Pack.suitColors.R ?? Pack.color
+            onClicked: Pack.nextSuit()
+        }
+
         Tile {
             glyph: 0xF03D5
             label: "Updates"

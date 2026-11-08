@@ -26,8 +26,12 @@ Canvas {
     onWidthChanged: requestPaint()
     onHeightChanged: requestPaint()
 
-    // R red, D dark red, N navy, W white trim / emblem, K black eye rims, E eye white
-    readonly property var colors: ({ R: "#C8102E", D: "#7A0A1C", N: "#1B2A57", W: "#F2F2F2", K: "#0D0D10", E: "#FAFAFF" })
+    // R suit main colour, D shading, N second colour, W emblem / glove and boot
+    // trims, K black eye rims, E eye lenses. The chosen suit (pack.json "suits",
+    // Pack.suit) overrides these.
+    readonly property var base: ({ R: "#C8102E", D: "#7A0A1C", B: "#1B2A57", N: "#1B2A57", W: "#F2F2F2", K: "#0D0D10", E: "#FAFAFF" })
+    readonly property var colors: Object.assign({}, base, Pack.suitColors)
+    onColorsChanged: requestPaint()
     readonly property var poses: ({
         cling: [
             ".RRR.............RRR.",

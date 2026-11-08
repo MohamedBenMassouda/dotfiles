@@ -16,6 +16,10 @@ import Quickshell.Io
 //                 spider-sense.wav (warnings)
 // The chosen pack's name is in ~/.local/state/desktop-pack; "none" is the plain
 // desktop, no file means spiderman. Quick settings tile, or: qs ipc call panel pack
+// Suits: pack.json "suits" ({name: {title, colors}}) recolour the figures that
+// read Pack.suitColors (Spider-Man: Advanced, Classic, Gwen, Miles, Miguel,
+// Amazing). The chosen suit is in ~/.local/state/desktop-pack-suit; quick
+// settings tile, or: qs ipc call panel suit
 // Game mode pauses it (scripts/Pack.sh pause / resume): a flag in the runtime
 // dir, so a crash mid-game can't leave it off after the next login.
 Singleton {
@@ -31,6 +35,19 @@ Singleton {
     readonly property string dir: Quickshell.shellPath("packs/" + name)
     readonly property string title: on ? (info.title ?? name) : "None"
     readonly property color color: on && info.color ? info.color : Theme.accent
+
+    readonly property string suitFile: Quickshell.env("HOME") + "/.local/state/desktop-pack-suit"
+    property string suitChoice: ""
+    readonly property var suits: on ? (info.suits ?? {}) : ({})
+    readonly property var suitNames: Object.keys(suits)
+    readonly property string suit: suits[suitChoice] ? suitChoice : (on ? (info.suit ?? suitNames[0] ?? "") : "")
+    readonly property string suitTitle: suits[suit]?.title ?? suit
+    readonly property var suitColors: suits[suit]?.colors ?? ({})
+    function nextSuit() {
+        if (suitNames.length === 0) return;
+        suitChoice = suitNames[(suitNames.indexOf(suit) + 1) % suitNames.length];
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "${1%/*}" && printf %s "$2" > "$1"', "sh", suitFile, suitChoice]);
+    }
 
     // a feature switch from pack.json ("corners", "warningTingle", ...)
     function flag(key) { return on && info[key] === true; }
@@ -64,6 +81,12 @@ Singleton {
         }
         onLoadFailed: root.info = null
         onPathChanged: if (path === "") root.info = null
+    }
+
+    FileView {
+        path: root.suitFile
+        printErrors: false
+        onLoaded: root.suitChoice = text().trim()
     }
 
     FileView {
