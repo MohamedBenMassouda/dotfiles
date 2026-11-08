@@ -25,6 +25,7 @@ hl.on("window.open", function(w)
         animations = { enabled = false },
         decoration = { blur = { enabled = false }, shadow = { enabled = false } },
     })
+    hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/scripts/Pack.sh pause")   -- theme pack off while gaming
     hl.exec_cmd("qs ipc call osd toast game 'Game mode' 'On while a game is open'")
 end)
 
@@ -35,5 +36,6 @@ hl.on("window.close", function(w)
         decoration = { blur = { enabled = saved.blur }, shadow = { enabled = saved.shadow } },
     })
     saved = nil
+    hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/scripts/Pack.sh resume")
     hl.exec_cmd("qs ipc call osd toast game 'Game mode' 'Off'")
 end)

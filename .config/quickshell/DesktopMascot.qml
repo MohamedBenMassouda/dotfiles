@@ -26,7 +26,9 @@ PanelWindow {
     exclusiveZone: 0
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Bottom
-    WlrLayershell.namespace: "quickshell-spider"
+    // not "quickshell…": the bar's blur rule matches that, and blurring a
+    // full-screen layer every frame he moves is expensive
+    WlrLayershell.namespace: "desktop-mascot"
     mask: Region { item: spider }
 
     // the islands he clings to, left to right
@@ -43,12 +45,34 @@ PanelWindow {
     function rand(a, b) { return a + Math.random() * (b - a); }
     function later(ms) { pause.interval = ms; pause.restart(); }
 
+    // walking is done in pixel-art steps (a few redraws a second, not 60)
+    property real walkTarget: 0
+    readonly property int stepPx: 9
     function walkTo(to) {
         facing = to > spider.x ? 1 : -1;
-        walk.to = to;
-        walk.duration = Math.abs(to - spider.x) / 55 * 1000;
+        walkTarget = to;
         walking = true;
-        walk.restart();
+        stepTimer.restart();
+    }
+    function stopWalk() {
+        stepTimer.stop();
+        walking = false;
+    }
+    Timer {
+        id: stepTimer
+        interval: 160
+        repeat: true
+        onTriggered: {
+            const d = win.walkTarget - spider.x;
+            if (Math.abs(d) <= win.stepPx) {
+                spider.x = win.walkTarget;
+                win.stopWalk();
+                win.later(win.spans.length ? win.rand(2500, 7000) : win.rand(3000, 8000));
+                return;
+            }
+            spider.x += Math.sign(d) * win.stepPx;
+            win.stepA = !win.stepA;
+        }
     }
 
     function next() {
@@ -124,28 +148,17 @@ PanelWindow {
             win.swingAngle = 0;
             win.seg = win.target;
             spider.x = win.hx1 - spider.width / 2;
-            win.later(win.rand(500, 1400));
+            win.later(win.rand(1500, 4000));
         }
     }
 
     function dropDown() {
         if (hanging || swinging) return;
-        walk.stop();
-        walking = false;
+        stopWalk();
         hanging = true;
         down.to = rand(140, 230);
         down.restart();
         hang.restart();
-    }
-
-    NumberAnimation {
-        id: walk
-        target: spider
-        property: "x"
-        onFinished: {
-            win.walking = false;
-            win.later(win.spans.length ? win.rand(500, 2200) : win.rand(1200, 4500));
-        }
     }
 
     Timer {
@@ -179,7 +192,7 @@ PanelWindow {
         easing.type: Easing.InOutQuad
         onFinished: {
             win.hanging = false;
-            win.later(1500);
+            win.later(win.rand(2500, 6000));
         }
     }
 
@@ -209,12 +222,6 @@ PanelWindow {
     // (a head-up drawing, turned to face the way it walks)
     readonly property bool hasCrawler: Pack.on && !!Pack.info.crawler
     property bool stepA: false
-    Timer {
-        interval: 160
-        repeat: true
-        running: win.walking && win.hasCrawler
-        onTriggered: win.stepA = !win.stepA
-    }
 
     Item {
         id: spider
@@ -243,13 +250,13 @@ PanelWindow {
             }
             property real wobble: 0
             Behavior on rotation {
-                enabled: !win.walking
+                enabled: !win.walking && !win.swinging
                 NumberAnimation { duration: 220 }
             }
 
             // legs scuttle while walking, a slow sway while hanging
             SequentialAnimation on wobble {
-                running: win.hasCrawler ? win.hanging : (win.walking || win.hanging)
+                running: win.hanging
                 loops: Animation.Infinite
                 NumberAnimation { to: win.walking ? 7 : 4; duration: win.walking ? 90 : 700; easing.type: Easing.InOutSine }
                 NumberAnimation { to: win.walking ? -7 : -4; duration: win.walking ? 90 : 700; easing.type: Easing.InOutSine }

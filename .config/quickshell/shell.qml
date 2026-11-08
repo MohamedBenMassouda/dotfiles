@@ -32,6 +32,11 @@ ShellRoot {
             Globals.togglePanel(name);
         }
 
+        // game mode: pause / resume the theme pack (scripts/Pack.sh pause|resume)
+        function packPaused(on: bool): void {
+            Pack.paused = on;
+        }
+
         // next desktop theme pack (none -> spiderman -> ... -> none)
         function pack(): void {
             Pack.next();
