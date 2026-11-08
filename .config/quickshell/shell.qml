@@ -75,6 +75,9 @@ ShellRoot {
         DesktopMascot {}
     }
 
+    // SUPER+ALT+M: web lines to the mouse pointer (qs ipc call tracer fire)
+    Tracer {}
+
     // volume / media / brightness / toast flyout + notification popups
     Osd {}
 

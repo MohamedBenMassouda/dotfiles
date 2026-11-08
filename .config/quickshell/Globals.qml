@@ -177,7 +177,7 @@ Singleton {
             dndBeforeFocus = dnd;
             dnd = true;
             startFocus("work", 25);
-            toast("focus", "Focus", "25 minutes, notifications muted");
+            toast("focus", "Focus · 25 minutes", Pack.quip("focusStart") || "Notifications muted");
         } else {
             focusPhase = "";
             dnd = dndBeforeFocus;
@@ -185,7 +185,9 @@ Singleton {
         }
     }
 
+    property int focusMinutes: 0          // length of the current phase
     function startFocus(phase, minutes) {
+        focusMinutes = minutes;
         focusPhase = phase;
         focusEnd = Date.now() + minutes * 60 * 1000;
         focusLeft = minutes * 60;
@@ -201,7 +203,8 @@ Singleton {
             if (root.focusPhase === "work") {
                 root.dnd = root.dndBeforeFocus;
                 root.startFocus("break", 5);
-                root.toast("focus", "Time for a break", "5 minutes");
+                root.toast("focus", "Time for a break · 5 minutes", Pack.quip("focusEnd") || "Stretch your legs");
+                Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Sounds.sh", "--screenshot"]);
             } else {
                 root.focusPhase = "";
                 root.toast("focus", "Break over", "Start another round from quick settings");

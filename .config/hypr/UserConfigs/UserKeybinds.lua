@@ -28,6 +28,7 @@ bind("SUPER + J", "Toggle focus-follows-mouse", function()
 end)
 bind("SUPER + K", "Keybind cheat sheet", exec(s .. "/KeyBinds.sh"))
 bind("SUPER + Escape", "Dismiss flyout and pop-ups", exec("qs ipc call osd hide"))
+bind("SUPER + ALT + M", "Find the mouse pointer (spider-tracer)", exec("qs ipc call tracer fire"))
 bind("SUPER + SHIFT + W", "Random wallpaper", exec(us .. "/WallpaperRandom.sh"))
 -- Rofi menus
 bind("SUPER + T", "Open project (tmux)", exec(us .. "/ProjectPicker.sh"))

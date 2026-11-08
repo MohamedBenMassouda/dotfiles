@@ -53,6 +53,13 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", 'mkdir -p "${1%/*}" && printf %s "$2" > "$1"', "sh", suitFile, suitChoice]);
     }
 
+    // a random line from pack.json "quips" (hover, cpu, ram, service,
+    // focusStart, focusEnd, tracer), "" when the pack has none
+    function quip(kind) {
+        const list = on ? (info.quips?.[kind] ?? []) : [];
+        return list.length ? list[Math.floor(Math.random() * list.length)] : "";
+    }
+
     // a feature switch from pack.json ("corners", "warningTingle", ...)
     function flag(key) { return on && info[key] === true; }
     // a file from the pack, as a URL for a Loader / Image ("" when off)
