@@ -6,6 +6,7 @@
   "workspaceMascot": true,
   "hanger": "Hanger.qml",
   "desktopMascot": true,
+  "crawler": "Crawler.qml",
   "corners": true,
   "lockEmblem": false,
   "warningTingle": true,

@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs
 
-// The pack's mascot (a spider for Spider-Man) lives on empty workspaces: it crawls along the top edge of the
+// The pack's crawler (Spider-Man: a pixel Spider-Man) or mascot lives on empty workspaces: it crawls along the top edge of the
 // screen (just under the bar), stops now and then, and drops down on a thread
 // when you hover it (or sometimes by itself), then climbs back up.
 // Sits under all windows and only the spider itself takes the mouse.
@@ -112,12 +112,23 @@ PanelWindow {
         color: Qt.alpha(Theme.foreground, 0.55)
     }
 
+    // a pack crawler figure (pack.json "crawler": poses, no turning) or the
+    // pack mascot (a head-up drawing that is turned to face the way it walks)
+    readonly property bool hasCrawler: Pack.on && !!Pack.info.crawler
+    property bool stepA: false
+    Timer {
+        interval: 160
+        repeat: true
+        running: win.walking && win.hasCrawler
+        onTriggered: win.stepA = !win.stepA
+    }
+
     Item {
         id: spider
         x: 60
         y: win.drop
-        width: 28
-        height: 28
+        width: win.hasCrawler ? (body.item?.implicitWidth ?? 28) : 28
+        height: win.hasCrawler ? (body.item?.implicitHeight ?? 28) : 28
 
         HoverHandler {
             id: spiderHover
@@ -127,10 +138,10 @@ PanelWindow {
         Loader {
             id: body
             anchors.fill: parent
-            source: Pack.flag("desktopMascot") ? Pack.url("Mascot.qml") : ""
-            // head-up drawing: walking along the ceiling it faces the way it goes,
-            // hanging it points down
-            rotation: (win.hanging ? 180 : win.facing * 90) + wobble
+            source: !Pack.flag("desktopMascot") ? "" : win.hasCrawler ? Pack.url(Pack.info.crawler) : Pack.url("Mascot.qml")
+            // a plain mascot faces the way it walks along the ceiling, and points
+            // down while hanging; a crawler figure only sways
+            rotation: (win.hasCrawler ? 0 : win.hanging ? 180 : win.facing * 90) + wobble
             property real wobble: 0
             Behavior on rotation {
                 enabled: !win.walking
@@ -139,10 +150,17 @@ PanelWindow {
 
             // legs scuttle while walking, a slow sway while hanging
             SequentialAnimation on wobble {
-                running: win.walking || win.hanging
+                running: win.hasCrawler ? win.hanging : (win.walking || win.hanging)
                 loops: Animation.Infinite
                 NumberAnimation { to: win.walking ? 7 : 4; duration: win.walking ? 90 : 700; easing.type: Easing.InOutSine }
                 NumberAnimation { to: win.walking ? -7 : -4; duration: win.walking ? 90 : 700; easing.type: Easing.InOutSine }
+            }
+
+            Binding {
+                target: body.item
+                property: "pose"
+                value: win.hanging ? "hang" : win.walking ? (win.stepA ? "step1" : "step2") : "cling"
+                when: win.hasCrawler && body.item !== null
             }
         }
     }
