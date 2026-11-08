@@ -29,13 +29,13 @@ PanelWindow {
         enabled: Globals.keepAwake || Globals.mediaPlaying
     }
 
-    // left: spider (app launcher), workspaces, cpu/memory, visualiser, open apps
+    // left: pack mascot (app launcher), workspaces, cpu/memory, visualiser, open apps
     Island {
         anchors.left: parent.left
         anchors.leftMargin: 8
         y: Theme.gap
 
-        SpiderButton {}
+        MascotButton {}
         Workspaces { screenName: bar.screen.name }
         SysStats {}
         Cava {}

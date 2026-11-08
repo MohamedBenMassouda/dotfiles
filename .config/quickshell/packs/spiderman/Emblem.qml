@@ -1,6 +1,6 @@
 import QtQuick
 
-// A web-head mask: red head with web lines and two big white eyes. The eyes
+// Spider-Man pack lock emblem: a web-head mask: red head with web lines and two big white eyes. The eyes
 // follow `open` (1 = wide, 0 = shut): the lock screen squints them while it
 // checks the password, narrows them on a wrong one, and blinks now and then.
 Canvas {

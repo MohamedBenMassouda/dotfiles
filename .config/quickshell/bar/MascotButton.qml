@@ -2,20 +2,26 @@ import QtQuick
 import Quickshell
 import qs
 
-// Spider emblem at the start of the bar: click for the app launcher (SUPER+D).
-// Hover: it turns the suit red and wiggles.
+// The pack's mascot at the start of the bar (Pack.qml): click for the app
+// launcher (SUPER+D). Hover: it takes the pack colour and wiggles.
 Item {
     id: root
 
-    visible: Globals.spidey
+    visible: Pack.flag("buttonMascot")
     implicitWidth: 18
     implicitHeight: 18
 
-    Spider {
-        id: spider
+    Loader {
+        id: mascot
         anchors.fill: parent
-        color: area.containsMouse ? "#E23636" : Theme.accent
+        source: Pack.url("Mascot.qml")
         rotation: 0
+        Binding {
+            target: mascot.item
+            property: "color"
+            value: area.containsMouse ? Pack.color : Theme.accent
+            when: mascot.item !== null
+        }
 
         SequentialAnimation on rotation {
             running: area.containsMouse

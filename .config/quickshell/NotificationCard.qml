@@ -69,7 +69,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        if (!popup || !Globals.spidey || Notifs.dropped[notification.id]) return;
+        if (!popup || !Pack.flag("notificationDrop") || Notifs.dropped[notification.id]) return;
         Notifs.dropped[notification.id] = true;
         dropAnim.start();
     }

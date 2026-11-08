@@ -1,33 +1,28 @@
 #!/usr/bin/env bash
-# Desktop sounds (synthesized, in ~/.config/hypr/assets/sounds):
-#   Sounds.sh --screenshot   web-shooter "thwip"
-#   Sounds.sh --notify       softer thwip (Quickshell plays it for new notifications)
-#   Sounds.sh --error        spider-sense tingle (also warnings in the flyout)
-# Set mute=true to silence them all. With the Spider-Man touches off (quick
-# settings) the plain system sounds play instead.
+# Desktop sounds:
+#   Sounds.sh --screenshot   (Spider-Man: web-shooter thwip)
+#   Sounds.sh --notify       new notifications (softer thwip)
+#   Sounds.sh --error        warnings in the flyout, errors (spider-sense)
+# Set mute=true to silence them all.
 mute=false
 $mute && exit 0
 
-# Your own sounds go in ~/.local/share/sounds/desktop/ (same file names) and win
-# over the built-in ones; that folder isn't in the dotfiles repo, so sounds you
-# don't own the rights to stay on this machine.
+# Sounds come from the theme pack (quickshell/packs/<name>/sounds). Your own
+# files in ~/.local/share/sounds/desktop/ (same names) win over the pack's;
+# that folder isn't in the dotfiles repo, so sounds you don't own the rights to
+# stay on this machine. No pack ("none"): plain system sounds, silent notifications.
 own="$HOME/.local/share/sounds/desktop"
-dir="$HOME/.config/hypr/assets/sounds"
+dir=$("$HOME/.config/hypr/scripts/Pack.sh" dir)
 case $1 in
-  --screenshot) f=thwip.wav; vol=0.7 ;;
-  --notify) f=thwip-soft.wav; vol=0.4 ;;
-  --error) f=spider-sense.wav; vol=0.6 ;;
+  --screenshot) f=thwip.wav; vol=0.7; sys=screen-capture ;;
+  --notify) f=thwip-soft.wav; vol=0.4; sys= ;;
+  --error) f=spider-sense.wav; vol=0.6; sys=dialog-error ;;
   *) echo "Available sounds: --screenshot, --notify, --error"; exit 0 ;;
 esac
-[[ -f $own/$f ]] && dir=$own
-
-# Spider-Man touches off (quick settings): plain system sounds, silent notifications
-if [[ -e $HOME/.local/state/spidey-off ]]; then
-  sys=/usr/share/sounds/freedesktop/stereo
-  case $1 in
-    --screenshot) exec pw-play --volume "$vol" "$sys/screen-capture.oga" ;;
-    --error) exec pw-play --volume "$vol" "$sys/dialog-error.oga" ;;
-    *) exit 0 ;;
-  esac
+if [[ -z $dir ]]; then
+  [[ -n $sys ]] && exec pw-play --volume "$vol" "/usr/share/sounds/freedesktop/stereo/$sys.oga"
+  exit 0
 fi
-exec pw-play --volume "$vol" "$dir/$f"
+src="$dir/sounds/$f"
+[[ -f $own/$f ]] && src="$own/$f"
+[[ -f $src ]] && exec pw-play --volume "$vol" "$src"

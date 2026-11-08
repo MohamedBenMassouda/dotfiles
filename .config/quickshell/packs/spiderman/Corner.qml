@@ -1,6 +1,7 @@
 import QtQuick
+import qs
 
-// A corner of spider web: threads fanning out from one corner, joined by
+// Spider-Man pack corner: a bit of spider web: threads fanning out from one corner, joined by
 // sagging rings. Put it in a corner of a card / island; `corner` picks which:
 // 0 top-left, 1 top-right, 2 bottom-left, 3 bottom-right.
 Canvas {

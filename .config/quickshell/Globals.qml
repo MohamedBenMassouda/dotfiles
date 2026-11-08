@@ -10,23 +10,6 @@ Singleton {
     id: root
 
     property bool keepAwake: false       // idle inhibitor (bar coffee icon)
-
-    // Spider-Man touches (spider button and workspace spider, web corners,
-    // spider-sense, desktop spider, dropping notifications, lock mask, thwip
-    // sounds). Off = ~/.local/state/spidey-off exists; quick settings tile,
-    // or: qs ipc call panel spidey
-    readonly property string spideyFlag: Quickshell.env("HOME") + "/.local/state/spidey-off"
-    property bool spidey: true
-    function toggleSpidey() {
-        spidey = !spidey;
-        Quickshell.execDetached(["sh", "-c", spidey ? 'rm -f "$1"' : 'mkdir -p "${1%/*}" && touch "$1"', "sh", spideyFlag]);
-    }
-    FileView {
-        path: root.spideyFlag
-        printErrors: false
-        onLoaded: root.spidey = false
-        onLoadFailed: root.spidey = true
-    }
     property bool dnd: false             // do not disturb: no notification popups
     property string panel: ""            // open side panel: "", "control" or "notifications"
 

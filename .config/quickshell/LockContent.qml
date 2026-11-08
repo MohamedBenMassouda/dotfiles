@@ -19,14 +19,6 @@ Item {
 
     anchors.fill: parent
 
-    // Spider-Man touches off (see Globals.spidey): no mask
-    property bool spidey: true
-    FileView {
-        path: Quickshell.env("HOME") + "/.local/state/spidey-off"
-        printErrors: false
-        onLoaded: root.spidey = false
-    }
-
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
@@ -74,15 +66,22 @@ Item {
         anchors.verticalCenterOffset: -30
         spacing: 6
 
-        // squints while checking, narrows and shakes on a wrong password, blinks
-        Mask {
+        // pack emblem (Spider-Man: a mask that squints while checking, narrows
+        // and shakes on a wrong password, blinks)
+        Loader {
             id: mask
-            visible: root.spidey
+            visible: Pack.flag("lockEmblem")
+            source: Pack.flag("lockEmblem") ? Pack.url("Emblem.qml") : ""
             Layout.alignment: Qt.AlignHCenter
             Layout.bottomMargin: 10
-            implicitWidth: 130
-            implicitHeight: 160
-            open: root.lock.busy ? 0.35 : root.lock.failed ? 0.5 : 1
+            Layout.preferredWidth: 130
+            Layout.preferredHeight: 160
+            Binding {
+                target: mask.item
+                property: "open"
+                value: root.lock.busy ? 0.35 : root.lock.failed ? 0.5 : 1
+                when: mask.item !== null
+            }
 
             transform: Translate { id: maskShake }
             SequentialAnimation {

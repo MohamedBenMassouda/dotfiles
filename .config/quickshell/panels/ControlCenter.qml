@@ -395,11 +395,11 @@ SidePanel {
 
         Tile {
             glyph: 0xF0BCA                  // spider web
-            label: "Spider-Man"
-            detail: Globals.spidey ? "Spiders, webs, thwips" : "Off, plain desktop"
-            on: Globals.spidey
-            tint: "#E23636"
-            onClicked: Globals.toggleSpidey()
+            label: "Theme pack"
+            detail: Pack.on ? Pack.title : "None, plain desktop"
+            on: Pack.on
+            tint: Pack.color
+            onClicked: Pack.next()
         }
 
         Tile {

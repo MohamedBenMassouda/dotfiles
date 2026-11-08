@@ -1,0 +1,15 @@
+{
+  "title": "Spider-Man",
+  "color": "#E23636",
+
+  "buttonMascot": true,
+  "workspaceMascot": true,
+  "desktopMascot": true,
+  "corners": true,
+  "lockEmblem": true,
+  "warningTingle": true,
+  "notificationDrop": true,
+
+  "greeting": "Your friendly neighborhood %h",
+  "terminal": "Your friendly neighborhood %u"
+}

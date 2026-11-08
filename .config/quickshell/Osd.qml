@@ -138,15 +138,15 @@ Scope {
         mode = "toast";
         sticky = kind === "battery-low";
         if (senseKinds.includes(kind)) {
-            if (Globals.spidey) sense.restart();
+            if (Pack.flag("warningTingle")) sense.restart();
             Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Sounds.sh", "--error"]);
         }
         hideTimer.interval = x.timeout ?? (toast.actions.length ? 6000 : 2500);
         show();
     }
 
-    // warnings that set off the spider-sense: jagged lines flicker out from both
-    // sides of the card for a second
+    // warnings that set off the pack's warning effect (spider-sense: jagged
+    // lines flicker out from both sides of the card for a second)
     readonly property var senseKinds: ["battery-low", "hot", "failed", "disk", "no-internet", "device-battery", "share"]
 
     // "1 h 20 min" from seconds
@@ -554,22 +554,22 @@ Scope {
                     onUsed: root.show()
                 }
 
-                // web in two corners, like the bar's islands
-                WebCorner {
+                // pack ornament in two corners, like the bar's islands
+                Loader {
                     z: 1
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.margins: Theme.border
-                    corner: 0
-                    visible: Globals.spidey
+                    source: Pack.flag("corners") ? Pack.url("Corner.qml") : ""
+                    onLoaded: item.corner = 0
                 }
-                WebCorner {
+                Loader {
                     z: 1
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
                     anchors.margins: Theme.border
-                    corner: 3
-                    visible: Globals.spidey
+                    source: Pack.flag("corners") ? Pack.url("Corner.qml") : ""
+                    onLoaded: item.corner = 3
                 }
 
                 // click anywhere on the card that isn't a button: dismiss

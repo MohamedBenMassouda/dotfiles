@@ -26,5 +26,15 @@ copy "$home/.config/hypr/monitors.lua" "$dst/monitors.lua" 644
 copy "$home/.config/quickshell/Theme.qml" "$dst/quickshell/Theme.qml" 644
 copy "$home/.config/quickshell/colors.json" "$dst/quickshell/colors.json" 644
 copy "$home/.config/rofi/.current_wallpaper" "$dst/quickshell/wallpaper" 644
-# Spider-Man touches off: the greeter hides its "friendly neighborhood" line
-if [[ -e $home/.local/state/spidey-off ]]; then touch "$dst/spidey-off"; else rm -f "$dst/spidey-off"; fi
+# the theme pack's greeting line (empty with no pack); the greeter shows it under the date
+pack=$(runuser -u "$user" -- cat "$home/.local/state/desktop-pack" 2>/dev/null || true)
+pack=${pack:-spiderman}
+json="$home/.config/quickshell/packs/$pack/pack.json"
+if [[ $pack != none ]] && runuser -u "$user" -- test -f "$json"; then
+  runuser -u "$user" -- cat "$json" |
+    jq --arg u "$user" --arg h "$(cat /etc/hostname)" '{text: ((.greeting // "") | gsub("%u"; $u) | gsub("%h"; $h)), color: (.color // "")}'
+else
+  echo '{}'
+fi > "$dst/greeting.json"
+chmod 644 "$dst/greeting.json"
+rm -f "$dst/spidey-off" "$dst/greeting" "$dst/quickshell/Mask.qml"

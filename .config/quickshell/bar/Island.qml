@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import qs
 
-// A rounded, bordered pill that lays its children out in a row, with a bit of
-// spider web in the top-left and bottom-right corners.
+// A rounded, bordered pill that lays its children out in a row, with the
+// pack's corner ornament top-left and bottom-right.
 Rectangle {
     default property alias content: row.data
 
@@ -14,24 +14,24 @@ Rectangle {
     border.color: Theme.accent
     border.width: Theme.border
 
-    // web in two corners, like the suit's texture
-    WebCorner {
+    // pack ornament in two corners (web for Spider-Man)
+    Loader {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.margins: Theme.border
-        implicitWidth: 16
-        implicitHeight: 16
-        corner: 0
-        visible: Globals.spidey
+        width: 16
+        height: 16
+        source: Pack.flag("corners") ? Pack.url("Corner.qml") : ""
+        onLoaded: item.corner = 0
     }
-    WebCorner {
+    Loader {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: Theme.border
-        implicitWidth: 16
-        implicitHeight: 16
-        corner: 3
-        visible: Globals.spidey
+        width: 16
+        height: 16
+        source: Pack.flag("corners") ? Pack.url("Corner.qml") : ""
+        onLoaded: item.corner = 3
     }
 
     RowLayout {
