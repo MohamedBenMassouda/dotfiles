@@ -3,13 +3,13 @@
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    base_path="/mnt/7C2885E92885A2AE/Class"
+    base_path="/mnt/Data/Class"
     results=$(find "$base_path" -mindepth 1 -maxdepth 2 -type d)
     results="$base_path"$'\n'"$results"
 
     if [[ -z $results ]]; then
         exit 0
-    fi 
+    fi
 
     selected=$(echo -e "$results" | fzf)
 fi
@@ -27,7 +27,7 @@ if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
     exit 0
 fi
 
-if ! tmux has-session -t=$selected_name 2> /dev/null; then
+if ! tmux has-session -t=$selected_name 2>/dev/null; then
     tmux new-session -ds $selected_name -c $selected
 fi
 
