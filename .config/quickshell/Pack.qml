@@ -43,6 +43,10 @@ Singleton {
     readonly property string suit: suits[suitChoice] ? suitChoice : (on ? (info.suit ?? suitNames[0] ?? "") : "")
     readonly property string suitTitle: suits[suit]?.title ?? suit
     readonly property var suitColors: suits[suit]?.colors ?? ({})
+    function setSuit(n) {
+        suitChoice = n;
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "${1%/*}" && printf %s "$2" > "$1"', "sh", suitFile, n]);
+    }
     function nextSuit() {
         if (suitNames.length === 0) return;
         suitChoice = suitNames[(suitNames.indexOf(suit) + 1) % suitNames.length];

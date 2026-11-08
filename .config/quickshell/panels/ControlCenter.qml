@@ -37,6 +37,7 @@ SidePanel {
     property bool wifiOpen: false       // drop-down sections, closed each time the panel opens
     property bool btOpen: false
     property bool phoneOpen: false
+    property bool packOpen: false
     property var btAudio: []            // [{ id, name, active, profiles }] from BtProfile.sh list
     property bool mixerOpen: false
 
@@ -54,6 +55,7 @@ SidePanel {
             wifiOpen = false;
             btOpen = false;
             phoneOpen = false;
+            packOpen = false;
             mixerOpen = false;
             if (adapter?.discovering) adapter.discovering = false;
             return;
@@ -393,24 +395,64 @@ SidePanel {
             onClicked: Globals.keepAwake = !Globals.keepAwake
         }
 
+        // theme pack: click turns it on / off, the arrow lists the packs and suits
         Tile {
             glyph: 0xF0BCA                  // spider web
             label: "Theme pack"
-            detail: Pack.on ? Pack.title : "None, plain desktop"
+            detail: !Pack.on ? "None, plain desktop"
+                    : Pack.title + (Pack.suitNames.length > 1 ? " · " + Pack.suitTitle : "")
             on: Pack.on
-            tint: Pack.color
-            onClicked: Pack.next()
+            tint: Pack.suitColors.R ?? Pack.color
+            expandable: true
+            expanded: cc.packOpen
+            onClicked: Pack.set(Pack.on ? "none" : (Pack.available[0] ?? "none"))
+            onExpandClicked: cc.packOpen = !cc.packOpen
         }
 
-        // the pack's suits (colours of its figures), when it has more than one
-        Tile {
-            visible: Pack.suitNames.length > 1
-            glyph: 0xF0A7B                  // t-shirt: suit
-            label: "Suit"
-            detail: Pack.suitTitle
-            on: true
-            tint: Pack.suitColors.R ?? Pack.color
-            onClicked: Pack.nextSuit()
+        ColumnLayout {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            visible: cc.packOpen
+            spacing: 2
+
+            Heading { text: "Theme pack" }
+
+            Repeater {
+                model: ["none"].concat(Pack.available)
+
+                delegate: MenuRow {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    glyph: Pack.name === modelData ? String.fromCodePoint(0xF012C) : ""
+                    label: modelData === "none" ? "None, plain desktop"
+                           : Pack.name === modelData && Pack.info ? Pack.title
+                           : modelData.charAt(0).toUpperCase() + modelData.slice(1)
+                    dimmed: Pack.name !== modelData
+                    onActivated: Pack.set(modelData)
+                }
+            }
+
+            Heading {
+                visible: Pack.on && Pack.suitNames.length > 1
+                text: "Suit"
+            }
+
+            Repeater {
+                model: Pack.on ? Pack.suitNames : []
+
+                delegate: MenuRow {
+                    required property string modelData
+                    readonly property var suit: Pack.suits[modelData]
+                    Layout.fillWidth: true
+                    visible: Pack.suitNames.length > 1
+                    glyph: "●"                          // the suit's main colour
+                    glyphColor: suit.colors?.R ?? Pack.info.color ?? Theme.accent
+                    label: suit.title ?? modelData
+                    dimmed: Pack.suit !== modelData
+                    trailing: Pack.suit === modelData ? String.fromCodePoint(0xF012C) : ""
+                    onActivated: Pack.setSuit(modelData)
+                }
+            }
         }
 
         Tile {

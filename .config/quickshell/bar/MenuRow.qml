@@ -9,6 +9,7 @@ Rectangle {
 
     property string label: ""
     property string glyph: ""          // check / radio mark or a symbol
+    property color glyphColor: Theme.accent
     property string iconSource: ""     // app-provided icon
     property string trailing: ""       // › for submenus
     property bool dimmed: false
@@ -44,7 +45,7 @@ Rectangle {
                 anchors.centerIn: parent
                 visible: row.glyph !== ""
                 text: row.glyph
-                color: Theme.accent
+                color: row.glyphColor
             }
         }
 
