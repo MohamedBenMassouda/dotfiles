@@ -7,6 +7,10 @@
 mute=false
 $mute && exit 0
 
+# Your own sounds go in ~/.local/share/sounds/desktop/ (same file names) and win
+# over the built-in ones; that folder isn't in the dotfiles repo, so sounds you
+# don't own the rights to stay on this machine.
+own="$HOME/.local/share/sounds/desktop"
 dir="$HOME/.config/hypr/assets/sounds"
 case $1 in
   --screenshot) f=thwip.wav; vol=0.7 ;;
@@ -14,4 +18,5 @@ case $1 in
   --error) f=spider-sense.wav; vol=0.6 ;;
   *) echo "Available sounds: --screenshot, --notify, --error"; exit 0 ;;
 esac
+[[ -f $own/$f ]] && dir=$own
 exec pw-play --volume "$vol" "$dir/$f"
