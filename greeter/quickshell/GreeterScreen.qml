@@ -111,17 +111,8 @@ PanelWindow {
         anchors.topMargin: 10
         spacing: 12
 
-        // the mask squints while checking the password and blinks now and then
-        Mask {
-            Layout.alignment: Qt.AlignHCenter
-            implicitWidth: 72
-            implicitHeight: 88
-            open: win.greeter.busy ? 0.35 : win.greeter.failed ? 0.5 : 1
-        }
-
         Text {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 4
             text: "Welcome back,"
             color: Theme.dim
             font.family: Theme.font
