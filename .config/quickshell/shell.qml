@@ -53,6 +53,13 @@ ShellRoot {
         }
     }
 
+    // a spider that crawls along the top of empty workspaces
+    Variants {
+        model: Quickshell.screens
+
+        DesktopSpider {}
+    }
+
     // volume / media / brightness / toast flyout + notification popups
     Osd {}
 
