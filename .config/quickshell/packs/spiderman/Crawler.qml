@@ -8,12 +8,15 @@ import qs
 //   "cling"   upside down on the top edge, facing you, arms and legs spread
 //   "step1"/"step2"   alternate while crawling along the edge
 //   "hang"    hanging by his feet from a thread (dropped down)
+//   "swing"   one arm up on a web line (swinging between bar islands)
+// attachX: where the web line ties on, 0..1 across (his hand while swinging).
 // Each pixel is drawn `px` screen pixels; the size follows the pose.
 Canvas {
     id: root
 
     property string pose: "cling"
     property int px: 2
+    readonly property real attachX: pose === "swing" ? 13.5 / 16 : 0.5
     readonly property var rows: poses[pose] ?? poses.cling
 
     implicitWidth: rows[0].length * px
@@ -82,6 +85,30 @@ Canvas {
             "......RKKRRRKKR......",
             ".......RRRRRRR.......",
             "........RRRRR........"
+        ],
+        swing: [
+            ".....RRRRR...RR.",
+            "....RRRRRRR..WW.",
+            "...RKKRRRKKR.RR.",
+            "..RKEEKRKEEKRRR.",
+            "..RKEEEKEEEKRRR.",
+            "...RKKRRRKKR.RR.",
+            "....RRRRRRR..NN.",
+            ".....RDRDR...NN.",
+            "......RRR....NN.",
+            "..NRRRRWRRRRNNN.",
+            ".NNRWRWWWRWR....",
+            ".NNRRWWWWWRR....",
+            ".RN.WRRWRRW.....",
+            ".RN.RRWWWRR.....",
+            ".RN..RRWRR......",
+            ".WW..NNNNN......",
+            ".RR..NN.NN......",
+            ".....NN.NN......",
+            ".....NN.NN......",
+            ".....WW.WW......",
+            ".....RR.RR......",
+            "....RRR.RRR....."
         ],
         hang: [
             "....RRR.RRR....",

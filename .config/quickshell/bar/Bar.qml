@@ -29,8 +29,17 @@ PanelWindow {
         enabled: Globals.keepAwake || Globals.mediaPlaying
     }
 
+    // tell the desktop crawler where the islands are (empty while the bar is hidden)
+    readonly property var islandSpans: visible ? [[leftIsland.x, leftIsland.x + leftIsland.width], [centre.x, centre.x + centre.width], [right.x, right.x + right.width]] : []
+    onIslandSpansChanged: {
+        const all = Object.assign({}, Globals.islands);
+        all[bar.screen.name] = islandSpans;
+        Globals.islands = all;
+    }
+
     // left: pack mascot (app launcher), workspaces, cpu/memory, visualiser, open apps
     Island {
+        id: leftIsland
         anchors.left: parent.left
         anchors.leftMargin: 8
         y: Theme.gap
