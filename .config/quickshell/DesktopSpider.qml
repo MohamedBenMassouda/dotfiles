@@ -17,7 +17,7 @@ PanelWindow {
     readonly property var monitor: Hyprland.monitors.values.find(m => m.name === modelData.name)
     readonly property bool empty: (monitor?.activeWorkspace?.toplevels?.values.length ?? 1) === 0
 
-    visible: empty
+    visible: empty && Globals.spidey
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Normal        // starts under the bar, not behind it
     exclusiveZone: 0

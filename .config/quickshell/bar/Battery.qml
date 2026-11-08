@@ -19,7 +19,7 @@ Label {
     color: !charging && percent <= 15 ? Theme.urgent : Theme.battery
 
     // spider-sense: at 10 % or less (not charging), jagged lines pulse on both sides
-    readonly property bool tingling: !charging && percent <= 10
+    readonly property bool tingling: Globals.spidey && !charging && percent <= 10
     Repeater {
         model: root.tingling ? [-1, 1] : []
 

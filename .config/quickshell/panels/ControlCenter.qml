@@ -394,6 +394,15 @@ SidePanel {
         }
 
         Tile {
+            glyph: 0xF0BCA                  // spider web
+            label: "Spider-Man"
+            detail: Globals.spidey ? "Spiders, webs, thwips" : "Off, plain desktop"
+            on: Globals.spidey
+            tint: "#E23636"
+            onClicked: Globals.toggleSpidey()
+        }
+
+        Tile {
             glyph: 0xF03D5
             label: "Updates"
             detail: (Globals.updates > 0 ? Globals.updates + " available" : "Up to date")

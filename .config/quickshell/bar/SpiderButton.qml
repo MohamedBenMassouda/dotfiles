@@ -7,6 +7,7 @@ import qs
 Item {
     id: root
 
+    visible: Globals.spidey
     implicitWidth: 18
     implicitHeight: 18
 

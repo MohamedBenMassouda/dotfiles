@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import Quickshell.Services.UPower
@@ -17,6 +18,14 @@ Item {
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
 
     anchors.fill: parent
+
+    // Spider-Man touches off (see Globals.spidey): no mask
+    property bool spidey: true
+    FileView {
+        path: Quickshell.env("HOME") + "/.local/state/spidey-off"
+        printErrors: false
+        onLoaded: root.spidey = false
+    }
 
     SystemClock {
         id: clock
@@ -68,6 +77,7 @@ Item {
         // squints while checking, narrows and shakes on a wrong password, blinks
         Mask {
             id: mask
+            visible: root.spidey
             Layout.alignment: Qt.AlignHCenter
             Layout.bottomMargin: 10
             implicitWidth: 130

@@ -48,6 +48,7 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   CPU over 90 °C, update summary (Restart now after a kernel / driver update),
   lid closed with a monitor plugged in (laptop screen turns off), and terminal
   commands over 30 s finishing while you're on another window (Show).
+- **Spider-Man touches** (spider button, workspace spider, web corners, spider-sense, desktop spider, dropping notifications, lock mask, thwip sounds): on by default, one switch turns them all off: the **Spider-Man** tile in quick settings, or `qs ipc call panel spidey`.
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).

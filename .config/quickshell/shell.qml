@@ -32,6 +32,10 @@ ShellRoot {
             Globals.togglePanel(name);
         }
 
+        function spidey(): void {
+            Globals.toggleSpidey();
+        }
+
         function dnd(): void {
             Globals.dnd = !Globals.dnd;
         }

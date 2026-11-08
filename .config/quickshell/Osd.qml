@@ -138,7 +138,7 @@ Scope {
         mode = "toast";
         sticky = kind === "battery-low";
         if (senseKinds.includes(kind)) {
-            sense.restart();
+            if (Globals.spidey) sense.restart();
             Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Sounds.sh", "--error"]);
         }
         hideTimer.interval = x.timeout ?? (toast.actions.length ? 6000 : 2500);
@@ -561,6 +561,7 @@ Scope {
                     anchors.left: parent.left
                     anchors.margins: Theme.border
                     corner: 0
+                    visible: Globals.spidey
                 }
                 WebCorner {
                     z: 1
@@ -568,6 +569,7 @@ Scope {
                     anchors.right: parent.right
                     anchors.margins: Theme.border
                     corner: 3
+                    visible: Globals.spidey
                 }
 
                 // click anywhere on the card that isn't a button: dismiss

@@ -89,7 +89,8 @@ PanelWindow {
         Text {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 4
-            visible: hostname.text().trim() !== ""
+            // hidden with the Spider-Man touches off (greeter-sync copies the flag)
+            visible: hostname.text().trim() !== "" && !spideyOff.loaded
             text: "Your friendly neighborhood " + hostname.text().trim()
             color: "#E23636"
             font.family: Theme.font
@@ -99,6 +100,12 @@ PanelWindow {
             FileView {
                 id: hostname
                 path: "/etc/hostname"
+            }
+
+            FileView {
+                id: spideyOff
+                path: "/etc/greetd/greeter/spidey-off"
+                printErrors: false
             }
         }
     }
