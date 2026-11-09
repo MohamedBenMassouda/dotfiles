@@ -11,6 +11,7 @@ Lists, sorted by name:
 """
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -131,6 +132,41 @@ def all_games():
     return sorted(games, key=lambda g: g[0].lower())
 
 
+# Saves live in the same places whichever way a game is started: plain Wine
+# (opening the .exe in Thunar uses ~/.wine, whose Documents is ~/Documents) or
+# this launcher (Proton, one prefix per game). Each prefix's save folders are
+# links to those; whatever a prefix had there first is moved to
+# <prefix>/saves-before-link/ (files the shared folders didn't have are copied
+# there first), never deleted.
+HOME = os.path.expanduser("~")
+SHARED_SAVES = {
+    "Documents": f"{HOME}/Documents",
+    "AppData/Roaming": f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}/AppData/Roaming",
+    "AppData/LocalLow": f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}/AppData/LocalLow",
+}
+
+
+def share_saves(prefix):
+    user = f"{prefix}/drive_c/users/steamuser"
+    backup = f"{prefix}/saves-before-link"
+    for rel, target in SHARED_SAVES.items():
+        os.makedirs(target, exist_ok=True)
+        path = f"{user}/{rel}"
+        if os.path.islink(path):
+            if os.path.realpath(path) == os.path.realpath(target):
+                continue
+            os.unlink(path)
+        elif os.path.exists(path):
+            # files the shared folder doesn't have yet (e.g. a first run's saves)
+            # are copied over, never overwriting; then the folder goes to the backup
+            shutil.copytree(path, target, symlinks=True, dirs_exist_ok=True,
+                            copy_function=lambda src, dst: os.path.exists(dst) or shutil.copy2(src, dst))
+            os.makedirs(f"{backup}/{os.path.dirname(rel)}", exist_ok=True)
+            os.rename(path, f"{backup}/{rel}")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.symlink(target, path)
+
+
 def launch(game):
     name, _icon, cmd, extra = game
     env, cwd = dict(os.environ), None
@@ -141,6 +177,8 @@ def launch(game):
         exe, slug = extra
         prefix = f"{PREFIXES}/{slug}"
         os.makedirs(prefix, exist_ok=True)
+        if os.path.isdir(f"{prefix}/drive_c/users/steamuser"):   # new prefixes: after their first run
+            share_saves(prefix)
         env.update(WINEPREFIX=prefix, GAMEID="umu-default")
         cwd = os.path.dirname(exe)
     subprocess.Popen(cmd, env=env, cwd=cwd, start_new_session=True,
