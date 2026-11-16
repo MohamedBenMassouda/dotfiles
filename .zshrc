@@ -109,6 +109,7 @@ export CHROME_EXECUTABLE="google-chrome-stable"
 
 # setopt correct_all
 export PATH=$HOME/.dotnet/tools:$PATH
+export PATH="$HOME/.local/bin:$PATH"   # uv tool install … (rep)
 source ~/.config/completion-for-pnpm.zsh
 
 alias python="python3.12"
