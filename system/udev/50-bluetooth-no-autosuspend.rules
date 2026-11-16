@@ -1,0 +1,5 @@
+# Realtek RTL8822CU Bluetooth (0bda:b00c): USB power saving breaks wideband
+# (mSBC) call audio: headset calls go silent ("SCO packet for unknown
+# connection handle"). Keep it powered.
+# Install: sudo cp ~/dotfiles/system/udev/50-bluetooth-no-autosuspend.rules /etc/udev/rules.d/
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="b00c", TEST=="power/control", ATTR{power/control}="on"

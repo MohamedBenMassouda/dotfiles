@@ -344,7 +344,7 @@ SidePanel {
                     required property var modelData
                     readonly property var labels: ({
                         "a2dp-sink": "Music · AAC", "a2dp-sink-sbc_xq": "Music · SBC-XQ", "a2dp-sink-sbc": "Music · SBC",
-                        "headset-head-unit": "Calls", "headset-head-unit-cvsd": "Calls · CVSD"
+                        "headset-head-unit": "Calls · mSBC", "headset-head-unit-cvsd": "Calls · CVSD"
                     })
                     text: labels[modelData.name] ?? modelData.description
                     on: btRow.audio.active === modelData.name

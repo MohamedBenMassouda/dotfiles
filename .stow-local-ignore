@@ -8,3 +8,4 @@ bootstrap\.sh
 packages\.txt
 flatpaks\.txt
 greeter
+system
