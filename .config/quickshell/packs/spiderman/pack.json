@@ -82,53 +82,124 @@
       "Rent's due, homework's due, and I'm on a wallpaper.",
       "Ceiling's my favourite floor.",
       "If you need me, I'll be upside down.",
-      "Okay, who keeps closing all the windows on me?"
+      "Okay, who keeps closing all the windows on me?",
+      "Hey! Personal space. I'm upside down here.",
+      "You're hovering. I'm hovering. We're both hovering.",
+      "Did you know spiders have eight eyes? I have two. Big ones though.",
+      "I'd make small talk, but my mask muffles everything.",
+      "Is it just me or is this wallpaper really nice up close?",
+      "Patrol report: zero crimes on this workspace.",
+      "I could swing down there, but the view's better from up here.",
+      "Don't mind me, just running diagnostics on the ceiling.",
+      "My spider-sense says you're avoiding work. Kidding! Mostly.",
+      "Fun fact: I've never once been stuck in a web. Okay, twice.",
+      "This is my desk too, you know. I pay rent in thwips.",
+      "Look ma, no hands! ...wait, I need those.",
+      "Swing by any time. Get it? Swing?",
+      "Ugh, I left my backpack on a rooftop again.",
+      "If anyone asks, I was never here.",
+      "Hanging out. Again. It's kind of my thing.",
+      "Wanna know a secret? The suit itches.",
+      "Somewhere a pizza is getting cold and I can feel it.",
+      "Don't worry, I double-checked the web. Triple, actually.",
+      "Quick question: is upside-down coffee a thing?",
+      "Workspace secure. Snacks, however, are not.",
+      "My Aunt says I should get more sun. I'm on a screen.",
+      "Ever tried hanging upside down for an hour? Blood. Rushes.",
+      "Thwip. Just practising.",
+      "You know, with great desktop comes great responsibility."
     ],
     "cpu": [
       "Something's chewing the CPU and it isn't me.",
       "My spider-sense is tingling... and so is your fan.",
       "That process has been lifting weights for minutes. Suspicious.",
       "Either a tab's stuck in a loop or it's mining something. Bad vibes either way.",
-      "It's getting hot in here. Wasn't the suit."
+      "It's getting hot in here. Wasn't the suit.",
+      "Someone's making your processor do push-ups.",
+      "Your laptop is warmer than a Queens summer.",
+      "A process went full villain mode. Want me to web it?",
+      "CPU's sprinting like it's late for school. Again.",
+      "This much CPU? Even my metabolism isn't that fast.",
+      "I'd tell it to calm down, but it doesn't listen to me either.",
+      "Something's hogging the CPU. Rude.",
+      "Fan's about to achieve liftoff. Just saying."
     ],
     "ram": [
       "Memory's almost full. Even my web has limits.",
       "RAM is tighter than my suit after laundry day.",
-      "Running out of memory. Close a few things before it gets messy."
+      "Running out of memory. Close a few things before it gets messy.",
+      "Your memory's fuller than my inbox from J. Jonah.",
+      "Too many tabs open. Pick your battles.",
+      "RAM's almost gone. Like my free time.",
+      "Memory's packed tighter than a subway at rush hour.",
+      "Close something before the whole city slows down."
     ],
     "service": [
       "Something in the background just fell over.",
       "A service went down. Not on my watch... well, kind of on my watch.",
-      "Background service failed. Want me to look the other way? Kidding, check it."
+      "Background service failed. Want me to look the other way? Kidding, check it.",
+      "Something crashed in the background. Not it, sir!",
+      "A service tripped over its own web.",
+      "Background hiccup detected. I'd investigate, but no badge.",
+      "One of the gears just slipped. Worth a look."
     ],
     "focusStart": [
       "Mission started. I'll keep the notifications off your back.",
       "Focus mode. No villains, no pings, just you.",
-      "Lowering in slowly. When I hit the bottom, take a break."
+      "Lowering in slowly. When I hit the bottom, take a break.",
+      "Mask on, notifications off. Let's do this.",
+      "Crunch time. I'll be very quiet. Mostly.",
+      "Going into stealth mode. Even I won't talk.",
+      "Twenty-five minutes. You got this, hero.",
+      "Focus like you've got a test tomorrow. Because maybe you do."
     ],
     "focusEnd": [
       "Mission accomplished! Stretch those legs, hero.",
       "Time's up. Even I take breaks between rooftops.",
-      "Nice work. Go grab a snack, I'll guard the desk."
+      "Nice work. Go grab a snack, I'll guard the desk.",
+      "Break time! Even superheroes need snacks.",
+      "You did it! Go look at something that isn't a screen.",
+      "Quick stretch. Pretend you're crawling on a ceiling.",
+      "That's a wrap. Hydrate, hero.",
+      "Five minutes off. I won't tell anyone."
     ],
     "tracer": [
       "Found it!",
       "Spider-tracer locked on.",
-      "There it is. Thwip!"
+      "There it is. Thwip!",
+      "Gotcha!",
+      "Right where I left it.",
+      "Tracer says: here.",
+      "Can't hide from the spider-sense.",
+      "Pointer located. Crime averted."
     ],
     "gameStart": [
-      "Swinging into {game}\u2026",
+      "Swinging into {game}…",
       "Thwip! Loading {game}.",
       "Suit up, it's {game} time.",
       "Off to {game}. Try not to break anything.",
-      "Web-slinging over to {game}."
+      "Web-slinging over to {game}.",
+      "Hang tight, {game} is loading.",
+      "Suiting up for {game}. Gloves on.",
+      "Swinging past traffic to get to {game}.",
+      "Off the clock, into {game}.",
+      "Loading {game}. Snacks ready?",
+      "One thwip away from {game}.",
+      "Patrol can wait. {game} can't."
     ],
     "gameEnd": [
       "Back from {game}. City's still standing.",
       "Welcome back, hero.",
       "Nice session. Go drink some water.",
       "And... we're back.",
-      "{game} survived you. Barely."
+      "{game} survived you. Barely.",
+      "You're back! How'd {game} go?",
+      "Hope {game} went better than my last fight.",
+      "Back to the real world. It missed you.",
+      "Game over? More like game... later.",
+      "Good session. The city thanks you.",
+      "{game} is done. Stretch those fingers.",
+      "Welcome home. I kept your desktop warm."
     ]
   }
 }
