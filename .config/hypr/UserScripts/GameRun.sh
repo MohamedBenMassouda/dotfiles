@@ -6,14 +6,17 @@
 #   it already was, and back off when the game exits
 # - gamemoderun (CPU governor boost while it runs)
 # - --gamescope: inside gamescope at the focused monitor's size and refresh rate
-# - --hud: MangoHud overlay (fps, frame times, CPU/GPU temperature and load, RAM/VRAM)
+# - MangoHud (fps, frame times, CPU/GPU temperature and load, RAM/VRAM) is always
+#   loaded, hidden; Shift+F12 in the game shows / hides it, --hud starts it shown
 # - the time played is added to ~/.local/state/game-launcher.json
 scope=false hud=false
 while [[ ${1:-} == --* ]]; do
   case $1 in --gamescope) scope=true ;; --hud) hud=true ;; esac
   shift
 done
-export MANGOHUD_CONFIG="fps,frametime,frame_timing=1,cpu_temp,gpu_temp,cpu_stats,gpu_stats,ram,vram,position=top-left"
+# toggle_hud: MangoHud reads the key itself while the game window has focus
+export MANGOHUD_CONFIG="toggle_hud=Shift_L+F12,fps,frametime,frame_timing=1,cpu_temp,gpu_temp,cpu_stats,gpu_stats,ram,vram,position=top-left"
+$hud || MANGOHUD_CONFIG+=",no_display"
 name=$1; shift
 scripts="$HOME/.config/hypr/scripts"
 state="$HOME/.local/state/game-launcher.json"
@@ -23,13 +26,10 @@ if [[ $(hyprctl repl 'hl.get_config("animations.enabled")' 2>/dev/null) == true 
   "$scripts/GameMode.sh" && turned_on=true
 fi
 
-cmd=(gamemoderun "$@")
-$hud && ! $scope && cmd=(mangohud "${cmd[@]}")
+cmd=(mangohud gamemoderun "$@")
 if $scope; then
   read -r w h r < <(hyprctl monitors -j | jq -r '.[] | select(.focused) | "\(.width) \(.height) \(.refreshRate | floor)"')
-  hudopt=()
-  $hud && hudopt=(--mangoapp)
-  cmd=(gamescope -W "${w:-1920}" -H "${h:-1080}" -r "${r:-60}" -f --force-grab-cursor "${hudopt[@]}" -- "${cmd[@]}")
+  cmd=(gamescope -W "${w:-1920}" -H "${h:-1080}" -r "${r:-60}" -f --force-grab-cursor -- "${cmd[@]}")
 fi
 
 # flyout with the game's icon (GAME_ICON from the launcher) and a line from the
