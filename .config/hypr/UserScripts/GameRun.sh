@@ -22,8 +22,8 @@ scripts="$HOME/.config/hypr/scripts"
 state="$HOME/.local/state/game-launcher.json"
 
 turned_on=false
-if [[ $(hyprctl repl 'hl.get_config("animations.enabled")' 2>/dev/null) == true ]]; then
-  "$scripts/GameMode.sh" && turned_on=true
+if [[ ! -e ${XDG_RUNTIME_DIR:-/tmp}/desktop-pack-paused ]]; then
+  "$scripts/GameMode.sh" on && turned_on=true
 fi
 
 cmd=(mangohud gamemoderun "$@")
@@ -82,7 +82,7 @@ wait "$gpid"
 played=$(( $(date +%s) - start ))
 if ! $opened && (( played < 20 )); then
   say "$name closed while loading" "It didn't open a window. Try Alt+Enter (without gamescope)"
-  $turned_on && "$scripts/GameMode.sh"
+  $turned_on && "$scripts/GameMode.sh" off
   exit 0
 fi
 
@@ -94,5 +94,5 @@ mkdir -p "${state%/*}"
 jq --arg n "$name" --argjson s "$played" --argjson now "$(date +%s)" \
   '.[$n].played = ((.[$n].played // 0) + $s) | .[$n].last = $now' "$state" > "$state.tmp" && mv "$state.tmp" "$state"
 
-$turned_on && "$scripts/GameMode.sh"
+$turned_on && "$scripts/GameMode.sh" off
 exit 0

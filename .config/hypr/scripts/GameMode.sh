@@ -6,8 +6,15 @@ notif="$HOME/.config/hypr/assets/images/ja.png"
 SCRIPTSDIR="$HOME/.config/hypr/scripts"
 
 
-HYPRGAMEMODE=$(hyprctl repl 'hl.get_config("animations.enabled")')
-if [ "$HYPRGAMEMODE" = true ] ; then
+# GameMode.sh [on|off|toggle]. The pack's pause flag is the game mode state, not
+# animations.enabled: a config reload turns animations back on mid-game, and a toggle
+# reading them then switched game mode on when the game ended (couch mode stayed off).
+paused="${XDG_RUNTIME_DIR:-/tmp}/desktop-pack-paused"
+mode=${1:-toggle}
+if [ "$mode" = toggle ]; then
+    if [ -e "$paused" ]; then mode=off; else mode=on; fi
+fi
+if [ "$mode" = on ] ; then
     hyprctl eval '
       hl.config({
         animations = { enabled = false },
