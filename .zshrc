@@ -16,6 +16,7 @@ zinit light zsh-users/zsh-autosuggestions
 fpath=(
     $fpath
     $HOME/.local/share/zsh/generated_man_completions
+    $HOME/.local/share/zsh/site-functions
 )
 
 # Load completions
