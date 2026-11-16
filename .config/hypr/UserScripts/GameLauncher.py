@@ -337,6 +337,19 @@ def share_all_saves():
     return True
 
 
+def prepare_prefix(name, prefix, env):
+    """A new game's prefix is made before its first run, so its save folders can be
+    linked to the Windows ones first (else the first run saves inside the prefix and
+    doesn't see the Windows save). wineboot sets up the prefix in a few seconds."""
+    if os.path.isdir(f"{prefix}/drive_c/users/steamuser"):
+        return
+    subprocess.run(["qs", "ipc", "call", "osd", "rich", "game", f"Setting up {name}",
+                    "First launch: linking your Windows saves", json.dumps({"sticky": True})],
+                   capture_output=True)
+    subprocess.run(["umu-run", "wineboot", "-u"], env=env, stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, timeout=600)
+
+
 def launch(game, gamescope=False, hud=False):
     name, icon, cmd, extra = game
     mark_played(name)
@@ -349,12 +362,14 @@ def launch(game, gamescope=False, hud=False):
         exe, slug = extra
         prefix = f"{PREFIXES}/{slug}"
         os.makedirs(prefix, exist_ok=True)
-        if not share_all_saves():
-            notify(f"Windows drive isn't mounted at {WINDOWS}: not starting, the game couldn't save")
-            return
         env.update(WINEPREFIX=prefix, GAMEID="umu-default")
         cwd = os.path.dirname(exe)
         rom = switch_rom(exe)
+        if not (rom and gamescope and eden_installed()):
+            prepare_prefix(name, prefix, env)
+        if not share_all_saves():
+            notify(f"Windows drive isn't mounted at {WINDOWS}: not starting, the game couldn't save")
+            return
         if rom and gamescope and eden_installed():
             # Switch game: native Eden, fullscreen (its own window, no gamescope);
             # Alt+Enter (gamescope=False) keeps the Windows emulator
