@@ -279,8 +279,10 @@ def subtitle(game, stats):
 # prefix per game). Each prefix's save folders are links to the Windows ones;
 # whatever a prefix had there first is moved to <prefix>/saves-before-link/
 # (files Windows didn't have are copied over first), never deleted.
-# Wine can reset ~/.wine's links when it updates the prefix: every launcher
-# start re-links it, or run `GameLauncher.py --share-saves`.
+# Games added to Steam and started from Steam get the same links. Wine can
+# reset ~/.wine's links when it updates the prefix. Links are (re)made at login
+# (UserConfigs/Startup_Apps.lua), on every launcher start, or with
+# `GameLauncher.py --share-saves`.
 WINDOWS = "/mnt/Windows"
 WINDOWS_HOME = f"{WINDOWS}/Users/WINDOWS_USER"
 SAVE_DIRS = ["Documents", "Saved Games", "AppData/Roaming", "AppData/Local", "AppData/LocalLow"]
@@ -301,8 +303,16 @@ def share_saves(user):
         elif os.path.exists(path):
             # files the shared folder doesn't have yet (e.g. a first run's saves)
             # are copied over, never overwriting; then the folder goes to the backup
-            shutil.copytree(path, target, symlinks=True, dirs_exist_ok=True,
-                            copy_function=lambda src, dst: os.path.exists(dst) or shutil.copy2(src, dst))
+            # (folder links like Proton's Documents/Music are skipped: never saves,
+            # and the Windows drive refuses them)
+            # (Wine's own files can hit read-only Windows system folders: skipped,
+            # they stay in the backup like everything else)
+            try:
+                shutil.copytree(path, target, dirs_exist_ok=True,
+                                ignore=lambda d, names: [n for n in names if os.path.islink(os.path.join(d, n))],
+                                copy_function=lambda src, dst: os.path.exists(dst) or shutil.copy2(src, dst))
+            except shutil.Error:
+                pass
             os.makedirs(f"{backup}/{os.path.dirname(rel)}", exist_ok=True)
             os.rename(path, f"{backup}/{rel}")
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -313,8 +323,15 @@ def share_all_saves():
     """False when the Windows drive isn't there (links would point nowhere and saves get lost)."""
     if not os.path.ismount(WINDOWS):
         return False
-    for user in [WINE_USER] + [f"{p}/drive_c/users/steamuser" for p in
-                               (f"{PREFIXES}/{d}" for d in os.listdir(PREFIXES))]:
+    users = [WINE_USER] + [f"{PREFIXES}/{d}/drive_c/users/steamuser" for d in os.listdir(PREFIXES)]
+    # games added to Steam ("non-Steam games"): Steam gives them ids from 2^31 up,
+    # real Steam games keep their own prefix (Steam Cloud handles those)
+    for lib in steam_libraries():
+        data = f"{lib}/steamapps/compatdata"
+        if os.path.isdir(data):
+            users += [f"{data}/{d}/pfx/drive_c/users/steamuser" for d in os.listdir(data)
+                      if d.isdigit() and int(d) >= 2**31]
+    for user in users:
         if os.path.isdir(user):   # new prefixes: after their first run
             share_saves(user)
     return True
