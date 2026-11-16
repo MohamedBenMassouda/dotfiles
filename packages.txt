@@ -110,6 +110,7 @@ docker
 lazygit
 
 [games]
+python-evdev        # controller on the desktop (scripts/ControllerDesk.py)
 # Windows games from /mnt/Data/Games (game launcher: SUPER+CTRL+G)
 umu-launcher
 
