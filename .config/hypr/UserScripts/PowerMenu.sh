@@ -14,7 +14,7 @@ choice=$(applet $'\U000F0150'" Up $(uptime -p | sed 's/^up //')" \
 case "$choice" in
   0) "$HOME/.config/hypr/scripts/LockScreen.sh" ;;
   1) systemctl suspend ;;
-  2) confirm "Log out?" && hyprshutdown -t 'Logging out...' ;;
-  3) confirm "Restart?" && hyprshutdown -t 'Restarting...' --post-cmd 'systemctl reboot' ;;
-  4) confirm "Shut down?" && hyprshutdown -t 'Shutting down...' --post-cmd 'systemctl poweroff' ;;
+  2) confirm "Log out?" && "$HOME/.config/hypr/scripts/Power.sh" logout ;;
+  3) confirm "Restart?" && "$HOME/.config/hypr/scripts/Power.sh" reboot ;;
+  4) confirm "Shut down?" && "$HOME/.config/hypr/scripts/Power.sh" poweroff ;;
 esac

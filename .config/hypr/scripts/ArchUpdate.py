@@ -101,7 +101,7 @@ def report(log, start):
     if restart:
         extra = {"timeout": 15000, "actions": [
             {"label": "Restart now", "glyph": 0xF0709,
-             "cmd": ["hyprshutdown", "-t", "Restarting...", "--post-cmd", "systemctl reboot"]},
+             "cmd": [str(Path.home() / ".config/hypr/scripts/Power.sh"), "reboot"]},
             {"label": "Later", "cmd": ["true"]}]}
         sub = "Restart for the new " + ", ".join(restart[:3])
     else:

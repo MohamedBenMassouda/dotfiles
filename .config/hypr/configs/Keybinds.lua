@@ -5,10 +5,10 @@ local exec = hl.dsp.exec_cmd
 local bind = lib.bind
 local function m(keys) return "SUPER + " .. keys end
 
--- Power: hyprshutdown closes apps gracefully first
-bind("CTRL + ALT + Delete", "Log out", exec("hyprshutdown -t 'Logging out...'"))
-bind("CTRL + ALT + End", "Shut down", exec("hyprshutdown -t 'Shutting down...' --post-cmd 'systemctl poweroff'"))
-bind("CTRL + ALT + Home", "Restart", exec("hyprshutdown -t 'Restarting...' --post-cmd 'systemctl reboot'"))
+-- Power: apps close gracefully first (scripts/Power.sh, hyprshutdown)
+bind("CTRL + ALT + Delete", "Log out", exec(s .. "/Power.sh logout"))
+bind("CTRL + ALT + End", "Shut down", exec(s .. "/Power.sh poweroff"))
+bind("CTRL + ALT + Home", "Restart", exec(s .. "/Power.sh reboot"))
 bind("CTRL + ALT + P", "Power menu", exec(lib.UserScripts .. "/PowerMenu.sh"))
 bind("CTRL + ALT + L", "Lock screen", exec(s .. "/LockScreen.sh"))
 
