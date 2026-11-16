@@ -4,6 +4,7 @@
 \.gitmodules
 \.stow-local-ignore
 README\.md
+CLAUDE\.md
 bootstrap\.sh
 packages\.txt
 flatpaks\.txt
