@@ -33,7 +33,7 @@ system/               files for /etc (udev rules…); never stowed, installed by
 .config/quickshell/   the desktop shell (QML)
 .config/wallust/      colour templates (wallpaper → colours for hypr, rofi, quickshell, kitty, gtk, firefox)
 .config/wireplumber/  audio rules (wireplumber.conf.d/5x-*.conf)
-.config/systemd/user/ quickshell.service, workout.service/.timer
+.config/systemd/user/ quickshell.service
 .config/uwsm/env      session environment
 .local/share/applications/  desktop entry overrides
 .zshrc .tmux.conf     shell (the Neovim config is a separate repo, cloned by bootstrap)
@@ -126,9 +126,10 @@ no copied artwork or film dialogue.
   Alt+Enter = without, Shift+Enter = MangoHud shown (Alt+R toggles in game). GameRun: game
   mode, gamemoderun, sticky loading flyout until the game's window appears, playtime in
   `~/.local/state/game-launcher.json`. `--list` prints what it finds.
-- `Workout.py` (+ `workout.timer`, every 3 min): calisthenics challenges, ladders, weekly
-  caps, max test. It has its own stricter contract in `.config/hypr/scripts/CLAUDE.md`: read it
-  before touching the file.
+- Training is **rep**, a separate repo (`/mnt/Data/Programming/Python/rep`, installed with
+  `uv tool install`, its own CLAUDE.md). Here only the Training tile in `ControlCenter.qml`
+  calls `~/.local/bin/rep`, and `~/.config/rep/config.toml` (not in this repo, holds personal
+  data) sets `line_command = "~/.config/hypr/scripts/Pack.sh quip {kind}"` for pack lines.
 - `ControllerDesk.py`: couch mode (controller drives the desktop when no game; Home = game
   launcher; View+Menu toggles). Needs python-evdev; reads devices without grabbing.
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for
