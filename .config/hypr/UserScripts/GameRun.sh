@@ -14,6 +14,10 @@ while [[ ${1:-} == --* ]]; do
   case $1 in --gamescope) scope=true ;; --hud) hud=true ;; esac
   shift
 done
+# NVIDIA under Proton: NVAPI on, so games see the real GeForce (Proton otherwise reports
+# an AMD card) and can use DLSS / Reflex like on Windows; and keep the shader cache
+# instead of trimming it at 1 GB (Unreal Engine 5 games rebuild shaders every launch otherwise)
+export PROTON_ENABLE_NVAPI=1 __GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1
 # toggle_hud: MangoHud reads the key itself while the game window has focus
 export MANGOHUD_CONFIG="toggle_hud=Alt_L+r,fps,frametime,frame_timing=1,cpu_temp,gpu_temp,cpu_stats,gpu_stats,ram,vram,position=top-left"
 $hud || MANGOHUD_CONFIG+=",no_display"
