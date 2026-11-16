@@ -272,24 +272,26 @@ def subtitle(game, stats):
     return " · ".join(parts)
 
 
-# Saves live in the same places whichever way a game is started: plain Wine
-# (opening the .exe in Thunar uses ~/.wine, whose Documents is ~/Documents) or
-# this launcher (Proton, one prefix per game). Each prefix's save folders are
-# links to those; whatever a prefix had there first is moved to
-# <prefix>/saves-before-link/ (files the shared folders didn't have are copied
-# there first), never deleted.
-HOME = os.path.expanduser("~")
-SHARED_SAVES = {
-    "Documents": f"{HOME}/Documents",
-    "AppData/Roaming": f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}/AppData/Roaming",
-    "AppData/LocalLow": f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}/AppData/LocalLow",
-}
+# Saves are the Windows install's own folders, so a game continues where it
+# left off on either system. The Windows drive is mounted at /mnt/Windows
+# (/etc/fstab). Both ways of starting a game on Linux use them: plain Wine
+# (opening the .exe in Thunar uses ~/.wine) and this launcher (Proton, one
+# prefix per game). Each prefix's save folders are links to the Windows ones;
+# whatever a prefix had there first is moved to <prefix>/saves-before-link/
+# (files Windows didn't have are copied over first), never deleted.
+# Wine can reset ~/.wine's links when it updates the prefix: every launcher
+# start re-links it, or run `GameLauncher.py --share-saves`.
+WINDOWS = "/mnt/Windows"
+WINDOWS_HOME = f"{WINDOWS}/Users/WINDOWS_USER"
+SAVE_DIRS = ["Documents", "Saved Games", "AppData/Roaming", "AppData/Local", "AppData/LocalLow"]
+WINE_USER = f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}"
 
 
-def share_saves(prefix):
-    user = f"{prefix}/drive_c/users/steamuser"
-    backup = f"{prefix}/saves-before-link"
-    for rel, target in SHARED_SAVES.items():
+def share_saves(user):
+    """user: a prefix's drive_c/users/<name> folder."""
+    backup = f"{os.path.dirname(os.path.dirname(os.path.dirname(user)))}/saves-before-link"
+    for rel in SAVE_DIRS:
+        target = f"{WINDOWS_HOME}/{rel}"
         os.makedirs(target, exist_ok=True)
         path = f"{user}/{rel}"
         if os.path.islink(path):
@@ -307,6 +309,17 @@ def share_saves(prefix):
         os.symlink(target, path)
 
 
+def share_all_saves():
+    """False when the Windows drive isn't there (links would point nowhere and saves get lost)."""
+    if not os.path.ismount(WINDOWS):
+        return False
+    for user in [WINE_USER] + [f"{p}/drive_c/users/steamuser" for p in
+                               (f"{PREFIXES}/{d}" for d in os.listdir(PREFIXES))]:
+        if os.path.isdir(user):   # new prefixes: after their first run
+            share_saves(user)
+    return True
+
+
 def launch(game, gamescope=False, hud=False):
     name, icon, cmd, extra = game
     mark_played(name)
@@ -319,8 +332,9 @@ def launch(game, gamescope=False, hud=False):
         exe, slug = extra
         prefix = f"{PREFIXES}/{slug}"
         os.makedirs(prefix, exist_ok=True)
-        if os.path.isdir(f"{prefix}/drive_c/users/steamuser"):   # new prefixes: after their first run
-            share_saves(prefix)
+        if not share_all_saves():
+            notify(f"Windows drive isn't mounted at {WINDOWS}: not starting, the game couldn't save")
+            return
         env.update(WINEPREFIX=prefix, GAMEID="umu-default")
         cwd = os.path.dirname(exe)
         rom = switch_rom(exe)
@@ -361,6 +375,8 @@ def menu_toggle(name):
 
 
 def main():
+    if "--share-saves" in sys.argv:
+        sys.exit(0 if share_all_saves() else f"{WINDOWS} isn't mounted")
     if "--list" not in sys.argv and not menu_toggle("games"):
         return
     games = all_games()

@@ -121,8 +121,8 @@ no copied artwork or film dialogue.
   Hyprland it gets killed with it → black screen). Used by keybinds, power menu, updates.
 - `ArchUpdate.py`: Arch news first, `yay -Syu`, then a flyout (restart button for kernel/driver).
 - `GameLauncher.py` (SUPER+CTRL+G) + `GameRun.sh`: Steam, Steam shortcuts, Windows games in
-  `/mnt/Data/Games` via umu-run (prefix per game in `/mnt/Data/Games/.umu/<slug>`, saves
-  linked to `~/.wine` / `~/Documents`), Switch games in the Eden Flatpak. Enter = gamescope,
+  `/mnt/Data/Games` via umu-run (prefix per game in `/mnt/Data/Games/.umu/<slug>`; saves of
+  prefixes and `~/.wine` link to the Windows user folders on `/mnt/Windows`, fstab), Switch games in the Eden Flatpak. Enter = gamescope,
   Alt+Enter = without, Shift+Enter = MangoHud shown (Alt+R toggles in game). GameRun: game
   mode, gamemoderun, sticky loading flyout until the game's window appears, playtime in
   `~/.local/state/game-launcher.json`. `--list` prints what it finds.
