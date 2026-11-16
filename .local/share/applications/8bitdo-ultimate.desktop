@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=8BitDo Ultimate Software
+Comment=Controller profiles and button mapping (Windows app under Proton)
+Exec=/home/monarch/.config/hypr/UserScripts/8BitDo.sh
+Icon=input-gaming
+Categories=Utility;Settings;
