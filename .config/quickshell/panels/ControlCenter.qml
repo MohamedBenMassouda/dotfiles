@@ -40,7 +40,7 @@ SidePanel {
     property bool btOpen: false
     property bool phoneOpen: false
     property bool packOpen: false
-    property var workout: ({ done: 0, streak: 0, skills: {}, trained: [] })
+    property var workout: ({ done: 0, streak: 0, skills: {}, trained: [], sessions: {} })
     property bool trainingOpen: false
     property bool repReady: false       // false until `rep init` has set up a profile
     Process {
@@ -498,22 +498,21 @@ SidePanel {
             visible: cc.trainingOpen
             spacing: 2
 
+            // one row per training day from `rep routine` (rep init asks for it); ✓ = logged today
             Heading { text: "Trained today" }
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 6
-                Repeater {
-                    model: [["upper", "Upper"], ["legs", "Legs"], ["full", "Full body"]]
-                    delegate: SmallButton {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        implicitHeight: 30
-                        text: modelData[1]
-                        on: cc.workout.trained.includes(modelData[0])
-                        onClicked: {
-                            cc.run([cc.rep, "session", modelData[0]]);
-                            cc.workout = Object.assign({}, cc.workout, { trained: cc.workout.trained.concat([modelData[0]]) });
-                        }
+            Repeater {
+                model: Object.keys(cc.workout.sessions || {})
+                delegate: MenuRow {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    readonly property bool done: cc.workout.trained.includes(modelData)
+                    glyph: String.fromCodePoint(done ? 0xF012C : 0xF0FD7)
+                    label: modelData + " · " + cc.workout.sessions[modelData]
+                    dimmed: done
+                    onActivated: {
+                        if (done) return;
+                        cc.run([cc.rep, "session", modelData]);
+                        cc.workout = Object.assign({}, cc.workout, { trained: cc.workout.trained.concat([modelData]) });
                     }
                 }
             }
