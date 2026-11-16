@@ -16,6 +16,7 @@ usual) and, only while no game is running, sends keyboard / mouse input:
 $XDG_RUNTIME_DIR/desktop-pack-paused, set by GameMode.sh and AutoGameMode.lua).
 Needs python-evdev (sudo pacman -S python-evdev).
 """
+import fcntl
 import os
 import selectors
 import subprocess
@@ -35,6 +36,7 @@ GAME_FLAG = f"{RUNTIME}/desktop-pack-paused"
 OFF_FLAG = f"{RUNTIME}/controller-desk-off"          # couch mode switched off (Select+Start)
 LAUNCHER = f"{HOME}/.config/hypr/UserScripts/GameLauncher.py"
 VIRTUAL_NAME = "ControllerDesk virtual input"
+LOCK = f"{RUNTIME}/controller-desk.lock"   # one copy only: a second start exits
 
 DEADZONE = 0.20          # of the stick's range: ignores drift
 POINTER_SPEED = 1400     # px per second at full tilt
@@ -97,6 +99,12 @@ def stick(x, y):
 
 
 def main():
+    lock = open(LOCK, "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return                    # already running
+
     out = evdev.UInput({
         e.EV_KEY: sorted({k for keys in BUTTON_KEYS.values() for k in keys}
                          | {k for pair in HAT_KEYS.values() for k in pair}
