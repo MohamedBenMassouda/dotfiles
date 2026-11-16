@@ -127,7 +127,8 @@ no copied artwork or film dialogue.
   mode, gamemoderun, sticky loading flyout until the game's window appears, playtime in
   `~/.local/state/game-launcher.json`. `--list` prints what it finds.
 - `Workout.py` (+ `workout.timer`, every 3 min): calisthenics challenges, ladders, weekly
-  caps, max test. `--selftest`; test flows with `HOME=<scratch>` so real data stays clean.
+  caps, max test. It has its own stricter contract in `.config/hypr/scripts/CLAUDE.md`: read it
+  before touching the file.
 - `ControllerDesk.py`: couch mode (controller drives the desktop when no game; Home = game
   launcher; View+Menu toggles). Needs python-evdev; reads devices without grabbing.
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for
