@@ -40,6 +40,10 @@ SidePanel {
     property bool packOpen: false
     property var btAudio: []            // [{ id, name, active, profiles }] from BtProfile.sh list
     property bool mixerOpen: false
+    property bool devicesOpen: false
+    // speakers / headphones and mics to choose from (not app streams)
+    readonly property var outputs: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioSink && n.audio)
+    readonly property var inputs: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioSource && n.audio)
 
     // apps playing sound, for the mixer
     readonly property var streams: Pipewire.nodes.values.filter(n => n.type === PwNodeType.AudioOutStream && n.audio)
@@ -57,6 +61,7 @@ SidePanel {
             phoneOpen = false;
             packOpen = false;
             mixerOpen = false;
+            devicesOpen = false;
             if (adapter?.discovering) adapter.discovering = false;
             return;
         }
@@ -601,6 +606,48 @@ SidePanel {
         onMoved: v => {
             cc.brightness = Math.max(0.05, v);
             cc.run(["brightnessctl", "-q", "set", Math.round(cc.brightness * 100) + "%"]);
+        }
+    }
+
+    // ---- audio devices: pick the output and the input ----
+    MenuRow {
+        Layout.fillWidth: true
+        glyph: String.fromCodePoint(cc.devicesOpen ? 0xF0140 : 0xF0142)
+        label: "Audio devices  ·  " + (cc.sink?.description ?? "none") + "  ·  " + (cc.source?.description ?? "no mic")
+        dimmed: true
+        onActivated: cc.devicesOpen = !cc.devicesOpen
+    }
+
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.leftMargin: 20
+        visible: cc.devicesOpen
+        spacing: 2
+
+        Heading { text: "Output" }
+        Repeater {
+            model: cc.devicesOpen ? cc.outputs : []
+            delegate: MenuRow {
+                required property var modelData
+                Layout.fillWidth: true
+                glyph: cc.sink === modelData ? String.fromCodePoint(0xF012C) : String.fromCodePoint(0xF04C3)
+                label: modelData.description || modelData.nickname || modelData.name
+                dimmed: cc.sink !== modelData
+                onActivated: Pipewire.preferredDefaultAudioSink = modelData
+            }
+        }
+
+        Heading { text: "Input" }
+        Repeater {
+            model: cc.devicesOpen ? cc.inputs : []
+            delegate: MenuRow {
+                required property var modelData
+                Layout.fillWidth: true
+                glyph: cc.source === modelData ? String.fromCodePoint(0xF012C) : String.fromCodePoint(0xF036C)
+                label: modelData.description || modelData.nickname || modelData.name
+                dimmed: cc.source !== modelData
+                onActivated: Pipewire.preferredDefaultAudioSource = modelData
+            }
         }
     }
 
