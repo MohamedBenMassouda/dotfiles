@@ -4,6 +4,9 @@ local half = { "monitor_w*0.7", "monitor_h*0.6" }
 
 -- Spotify on workspace 3
 rule({ match = { class = "^([Ss]potify)$" }, workspace = "3 silent" })
+-- opaque, no blur: Spotify redraws all the time, and blurring behind it every frame
+-- kept the GPU busy and the whole desktop laggy
+rule({ match = { class = "^([Ss]potify)$" }, no_blur = true, opacity = "1.0 override 1.0 override" })
 
 ----------------------------------------------------------------------
 -- Tags: { match, tag }
@@ -117,7 +120,7 @@ rule({ match = { class = "^(yad)$" }, float = true, center = true, size = { "mon
 rule({ match = { class = "^(hyprland-donate-screen)$" }, float = true, center = true })
 
 -- Opacity (active inactive)
-rule({ match = { tag = "browser" }, opacity = "0.99 0.8" })
+rule({ match = { tag = "browser" }, opacity = "1.0 0.8" })  -- opaque while focused: at 0.99 every page frame was blurred too
 rule({ match = { tag = "projects" }, opacity = "0.9 0.8" })
 rule({ match = { tag = "im" }, opacity = "0.94 0.86" })
 rule({ match = { tag = "multimedia" }, opacity = "0.94 0.86" })
