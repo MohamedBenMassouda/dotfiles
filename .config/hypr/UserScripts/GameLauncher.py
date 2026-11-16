@@ -7,8 +7,16 @@ Lists, sorted by name:
   - Windows games in /mnt/Data/Games                -> launched with Proton via umu-run,
                                                       one prefix per game in /mnt/Data/Games/.umu/
 
+Recently played games come first, then A-Z; each row shows playtime and when
+it was last played (~/.local/state/game-launcher.json). Enter plays, Alt+Enter
+plays a Windows game inside gamescope. Windows games run through GameRun.sh
+(game mode for the session, gamemoderun, playtime).
+
 `GameLauncher.py --list` prints what was found instead of opening rofi.
 """
+import html
+import json
+import time
 import os
 import re
 import shutil
@@ -20,6 +28,8 @@ STEAM = f"{HOME}/.local/share/Steam"
 GAMES_DIR = "/mnt/Data/Games"
 PREFIXES = f"{GAMES_DIR}/.umu"
 SKIP_DIRS = {"GameSaves"}
+STATE = f"{HOME}/.local/state/game-launcher.json"
+RUN = os.path.join(os.path.dirname(os.path.realpath(__file__)), "GameRun.sh")
 # helper executables and tools that are not the game itself
 NOT_GAME = re.compile(
     r"unins|setup|install|redist|crash|createdump|dedicatedserver|server\.exe|qtwebengine|"
@@ -56,7 +66,17 @@ def steam_games():
             appid = re.search(r'"appid"\s+"(\d+)"', text)
             name = re.search(r'"name"\s+"([^"]+)"', text)
             if appid and name and not NOT_STEAM_GAME.match(name.group(1)):
-                yield name.group(1), "steam", ["steam", f"steam://rungameid/{appid.group(1)}"], None
+                yield name.group(1), steam_icon(appid.group(1)), ["steam", f"steam://rungameid/{appid.group(1)}"], None
+
+
+def steam_icon(appid):
+    """Steam's small game icon (librarycache/<appid>/<hash>.jpg), else the Steam icon."""
+    d = f"{STEAM}/appcache/librarycache/{appid}"
+    try:
+        jpgs = [f for f in os.listdir(d) if f.endswith(".jpg")]
+    except OSError:
+        jpgs = []
+    return f"{d}/{jpgs[0]}" if jpgs else "steam"
 
 
 def steam_shortcuts():
@@ -129,7 +149,46 @@ def all_games():
     shortcuts = list(steam_shortcuts())
     games += shortcuts
     games += folder_games({exe for *_, exe in shortcuts}, {norm(g[0]) for g in games})
-    return sorted(games, key=lambda g: g[0].lower())
+    stats = load_stats()
+    # recently played first (newest on top), then the rest A-Z
+    return sorted(games, key=lambda g: (-stats.get(g[0], {}).get("last", 0), g[0].lower()))
+
+
+def load_stats():
+    try:
+        return json.load(open(STATE))
+    except (OSError, ValueError):
+        return {}
+
+
+def mark_played(name):
+    stats = load_stats()
+    stats.setdefault(name, {})["last"] = int(time.time())
+    os.makedirs(os.path.dirname(STATE), exist_ok=True)
+    with open(STATE + ".tmp", "w") as f:
+        json.dump(stats, f)
+    os.replace(STATE + ".tmp", STATE)
+
+
+def ago(ts):
+    days = (time.time() - ts) / 86400
+    if days < 1:
+        return "today"
+    if days < 2:
+        return "yesterday"
+    return f"{int(days)} days ago" if days < 30 else f"{int(days // 30)} months ago"
+
+
+def subtitle(game, stats):
+    name, _icon, cmd, _extra = game
+    s = stats.get(name, {})
+    parts = ["Steam" if cmd[0] == "steam" else "Windows"]
+    if s.get("played", 0) >= 60:
+        h = s["played"] / 3600
+        parts.append(f"{h:.0f} h played" if h >= 1 else f"{s['played'] // 60} min played")
+    if s.get("last"):
+        parts.append(ago(s["last"]))
+    return " · ".join(parts)
 
 
 # Saves live in the same places whichever way a game is started: plain Wine
@@ -167,8 +226,9 @@ def share_saves(prefix):
         os.symlink(target, path)
 
 
-def launch(game):
+def launch(game, gamescope=False):
     name, _icon, cmd, extra = game
+    mark_played(name)
     env, cwd = dict(os.environ), None
     if cmd[0] == "umu-run":
         if subprocess.run(["sh", "-c", "command -v umu-run"], capture_output=True).returncode:
@@ -181,6 +241,7 @@ def launch(game):
             share_saves(prefix)
         env.update(WINEPREFIX=prefix, GAMEID="umu-default")
         cwd = os.path.dirname(exe)
+        cmd = [RUN] + (["--gamescope"] if gamescope else []) + [name, exe]
     subprocess.Popen(cmd, env=env, cwd=cwd, start_new_session=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     notify(f"Starting {name}")
@@ -218,11 +279,18 @@ def main():
     if not games:
         notify("No games found")
         return
-    rows = "\n".join(f"{name}\0icon\x1f{icon}" for name, icon, *_ in games)
-    res = subprocess.run(["rofi", "-dmenu", "-i", "-p", "Games", "-show-icons", "-format", "i"],
+    stats = load_stats()
+    rows = "\n".join(
+        f"{html.escape(g[0])}  <span size='small' alpha='55%'>{html.escape(subtitle(g, stats))}</span>"
+        f"\0icon\x1f{g[1]}\x1fmeta\x1f{html.escape(g[0])}"
+        for g in games)
+    res = subprocess.run(["rofi", "-dmenu", "-i", "-p", "Games", "-show-icons", "-markup-rows",
+                          "-format", "i", "-kb-custom-1", "Alt+Return",
+                          "-mesg", "Enter: play   ·   Alt+Enter: Windows game inside gamescope"],
                          input=rows, capture_output=True, text=True)
-    if res.returncode == 0 and res.stdout.strip().isdigit():
-        launch(games[int(res.stdout.strip())])
+    # exit 0: Enter, 10: Alt+Enter (kb-custom-1)
+    if res.returncode in (0, 10) and res.stdout.strip().isdigit():
+        launch(games[int(res.stdout.strip())], gamescope=res.returncode == 10)
 
 
 if __name__ == "__main__":
