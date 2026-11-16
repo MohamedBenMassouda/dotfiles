@@ -17,6 +17,8 @@ SidePanel {
     name: "control"
 
     readonly property string scripts: Quickshell.env("HOME") + "/.config/hypr/scripts"
+    // rep (uv tool install), by full path so it works in sessions without ~/.local/bin on PATH
+    readonly property string rep: Quickshell.env("HOME") + "/.local/bin/rep"
     readonly property string userScripts: Quickshell.env("HOME") + "/.config/hypr/UserScripts"
 
     readonly property var wifi: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
@@ -40,11 +42,12 @@ SidePanel {
     property bool packOpen: false
     property var workout: ({ done: 0, streak: 0, skills: {}, trained: [] })
     property bool trainingOpen: false
+    property bool repReady: false       // false until `rep init` has set up a profile
     Process {
         running: true                   // the panel is built each time it opens
-        command: [cc.scripts + "/Workout.py", "today"]
+        command: [cc.rep, "today"]
         stdout: StdioCollector {
-            onStreamFinished: { try { cc.workout = JSON.parse(text); } catch (e) {} }
+            onStreamFinished: { try { cc.workout = JSON.parse(text); cc.repReady = true; } catch (e) { cc.repReady = false; } }
         }
     }
     property var btAudio: []            // [{ id, name, active, profiles }] from BtProfile.sh list
@@ -470,20 +473,21 @@ SidePanel {
             }
         }
 
-        // calisthenics challenges (hypr/scripts/Workout.py): click = one now,
+        // calisthenics challenges (rep: github.com/MohamedBenMassouda/rep): click = one now,
         // arrow = log a session, max test, stats, skill steps
         Tile {
             glyph: 0xF0FD7
             label: "Training"
-            detail: cc.workout.done + " done today · streak " + cc.workout.streak + " d"
-                    + (cc.workout.trained.length ? " · trained " + cc.workout.trained.join(", ") : "")
+            detail: !cc.repReady ? "Not set up: run rep init in a terminal"
+                    : cc.workout.done + " done today · streak " + cc.workout.streak + " d"
+                      + (cc.workout.trained.length ? " · trained " + cc.workout.trained.join(", ") : "")
             on: cc.workout.done > 0
             tint: Theme.cpu
             expandable: true
             expanded: cc.trainingOpen
             onClicked: {
                 Globals.closePanel();
-                cc.run([cc.scripts + "/Workout.py", "now"]);
+                cc.run([cc.rep, "now"]);
             }
             onExpandClicked: cc.trainingOpen = !cc.trainingOpen
         }
@@ -507,7 +511,7 @@ SidePanel {
                         text: modelData[1]
                         on: cc.workout.trained.includes(modelData[0])
                         onClicked: {
-                            cc.run([cc.scripts + "/Workout.py", "session", modelData[0]]);
+                            cc.run([cc.rep, "session", modelData[0]]);
                             cc.workout = Object.assign({}, cc.workout, { trained: cc.workout.trained.concat([modelData[0]]) });
                         }
                     }
@@ -532,7 +536,7 @@ SidePanel {
                 label: "Run max test (sets your targets)"
                 onActivated: {
                     Globals.closePanel();
-                    cc.run([cc.scripts + "/Workout.py", "test-window"]);
+                    cc.run([cc.rep, "test-window"]);
                 }
             }
             MenuRow {
@@ -541,7 +545,7 @@ SidePanel {
                 label: "Stats and what to progress to"
                 onActivated: {
                     Globals.closePanel();
-                    cc.run(["kitty", "--class", "updates", "-e", "sh", "-c", cc.scripts + "/Workout.py stats; read -rp 'Enter to close' _"]);
+                    cc.run(["kitty", "--class", "updates", "-e", "sh", "-c", cc.rep + " stats --history; read -rp 'Enter to close' _"]);
                 }
             }
         }
