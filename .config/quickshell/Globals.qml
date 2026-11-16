@@ -204,6 +204,9 @@ Singleton {
     }
 
     property int focusMinutes: 0          // length of the current phase
+    // $XDG_RUNTIME_DIR/focus-active while a work phase runs (scripts/Workout.py waits)
+    onFocusPhaseChanged: Quickshell.execDetached(["sh", "-c", focusPhase === "work"
+        ? 'touch "$XDG_RUNTIME_DIR/focus-active"' : 'rm -f "$XDG_RUNTIME_DIR/focus-active"'])
     function startFocus(phase, minutes) {
         focusMinutes = minutes;
         focusPhase = phase;

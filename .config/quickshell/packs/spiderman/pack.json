@@ -212,6 +212,24 @@
       "Charge me! ...I mean the controller.",
       "Battery low. Even web-shooters need refills.",
       "Plug it in before the boss fight."
+    ],
+    "workout": [
+      "Spider-sense says: drop and give me these.",
+      "Even I train between patrols.",
+      "Web-shooters don't lift themselves.",
+      "Quick set, then back to saving the world.",
+      "Strength is a habit. Let's build it.",
+      "No villains right now. Perfect time for a set.",
+      "Peter Parker didn't get those arms from typing.",
+      "Thirty seconds of hard work. You got this."
+    ],
+    "workoutDone": [
+      "Thwip! That's how it's done.",
+      "Stronger than yesterday.",
+      "The city feels safer already.",
+      "Look at you, swinging past your limits.",
+      "Nice set, hero. Hydrate.",
+      "That's going in the Daily Bugle. Good press, for once."
     ]
   }
 }

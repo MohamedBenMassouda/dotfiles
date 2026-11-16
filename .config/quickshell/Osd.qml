@@ -119,6 +119,7 @@ Scope {
         "memory": [0xF035B, Theme.urgent],
         "service": [0xF0028, Theme.urgent],
         "controller": [0xF0297, Theme.accent],
+        "workout": [0xF0FD7, Theme.cpu],
         "controller-off": [0xF0297, Theme.dim],
         "controller-battery": [0xF0297, Theme.urgent]
     })
@@ -777,6 +778,8 @@ Scope {
                                 color: Theme.dim
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: 2
                                 elide: Text.ElideRight
                             }
                         }

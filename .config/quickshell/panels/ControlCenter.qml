@@ -38,6 +38,14 @@ SidePanel {
     property bool btOpen: false
     property bool phoneOpen: false
     property bool packOpen: false
+    property var workout: ({ done: 0, streak: 0 })
+    Process {
+        running: true                   // the panel is built each time it opens
+        command: [cc.scripts + "/Workout.py", "today"]
+        stdout: StdioCollector {
+            onStreamFinished: { try { cc.workout = JSON.parse(text); } catch (e) {} }
+        }
+    }
     property var btAudio: []            // [{ id, name, active, profiles }] from BtProfile.sh list
     property bool mixerOpen: false
     property bool devicesOpen: false
@@ -457,6 +465,25 @@ SidePanel {
                     trailing: Pack.suit === modelData ? String.fromCodePoint(0xF012C) : ""
                     onActivated: Pack.setSuit(modelData)
                 }
+            }
+        }
+
+        // calisthenics challenges (hypr/scripts/Workout.py): click = one now,
+        // arrow = progress and targets in a terminal
+        Tile {
+            glyph: 0xF0FD7
+            label: "Training"
+            detail: cc.workout.done + " done today · streak " + cc.workout.streak + " d"
+            on: cc.workout.done > 0
+            tint: Theme.cpu
+            expandable: true
+            onClicked: {
+                Globals.closePanel();
+                cc.run([cc.scripts + "/Workout.py", "now"]);
+            }
+            onExpandClicked: {
+                Globals.closePanel();
+                cc.run(["kitty", "--class", "updates", "-e", "sh", "-c", cc.scripts + "/Workout.py stats; read -rp 'Enter to close' _"]);
             }
         }
 

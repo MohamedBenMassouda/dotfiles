@@ -62,6 +62,11 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   left stick = pointer, right stick = scroll, RT / LT = click / right click, D-pad = arrows, A / B = Enter / Esc,
   X = Backspace, Y = overview, Start = app launcher, LB / RB = workspaces; Select+Start turns it off / on.
   Needs `python-evdev`.
+- **Training**: a calisthenics challenge in the flyout about once an hour (10:00 to 22:00, random
+  45 to 75 min apart; waits during calls, screen sharing, focus sessions and while locked), rotating
+  push / pull / legs / core. Done / Too hard / Skip / Later; targets go up after 2 clean sets, down
+  on Too hard; 22:00 summary and streak. Quick settings **Training** tile: click for one now, arrow for
+  progress (`hypr/scripts/Workout.py stats`).
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).

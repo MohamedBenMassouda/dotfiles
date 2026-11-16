@@ -1,0 +1,6 @@
+[Unit]
+Description=Calisthenics challenge check (hypr/scripts/Workout.py)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.config/hypr/scripts/Workout.py tick
