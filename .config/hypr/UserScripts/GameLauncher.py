@@ -379,7 +379,7 @@ def main():
     res = subprocess.run(["rofi", "-dmenu", "-i", "-p", "Games", "-show-icons", "-markup-rows",
                           "-format", "i", "-kb-custom-1", "Alt+Return",
                           "-kb-accept-alt", "Control+Alt+Return", "-kb-custom-2", "Shift+Return",
-                          "-mesg", "Enter: play (Windows games in gamescope)   ·   Alt+Enter: without gamescope   ·   Shift+Enter: FPS overlay shown (Shift+F12 in game toggles it)"],
+                          "-mesg", "Enter: play (Windows games in gamescope)   ·   Alt+Enter: without gamescope   ·   Shift+Enter: FPS overlay shown (Alt+R in game toggles it)"],
                          input=rows, capture_output=True, text=True)
     # exit 0: Enter (gamescope), 10: Alt+Enter (no gamescope), 11: Shift+Enter (gamescope + FPS overlay)
     if res.returncode in (0, 10, 11) and res.stdout.strip().isdigit():

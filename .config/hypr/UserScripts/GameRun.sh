@@ -7,7 +7,7 @@
 # - gamemoderun (CPU governor boost while it runs)
 # - --gamescope: inside gamescope at the focused monitor's size and refresh rate
 # - MangoHud (fps, frame times, CPU/GPU temperature and load, RAM/VRAM) is always
-#   loaded, hidden; Shift+F12 in the game shows / hides it, --hud starts it shown
+#   loaded, hidden; Alt+R in the game shows / hides it (like NVIDIA's overlay), --hud starts it shown
 # - the time played is added to ~/.local/state/game-launcher.json
 scope=false hud=false
 while [[ ${1:-} == --* ]]; do
@@ -15,7 +15,7 @@ while [[ ${1:-} == --* ]]; do
   shift
 done
 # toggle_hud: MangoHud reads the key itself while the game window has focus
-export MANGOHUD_CONFIG="toggle_hud=Shift_L+F12,fps,frametime,frame_timing=1,cpu_temp,gpu_temp,cpu_stats,gpu_stats,ram,vram,position=top-left"
+export MANGOHUD_CONFIG="toggle_hud=Alt_L+r,fps,frametime,frame_timing=1,cpu_temp,gpu_temp,cpu_stats,gpu_stats,ram,vram,position=top-left"
 $hud || MANGOHUD_CONFIG+=",no_display"
 name=$1; shift
 scripts="$HOME/.config/hypr/scripts"
