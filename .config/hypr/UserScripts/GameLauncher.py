@@ -284,16 +284,27 @@ def subtitle(game, stats):
 # (UserConfigs/Startup_Apps.lua), on every launcher start, or with
 # `GameLauncher.py --share-saves`.
 WINDOWS = "/mnt/Windows"
-WINDOWS_HOME = f"{WINDOWS}/Users/WINDOWS_USER"
 SAVE_DIRS = ["Documents", "Saved Games", "AppData/Roaming", "AppData/Local", "AppData/LocalLow"]
 WINE_USER = f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}"
+
+
+def windows_home():
+    """The Windows user's folder: the profile used most recently (its NTUSER.DAT
+    changes at every Windows login), found instead of written here so no account
+    name lives in the repo."""
+    users = f"{WINDOWS}/Users"
+    profiles = [f"{users}/{name}" for name in os.listdir(users)
+                if name != "Default" and not os.path.islink(f"{users}/{name}")
+                and os.path.isfile(f"{users}/{name}/NTUSER.DAT")]
+    return max(profiles, key=lambda profile: os.path.getmtime(f"{profile}/NTUSER.DAT"))
 
 
 def share_saves(user):
     """user: a prefix's drive_c/users/<name> folder."""
     backup = f"{os.path.dirname(os.path.dirname(os.path.dirname(user)))}/saves-before-link"
+    home = windows_home()
     for rel in SAVE_DIRS:
-        target = f"{WINDOWS_HOME}/{rel}"
+        target = f"{home}/{rel}"
         os.makedirs(target, exist_ok=True)
         path = f"{user}/{rel}"
         if os.path.islink(path):
