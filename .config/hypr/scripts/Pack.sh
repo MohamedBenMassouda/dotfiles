@@ -3,6 +3,7 @@
 #   Pack.sh               name of the chosen pack ("none" = plain desktop)
 #   Pack.sh dir           its folder (nothing when none)
 #   Pack.sh text KEY      a text line from its pack.json (%u user, %h host), e.g. terminal
+#   Pack.sh quip KIND     a random line from its pack.json "quips" (nothing when none)
 #   Pack.sh pause|resume  game mode: everything acts as "none" until resumed
 packs="$HOME/.config/quickshell/packs"
 paused="${XDG_RUNTIME_DIR:-/tmp}/desktop-pack-paused"
@@ -18,6 +19,11 @@ dir="$packs/$name"
 case ${1:-} in
   "") echo "$name" ;;
   dir) echo "$dir" ;;
+  quip)
+    [[ -n $dir ]] || exit 0
+    n=$(jq -r --arg k "$2" '.quips[$k] // [] | length' "$dir/pack.json")
+    (( n > 0 )) && jq -r --arg k "$2" --argjson i $((RANDOM % n)) '.quips[$k][$i]' "$dir/pack.json"
+    ;;
   text)
     [[ -n $dir ]] || exit 0
     jq -r --arg k "$2" '.[$k] // empty' "$dir/pack.json" | sed "s/%u/$USER/g; s/%h/$(cat /etc/hostname)/g"

@@ -115,6 +115,20 @@
       "Found it!",
       "Spider-tracer locked on.",
       "There it is. Thwip!"
+    ],
+    "gameStart": [
+      "Swinging into {game}\u2026",
+      "Thwip! Loading {game}.",
+      "Suit up, it's {game} time.",
+      "Off to {game}. Try not to break anything.",
+      "Web-slinging over to {game}."
+    ],
+    "gameEnd": [
+      "Back from {game}. City's still standing.",
+      "Welcome back, hero.",
+      "Nice session. Go drink some water.",
+      "And... we're back.",
+      "{game} survived you. Barely."
     ]
   }
 }

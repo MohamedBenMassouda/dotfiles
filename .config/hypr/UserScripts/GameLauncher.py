@@ -9,10 +9,14 @@ Lists, sorted by name:
 
 Recently played games come first, then A-Z; each row shows playtime and when
 it was last played (~/.local/state/game-launcher.json). Enter plays (Windows
-games inside gamescope), Alt+Enter plays a Windows game without gamescope.
+games inside gamescope), Alt+Enter plays a Windows game without gamescope, Shift+Enter adds the MangoHud FPS overlay.
 Windows games show the icon from their .exe (icoutils; cached in
 ~/.cache/game-launcher/icons). Windows games run through GameRun.sh
 (game mode for the session, gamemoderun, playtime).
+
+Switch games (folders running yuzu.exe) start in the native Eden emulator
+(Flatpak dev.eden_emu.eden) when it's installed: the game's .nsp/.xci, or the
+game installed in yuzu's storage; Alt+Enter still starts the Windows yuzu.
 
 `GameLauncher.py --list` prints what was found instead of opening rofi.
 """
@@ -141,6 +145,30 @@ def folder_games(skip_exes, skip_names):
             continue  # already listed through Steam
         slug = re.sub(r"[^a-z0-9]+", "-", clean(entry.name).lower()).strip("-")
         yield clean(entry.name), exe_icon(exe, slug), ["umu-run", exe], (exe, slug)
+
+
+EDEN = ["flatpak", "run", "dev.eden_emu.eden"]
+SWITCH_EXE = re.compile(r"^(yuzu|suyu|eden|citron)\.exe$", re.I)
+
+
+def eden_installed():
+    return subprocess.run(["flatpak", "info", "dev.eden_emu.eden"], capture_output=True).returncode == 0
+
+
+def switch_rom(exe):
+    """For a folder that runs a Windows Switch emulator: the game to give Eden,
+    a .nsp/.xci next to it, else the largest program installed in its storage."""
+    if not SWITCH_EXE.match(os.path.basename(exe)):
+        return None
+    folder = os.path.dirname(exe)
+    roms = []
+    for root, _dirs, files in os.walk(folder):
+        roms += [os.path.join(root, f) for f in files if f.lower().endswith((".nsp", ".xci", ".nsz", ".xcz"))]
+    if not roms:
+        reg = f"{folder}/user/nand/user/Contents/registered"
+        if os.path.isdir(reg):
+            roms = [os.path.join(reg, f) for f in os.listdir(reg) if f.endswith(".nca")]
+    return max(roms, key=os.path.getsize) if roms else None
 
 
 def other_exes(exe, limit=4):
@@ -279,10 +307,11 @@ def share_saves(prefix):
         os.symlink(target, path)
 
 
-def launch(game, gamescope=False):
-    name, _icon, cmd, extra = game
+def launch(game, gamescope=False, hud=False):
+    name, icon, cmd, extra = game
     mark_played(name)
     env, cwd = dict(os.environ), None
+    env["GAME_ICON"] = icon if icon.startswith("/") else ""
     if cmd[0] == "umu-run":
         if subprocess.run(["sh", "-c", "command -v umu-run"], capture_output=True).returncode:
             notify("Install umu-launcher to run this game: sudo pacman -S umu-launcher")
@@ -294,10 +323,20 @@ def launch(game, gamescope=False):
             share_saves(prefix)
         env.update(WINEPREFIX=prefix, GAMEID="umu-default")
         cwd = os.path.dirname(exe)
-        cmd = [RUN] + (["--gamescope"] if gamescope else []) + [name, exe]
+        rom = switch_rom(exe)
+        if rom and gamescope and eden_installed():
+            # Switch game: native Eden, fullscreen (its own window, no gamescope);
+            # Alt+Enter (gamescope=False) keeps the Windows emulator
+            cmd = [RUN] + (["--hud"] if hud else []) + [name] + EDEN + ["-f", "-g", rom]
+        else:
+            cmd = [RUN] + (["--gamescope"] if gamescope else []) + (["--hud"] if hud else []) + [name, "umu-run", exe]
     subprocess.Popen(cmd, env=env, cwd=cwd, start_new_session=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    notify(f"Starting {name}")
+    if cmd[0] == "steam":   # Windows/Switch games say hello through GameRun.sh
+        line = subprocess.run([os.path.expanduser("~/.config/hypr/scripts/Pack.sh"), "quip", "gameStart"],
+                              capture_output=True, text=True).stdout.strip() or "Starting {game}"
+        subprocess.run(["qs", "ipc", "call", "osd", "rich", "game", line.replace("{game}", name), "Steam",
+                        json.dumps({"image": icon} if icon.startswith("/") else {})], capture_output=True)
 
 
 def menu_toggle(name):
@@ -339,11 +378,12 @@ def main():
         for g in games)
     res = subprocess.run(["rofi", "-dmenu", "-i", "-p", "Games", "-show-icons", "-markup-rows",
                           "-format", "i", "-kb-custom-1", "Alt+Return",
-                          "-mesg", "Enter: play (Windows games in gamescope)   ·   Alt+Enter: without gamescope"],
+                          "-kb-accept-alt", "Control+Alt+Return", "-kb-custom-2", "Shift+Return",
+                          "-mesg", "Enter: play (Windows games in gamescope)   ·   Alt+Enter: without gamescope   ·   Shift+Enter: with FPS overlay"],
                          input=rows, capture_output=True, text=True)
-    # exit 0: Enter (gamescope), 10: Alt+Enter (kb-custom-1, no gamescope)
-    if res.returncode in (0, 10) and res.stdout.strip().isdigit():
-        launch(games[int(res.stdout.strip())], gamescope=res.returncode == 0)
+    # exit 0: Enter (gamescope), 10: Alt+Enter (no gamescope), 11: Shift+Enter (gamescope + FPS overlay)
+    if res.returncode in (0, 10, 11) and res.stdout.strip().isdigit():
+        launch(games[int(res.stdout.strip())], gamescope=res.returncode != 10, hud=res.returncode == 11)
 
 
 if __name__ == "__main__":
