@@ -117,7 +117,10 @@ Scope {
         "laptop-on": [0xF0322, Theme.accent],
         "runaway": [0xF04C5, Theme.urgent],
         "memory": [0xF035B, Theme.urgent],
-        "service": [0xF0028, Theme.urgent]
+        "service": [0xF0028, Theme.urgent],
+        "controller": [0xF0297, Theme.accent],
+        "controller-off": [0xF0297, Theme.dim],
+        "controller-battery": [0xF0297, Theme.urgent]
     })
 
     // media mode with something to show: MediaCard instead of the level bar
@@ -151,7 +154,7 @@ Scope {
 
     // warnings that set off the pack's warning effect (spider-sense: jagged
     // lines flicker out from both sides of the card for a second)
-    readonly property var senseKinds: ["battery-low", "hot", "failed", "disk", "no-internet", "device-battery", "share", "runaway", "memory", "service"]
+    readonly property var senseKinds: ["battery-low", "hot", "failed", "disk", "no-internet", "device-battery", "share", "runaway", "memory", "service", "controller-battery"]
 
     // "1 h 20 min" from seconds
     function duration(sec) {
@@ -487,6 +490,37 @@ Scope {
         repeat: true
         triggeredOnStart: true
         onTriggered: sysCheck.running = true
+    }
+
+    // game controllers connected / disconnected (with the battery when known),
+    // and low controller battery (at 15 %, again after it went over 20 %)
+    property var lastControllers: []
+    property bool controllersSeen: false       // the first list is just the start state
+    Connections {
+        target: Globals
+        function onControllersChanged() {
+            const now = Globals.controllers, before = root.lastControllers;
+            root.lastControllers = now;
+            if (!root.controllersSeen) { root.controllersSeen = true; return; }
+            for (const n of now.filter(x => !before.includes(x))) {
+                const b = Globals.controllerBatteries[0];
+                root.showToast("controller", n, (b ? b.percent + "% · " : "") + (Pack.quip("controllerOn") || "Connected"));
+            }
+            for (const n of before.filter(x => !now.includes(x)))
+                root.showToast("controller-off", n, "Disconnected");
+        }
+    }
+    property bool padWarned: false
+    Connections {
+        target: Globals
+        function onControllerBatteriesChanged() {
+            const b = Globals.controllerBatteries[0];
+            if (!b || b.percent > 20) { root.padWarned = false; return; }
+            if (b.percent <= 15 && !root.padWarned) {
+                root.padWarned = true;
+                root.showToast("controller-battery", b.name + " battery low: " + b.percent + "%", Pack.quip("controllerLow") || "Plug it in soon");
+            }
+        }
     }
 
     // USB drives and SD cards (scripts/Usb.sh watches UDisks)

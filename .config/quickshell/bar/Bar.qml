@@ -98,6 +98,7 @@ PanelWindow {
         Tray {}
         Volume {}
         Mic {}
+        Controller {}
         ControlPill {}
         KeepAwake {}
         Battery {}

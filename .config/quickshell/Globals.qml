@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
+import Quickshell.Services.UPower
 
 // Shell-wide state shared by the bar, panels and flyouts.
 Singleton {
@@ -13,6 +14,23 @@ Singleton {
     // each monitor's bar islands as [left, right] x ranges, left to right (bar/Bar.qml);
     // the desktop crawler clings under them and swings across the gaps
     property var islands: ({})
+    // ---- game controllers (hypr/scripts/Controllers.sh watch: names, live) ----
+    property var controllers: []
+    // their batteries, when the connection reports one (Bluetooth, PlayStation,
+    // Xbox...; an 8BitDo on its 2.4 GHz dongle doesn't): [{ name, percent }]
+    readonly property var controllerBatteries: UPower.devices.values
+        .filter(d => d.type === UPowerDeviceType.GamingInput && d.isPresent)
+        .map(d => ({ name: d.model || "Controller", percent: Math.round(d.percentage * (d.percentage <= 1 ? 100 : 1)) }))
+    Process {
+        running: true
+        command: [Quickshell.env("HOME") + "/.config/hypr/scripts/Controllers.sh", "watch"]
+        stdout: SplitParser {
+            onRead: line => {
+                try { root.controllers = JSON.parse(line); } catch (e) {}
+            }
+        }
+    }
+
     property bool dnd: false             // do not disturb: no notification popups
     property string panel: ""            // open side panel: "", "control" or "notifications"
 

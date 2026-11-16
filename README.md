@@ -56,6 +56,12 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   three QML drawings and `sounds/` (see the top of `Pack.qml`). Packs can have **suits**
   (colours of the figures); Spider-Man has Advanced, Classic, Gwen, Miles, Miguel (2099) and
   Amazing: the **Suit** tile in quick settings, or `qs ipc call panel suit`.
+- **Game controller**: gamepad icon in the bar while one is connected (battery when the connection
+  reports it; click: 8BitDo app, right click: Steam controller settings), connect / low-battery flyouts.
+  On the desktop (no game running) it drives the desktop, *couch mode*: Home opens the game launcher,
+  left stick = pointer, right stick = scroll, RT / LT = click / right click, D-pad = arrows, A / B = Enter / Esc,
+  X = Backspace, Y = overview, Start = app launcher, LB / RB = workspaces; Select+Start turns it off / on.
+  Needs `python-evdev`.
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).

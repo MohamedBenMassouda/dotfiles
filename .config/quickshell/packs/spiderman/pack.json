@@ -200,6 +200,18 @@
       "Good session. The city thanks you.",
       "{game} is done. Stretch those fingers.",
       "Welcome home. I kept your desktop warm."
+    ],
+    "controllerOn": [
+      "Controller connected. Let's play.",
+      "Gamepad online. Thwip-ready.",
+      "Nice grip. Let's go.",
+      "Controller's here. Couch mode unlocked."
+    ],
+    "controllerLow": [
+      "Your controller's running on fumes.",
+      "Charge me! ...I mean the controller.",
+      "Battery low. Even web-shooters need refills.",
+      "Plug it in before the boss fight."
     ]
   }
 }
