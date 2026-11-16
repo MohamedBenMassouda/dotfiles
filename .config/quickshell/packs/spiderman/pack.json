@@ -230,6 +230,18 @@
       "Look at you, swinging past your limits.",
       "Nice set, hero. Hydrate.",
       "That's going in the Daily Bugle. Good press, for once."
+    ],
+    "levelUp": [
+      "Level up!",
+      "New move unlocked!",
+      "Thwip! Harder variation time.",
+      "You've outgrown that one."
+    ],
+    "boss": [
+      "Boss fight. Everything you've got.",
+      "One set. No holding back.",
+      "Time to beat your record, hero.",
+      "This is the big one."
     ]
   }
 }

@@ -38,7 +38,8 @@ SidePanel {
     property bool btOpen: false
     property bool phoneOpen: false
     property bool packOpen: false
-    property var workout: ({ done: 0, streak: 0 })
+    property var workout: ({ done: 0, streak: 0, skills: {}, trained: [] })
+    property bool trainingOpen: false
     Process {
         running: true                   // the panel is built each time it opens
         command: [cc.scripts + "/Workout.py", "today"]
@@ -68,6 +69,7 @@ SidePanel {
             btOpen = false;
             phoneOpen = false;
             packOpen = false;
+            trainingOpen = false;
             mixerOpen = false;
             devicesOpen = false;
             if (adapter?.discovering) adapter.discovering = false;
@@ -469,21 +471,78 @@ SidePanel {
         }
 
         // calisthenics challenges (hypr/scripts/Workout.py): click = one now,
-        // arrow = progress and targets in a terminal
+        // arrow = log a session, max test, stats, skill steps
         Tile {
             glyph: 0xF0FD7
             label: "Training"
             detail: cc.workout.done + " done today · streak " + cc.workout.streak + " d"
+                    + (cc.workout.trained.length ? " · trained " + cc.workout.trained.join(", ") : "")
             on: cc.workout.done > 0
             tint: Theme.cpu
             expandable: true
+            expanded: cc.trainingOpen
             onClicked: {
                 Globals.closePanel();
                 cc.run([cc.scripts + "/Workout.py", "now"]);
             }
-            onExpandClicked: {
-                Globals.closePanel();
-                cc.run(["kitty", "--class", "updates", "-e", "sh", "-c", cc.scripts + "/Workout.py stats; read -rp 'Enter to close' _"]);
+            onExpandClicked: cc.trainingOpen = !cc.trainingOpen
+        }
+
+        ColumnLayout {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            visible: cc.trainingOpen
+            spacing: 2
+
+            Heading { text: "Trained today" }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: [["upper", "Upper"], ["legs", "Legs"], ["full", "Full body"]]
+                    delegate: SmallButton {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        implicitHeight: 30
+                        text: modelData[1]
+                        on: cc.workout.trained.includes(modelData[0])
+                        onClicked: {
+                            cc.run([cc.scripts + "/Workout.py", "session", modelData[0]]);
+                            cc.workout = Object.assign({}, cc.workout, { trained: cc.workout.trained.concat([modelData[0]]) });
+                        }
+                    }
+                }
+            }
+
+            Heading { text: "Skills" }
+            Repeater {
+                model: Object.keys(cc.workout.skills)
+                delegate: MenuRow {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    glyph: String.fromCodePoint(0xF0538)
+                    label: modelData + ": " + cc.workout.skills[modelData]
+                    dimmed: true
+                }
+            }
+
+            MenuRow {
+                Layout.fillWidth: true
+                glyph: String.fromCodePoint(0xF0FD7)
+                label: "Run max test (sets your targets)"
+                onActivated: {
+                    Globals.closePanel();
+                    cc.run([cc.scripts + "/Workout.py", "test-window"]);
+                }
+            }
+            MenuRow {
+                Layout.fillWidth: true
+                glyph: String.fromCodePoint(0xF0127)
+                label: "Stats and what to progress to"
+                onActivated: {
+                    Globals.closePanel();
+                    cc.run(["kitty", "--class", "updates", "-e", "sh", "-c", cc.scripts + "/Workout.py stats; read -rp 'Enter to close' _"]);
+                }
             }
         }
 

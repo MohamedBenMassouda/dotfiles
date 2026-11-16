@@ -57,8 +57,9 @@ HAT_KEYS = {e.ABS_HAT0X: (e.KEY_LEFT, e.KEY_RIGHT), e.ABS_HAT0Y: (e.KEY_UP, e.KE
 
 
 def toast(kind, title, sub=""):
-    subprocess.Popen(["qs", "ipc", "call", "osd", "toast", kind, title, sub],
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # run (not Popen): returns in a moment and leaves no finished child behind
+    subprocess.run(["qs", "ipc", "call", "osd", "toast", kind, title, sub],
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
 
 
 def is_gamepad(dev):
@@ -171,7 +172,8 @@ def main():
                     down = ev.value != 0
                     keys_now = pad.dev.active_keys()
                     if ev.code == e.BTN_MODE and down and not os.path.exists(GAME_FLAG):
-                        subprocess.Popen([LAUNCHER], start_new_session=True)
+                        # setsid -f: the launcher runs on its own, nothing left to reap here
+                        subprocess.run(["setsid", "-f", LAUNCHER], timeout=5)
                         continue
                     if ev.code in (e.BTN_START, e.BTN_SELECT) and down \
                             and e.BTN_START in keys_now and e.BTN_SELECT in keys_now:

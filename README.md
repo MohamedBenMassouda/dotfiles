@@ -62,11 +62,14 @@ generates the colours. Log in to **Hyprland (uwsm-managed)**.
   left stick = pointer, right stick = scroll, RT / LT = click / right click, D-pad = arrows, A / B = Enter / Esc,
   X = Backspace, Y = overview, Start = app launcher, LB / RB = workspaces; Select+Start turns it off / on.
   Needs `python-evdev`.
-- **Training**: a calisthenics challenge in the flyout about once an hour (10:00 to 22:00, random
-  45 to 75 min apart; waits during calls, screen sharing, focus sessions and while locked), rotating
-  push / pull / legs / core. Done / Too hard / Skip / Later; targets go up after 2 clean sets, down
-  on Too hard; 22:00 summary and streak. Quick settings **Training** tile: click for one now, arrow for
-  progress (`hypr/scripts/Workout.py stats`).
+- **Training** (`hypr/scripts/Workout.py`): muscle + skills (handstand, one-arm pull-up) through the day.
+  About once an hour (10:00 to 22:00; waits during calls, screen sharing, focus, lock) a hard set or
+  skill practice appears; weekly caps of hard sets per group (push 10, pull 10, legs 6, core 6) count
+  your logged sessions too; trained groups are skipped that day. Exercises climb ladders of harder
+  movement (explosive, one-sided, tempo, drop sets). Done / Skip / Later, then reps left (3+ / 1-2 /
+  failure) steers the target. Max test sets targets (retest every 6 weeks); boss challenge weekly;
+  20:00 protein check-in, 23:30 bedtime, 22:00 summary. Quick settings **Training** tile: click = one
+  now; arrow = log a session, skills, max test, stats.
 - **Notes**: `SUPER+ALT+N` opens a new note in nvim (a first line `# Title` names the file, empty notes are dropped), `SUPER+SHIFT+N` searches them.
 - **Quick settings** (`SUPER+N` or the status pill), **notifications** (`SUPER+H` or the bell),
   **overview** (`SUPER+A`), **lock screen** (`CTRL+ALT+L`, falls back to hyprlock).
