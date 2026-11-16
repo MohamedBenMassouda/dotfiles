@@ -8,8 +8,10 @@ Lists, sorted by name:
                                                       one prefix per game in /mnt/Data/Games/.umu/
 
 Recently played games come first, then A-Z; each row shows playtime and when
-it was last played (~/.local/state/game-launcher.json). Enter plays, Alt+Enter
-plays a Windows game inside gamescope. Windows games run through GameRun.sh
+it was last played (~/.local/state/game-launcher.json). Enter plays (Windows
+games inside gamescope), Alt+Enter plays a Windows game without gamescope.
+Windows games show the icon from their .exe (icoutils; cached in
+~/.cache/game-launcher/icons). Windows games run through GameRun.sh
 (game mode for the session, gamemoderun, playtime).
 
 `GameLauncher.py --list` prints what was found instead of opening rofi.
@@ -29,6 +31,7 @@ GAMES_DIR = "/mnt/Data/Games"
 PREFIXES = f"{GAMES_DIR}/.umu"
 SKIP_DIRS = {"GameSaves"}
 STATE = f"{HOME}/.local/state/game-launcher.json"
+ICONS = f"{HOME}/.cache/game-launcher/icons"
 RUN = os.path.join(os.path.dirname(os.path.realpath(__file__)), "GameRun.sh")
 # helper executables and tools that are not the game itself
 NOT_GAME = re.compile(
@@ -137,7 +140,57 @@ def folder_games(skip_exes, skip_names):
         if not exe or exe in skip_exes or norm(clean(entry.name)) in skip_names:
             continue  # already listed through Steam
         slug = re.sub(r"[^a-z0-9]+", "-", clean(entry.name).lower()).strip("-")
-        yield clean(entry.name), "wine", ["umu-run", exe], (exe, slug)
+        yield clean(entry.name), exe_icon(exe, slug), ["umu-run", exe], (exe, slug)
+
+
+def other_exes(exe, limit=4):
+    """Other game .exe files in the same game folder, largest first."""
+    top = exe[len(GAMES_DIR) + 1:].split("/")[0]
+    found = []
+    for root, dirs, files in os.walk(f"{GAMES_DIR}/{top}"):
+        dirs[:] = [d for d in dirs if not SKIP_SUBDIRS.match(d)]
+        found += [os.path.join(root, f) for f in files
+                  if f.lower().endswith(".exe") and not NOT_GAME.search(f) and os.path.join(root, f) != exe]
+    return sorted(found, key=os.path.getsize, reverse=True)[:limit]
+
+
+def valid_png(path):
+    """Decodes cleanly (ImageMagick); without it, trust the file."""
+    if not shutil.which("magick"):
+        return os.path.getsize(path) > 0
+    return subprocess.run(["magick", path, "-regard-warnings", "null:"], capture_output=True).returncode == 0
+
+
+def exe_icon(exe, slug):
+    """The .exe's own icon as a PNG (largest size up to 256 px), cached; "wine" if it has none.
+    A failed extraction leaves an empty file so it isn't retried every time."""
+    png = f"{ICONS}/{slug}.png"
+    if not os.path.exists(png):
+        os.makedirs(ICONS, exist_ok=True)
+        tmp = f"{ICONS}/{slug}.ico"
+        ok = False
+        if shutil.which("wrestool") and shutil.which("icotool"):
+            # the started .exe first; Unreal-style starters often have no icon,
+            # the real game binary deeper in the folder does
+            for cand in [exe] + other_exes(exe):
+                subprocess.run(["wrestool", "-x", "-t", "14", cand, "-o", tmp], capture_output=True)
+                if not (os.path.exists(tmp) and os.path.getsize(tmp)):
+                    continue
+                sizes = re.findall(r"--index=(\d+) --width=(\d+)",
+                                   subprocess.run(["icotool", "-l", tmp], capture_output=True, text=True).stdout)
+                # largest size first; some .exe files carry a damaged image, try the next size
+                for index, _w in sorted(sizes, key=lambda x: -int(x[1])):
+                    ok = (subprocess.run(["icotool", "-x", "-i", index, "-o", png, tmp], capture_output=True).returncode == 0
+                          and valid_png(png))
+                    if ok:
+                        break
+                if ok:
+                    break
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        if not ok:
+            open(png, "w").close()
+    return png if os.path.getsize(png) else "wine"
 
 
 def norm(name):
@@ -286,11 +339,11 @@ def main():
         for g in games)
     res = subprocess.run(["rofi", "-dmenu", "-i", "-p", "Games", "-show-icons", "-markup-rows",
                           "-format", "i", "-kb-custom-1", "Alt+Return",
-                          "-mesg", "Enter: play   ·   Alt+Enter: Windows game inside gamescope"],
+                          "-mesg", "Enter: play (Windows games in gamescope)   ·   Alt+Enter: without gamescope"],
                          input=rows, capture_output=True, text=True)
-    # exit 0: Enter, 10: Alt+Enter (kb-custom-1)
+    # exit 0: Enter (gamescope), 10: Alt+Enter (kb-custom-1, no gamescope)
     if res.returncode in (0, 10) and res.stdout.strip().isdigit():
-        launch(games[int(res.stdout.strip())], gamescope=res.returncode == 10)
+        launch(games[int(res.stdout.strip())], gamescope=res.returncode == 0)
 
 
 if __name__ == "__main__":
