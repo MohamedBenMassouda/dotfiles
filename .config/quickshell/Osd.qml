@@ -32,6 +32,7 @@ import qs
 // screen sharing starting / stopping, Bluetooth devices low on battery, a disk
 // over 90 % full, and the CPU running too hot.
 //   "timeout": ms in the rich json keeps a card up longer (idle lock warning)
+//   "sticky": true keeps it up until dismissKind / hide (a game loading)
 //   qs ipc call osd dismissKind <kind>   hides the card only if it's that kind
 // Notifications are shown as cards under it (Notifs.qml).
 // Hides after ~2.5 s, stays while the pointer is on it. Click the card (or its
@@ -43,7 +44,7 @@ Scope {
     property string mode: "media"          // "media", "mic", "brightness", "keyboard" or "toast"
     property int brightness: 0
     property var toast: ({ kind: "", glyph: 0, color: Theme.accent, title: "", subtitle: "", image: "", colors: [], actions: [] })
-    property bool sticky: false            // low battery: stays until plugged in
+    property bool sticky: false            // stays until dismissed: low battery (until plugged in), a game loading
 
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
     readonly property var sink: Pipewire.defaultAudioSink
@@ -139,7 +140,7 @@ Scope {
         toast = { kind: kind, glyph: k[0], color: color, title: title, subtitle: subtitle ?? "",
                   image: x.image ?? "", colors: x.colors ?? [], actions: x.actions ?? [] };
         mode = "toast";
-        sticky = kind === "battery-low";
+        sticky = kind === "battery-low" || x.sticky === true;
         if (senseKinds.includes(kind)) {
             if (Pack.flag("warningTingle")) sense.restart();
             Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Sounds.sh", "--error"]);
@@ -606,7 +607,7 @@ Scope {
                 visible: opacity > 0
                 radius: Theme.radius
                 color: Theme.popup
-                border.color: root.sticky ? Theme.urgent : Theme.accent
+                border.color: root.sticky && root.toast.kind === "battery-low" ? Theme.urgent : Theme.accent
                 border.width: Theme.border
 
                 opacity: root.shown ? 1 : 0

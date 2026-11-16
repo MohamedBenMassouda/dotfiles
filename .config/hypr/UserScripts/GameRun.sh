@@ -34,21 +34,60 @@ fi
 
 # flyout with the game's icon (GAME_ICON from the launcher) and a line from the
 # theme pack ("Swinging into …" for Spider-Man)
-say() {  # say KIND FALLBACK SUBTITLE
-  local line extra='{}'
-  line=$("$scripts/Pack.sh" quip "$1")
-  line=${line:-$2}
-  [[ -f ${GAME_ICON:-} ]] && extra=$(jq -nc --arg i "$GAME_ICON" '{image: $i}')
-  qs ipc call osd rich game "${line//\{game\}/$name}" "$3" "$extra" >/dev/null 2>&1
+line() {  # line KIND FALLBACK: a pack line with the game's name in it
+  local l
+  l=$("$scripts/Pack.sh" quip "$1")
+  l=${l:-$2}
+  echo "${l//\{game\}/$name}"
 }
-say gameStart "Starting {game}" "$name"
+say() {  # say TITLE SUBTITLE [sticky]
+  local extra
+  extra=$(jq -nc --arg i "${GAME_ICON:-}" --argjson s "${3:-false}" \
+    '{sticky: $s} + (if ($i != "" and ($i | test("^/"))) then {image: $i} else {} end)')
+  qs ipc call osd rich game "$1" "$2" "$extra" >/dev/null 2>&1
+}
+
+# is PID the game process or one of its children (gamescope, Proton, Wine…)?
+ours() {
+  local p=$1
+  while [[ -n $p && $p -gt 1 ]]; do
+    [[ $p == "$gpid" ]] && return 0
+    p=$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')
+  done
+  return 1
+}
 
 start=$(date +%s)
-"${cmd[@]}"
+opened=false
+"${cmd[@]}" &
+gpid=$!
+
+# loading: the flyout stays up (counting) until a window of the game appears,
+# or the game exits first
+first=$(jq -r --arg n "$name" '.[$n].played // 0' "$state" 2>/dev/null || echo 0)
+hint=""; [[ ${first:-0} == 0 ]] && hint=" · first launch can take a minute"
+title=$(line gameStart "Starting {game}")
+say "$title" "Loading…$hint" true
+while kill -0 "$gpid" 2>/dev/null; do
+  sleep 1
+  opened=false
+  while read -r pid; do ours "$pid" && { opened=true; break; }; done < <(hyprctl clients -j | jq -r '.[].pid')
+  $opened && break
+  t=$(( $(date +%s) - start ))
+  (( t % 3 == 0 )) && say "$title" "Loading… ${t} s$hint" true
+done
+qs ipc call osd dismissKind game >/dev/null 2>&1
+
+wait "$gpid"
 played=$(( $(date +%s) - start ))
+if ! $opened && (( played < 20 )); then
+  say "$name closed while loading" "It didn't open a window. Try Alt+Enter (without gamescope)"
+  $turned_on && "$scripts/GameMode.sh"
+  exit 0
+fi
 
 h=$(( played / 3600 )) m=$(( played % 3600 / 60 ))
-say gameEnd "Back from {game}" "$name · $( (( h )) && echo "$h h ")$m min played"
+say "$(line gameEnd "Back from {game}")" "$name · $( (( h )) && echo "$h h ")$m min played"
 
 mkdir -p "${state%/*}"
 [[ -s $state ]] || echo '{}' > "$state"
