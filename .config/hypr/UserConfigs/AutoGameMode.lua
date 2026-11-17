@@ -88,8 +88,11 @@ hl.on("window.close", function(w)
     stop()
 end)
 
--- after a reload: a game still open gets the quiet settings back (the reload reset them);
--- if the game closed meanwhile, finish turning game mode off
+-- after a reload (Hyprland reloads on every config save): a game still open gets the quiet
+-- settings back (the reload reset them); if the game closed meanwhile, finish turning game
+-- mode off. Game mode turned on by hand or by GameRun.sh gets its quiet settings back too.
 if exists(marker) then
     if games_open() then quiet() else stop() end
+elseif exists(paused_flag) then
+    quiet()
 end
