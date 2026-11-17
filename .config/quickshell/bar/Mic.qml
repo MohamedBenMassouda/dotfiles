@@ -23,7 +23,7 @@ Label {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            if (root.source?.audio) root.source.audio.muted = !root.source.audio.muted;
+            Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Volume.sh", "--toggle-mic"]);   // mutes every mic, not just this one
             Globals.flyout("mic");
         }
         onWheel: wheel => {

@@ -684,7 +684,7 @@ SidePanel {
         dimmed: cc.source?.audio?.muted ?? false
         tint: Theme.mic
         onMoved: v => { if (cc.source?.audio) cc.source.audio.volume = v; }
-        onIconClicked: if (cc.source?.audio) cc.source.audio.muted = !cc.source.audio.muted
+        onIconClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/scripts/Volume.sh", "--toggle-mic"])   // every mic, not just the default
     }
 
     LevelSlider {
