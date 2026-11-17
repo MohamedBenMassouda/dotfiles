@@ -20,6 +20,10 @@ done
 export PROTON_ENABLE_NVAPI=1 __GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1
 # toggle_hud: MangoHud reads the key itself while the game window has focus
 export MANGOHUD_CONFIG="toggle_hud=Alt_L+r,fps,frametime,frame_timing=1,cpu_temp,gpu_temp,cpu_stats,gpu_stats,ram,vram,position=top-left"
+# GPU stats from the NVIDIA card: on this laptop MangoHud otherwise reads the idle
+# Intel iGPU, so the game looked like it ran on the CPU (it renders on NVIDIA either way)
+nvidia_pci=$(lspci -D -d 10de: 2>/dev/null | awk '/VGA|3D/ {print $1; exit}')
+[[ -n $nvidia_pci ]] && MANGOHUD_CONFIG+=",pci_dev=$nvidia_pci"
 $hud || MANGOHUD_CONFIG+=",no_display"
 name=$1; shift
 scripts="$HOME/.config/hypr/scripts"
