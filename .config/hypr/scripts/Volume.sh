@@ -88,11 +88,19 @@ toggle_mute() {
 
 
 # Toggle Mic
+# every mic, not only the default one: an app can record from another mic (Discord
+# using the headphones' mic while the laptop mic is the default) and would still hear you.
+# The bar's mic and the quick settings tile call this too (quickshell bar/Mic.qml, ControlCenter.qml)
 toggle_mic() {
-	if [ "$(pamixer --default-source --get-mute)" == "false" ]; then
-		pamixer --default-source -m && { osd_toast mic-off "Microphone muted" "" || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone-mute.png" " Microphone:" " Switched OFF"; }
-	elif [ "$(pamixer --default-source --get-mute)" == "true" ]; then
-		pamixer --default-source -u && { osd_toast mic-on "Microphone on" "" || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone.png" " Microphone:" " Switched ON"; }
+	local mute=1 source
+	[ "$(pamixer --default-source --get-mute)" == "true" ] && mute=0
+	for source in $(pactl list short sources | awk '$2 !~ /\.monitor$/ {print $2}'); do
+		pactl set-source-mute "$source" "$mute"
+	done
+	if [ "$mute" = 1 ]; then
+		osd_toast mic-off "Microphone muted" "Every mic is off" || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone-mute.png" " Microphone:" " Switched OFF"
+	else
+		osd_toast mic-on "Microphone on" "" || notify-send -e -u low -h boolean:SWAYNC_BYPASS_DND:true -i "$iDIR/microphone.png" " Microphone:" " Switched ON"
 	fi
 }
 # Get Mic Icon
