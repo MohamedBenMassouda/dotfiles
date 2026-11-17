@@ -284,6 +284,12 @@ def subtitle(game, stats):
 # (UserConfigs/Startup_Apps.lua), on every launcher start, or with
 # `GameLauncher.py --share-saves`.
 WINDOWS = "/mnt/Windows"
+# extra arguments for a Windows game, by its prefix name (/mnt/Data/Games/.umu/<name>).
+# -dx11: Unreal games default to DirectX 12, which Proton runs through vkd3d, slow on
+# NVIDIA; DirectX 11 goes through DXVK and runs close to Windows speed
+GAME_ARGS = {
+    "psychonauts-2": ["-dx11"],
+}
 SAVE_DIRS = ["Documents", "Saved Games", "AppData/Roaming", "AppData/Local", "AppData/LocalLow"]
 WINE_USER = f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}"
 
@@ -386,7 +392,7 @@ def launch(game, gamescope=False, hud=False):
             # Alt+Enter (gamescope=False) keeps the Windows emulator
             cmd = [RUN] + (["--hud"] if hud else []) + [name] + EDEN + ["-f", "-g", rom]
         else:
-            cmd = [RUN] + (["--gamescope"] if gamescope else []) + (["--hud"] if hud else []) + [name, "umu-run", exe]
+            cmd = [RUN] + (["--gamescope"] if gamescope else []) + (["--hud"] if hud else []) + [name, "umu-run", exe] + GAME_ARGS.get(slug, [])
     subprocess.Popen(cmd, env=env, cwd=cwd, start_new_session=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if cmd[0] == "steam":   # Windows/Switch games say hello through GameRun.sh
