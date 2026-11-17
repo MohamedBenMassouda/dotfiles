@@ -289,7 +289,6 @@ WINDOWS = "/mnt/Windows"
 # NVIDIA; DirectX 11 goes through DXVK and runs close to Windows speed
 GAME_ARGS = {
     "psychonauts-2": ["-dx11"],
-    "jusant": ["-dx11"],
 }
 SAVE_DIRS = ["Documents", "Saved Games", "AppData/Roaming", "AppData/Local", "AppData/LocalLow"]
 WINE_USER = f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}"
