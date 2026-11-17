@@ -14,10 +14,29 @@ local function exists(path)
     return f ~= nil
 end
 
+-- started by Steam's game launcher ("reaper SteamLaunch AppId=…"): catches native Linux
+-- games too (e.g. Silksong), whose windows have no steam_app_ class
+local function launched_by_steam(pid)
+    for _ = 1, 30 do
+        if not pid or pid <= 1 then return false end
+        local cmdline = io.open("/proc/" .. pid .. "/cmdline")
+        if not cmdline then return false end
+        local found = cmdline:read("*a"):find("SteamLaunch", 1, true)
+        cmdline:close()
+        if found then return true end
+        local stat = io.open("/proc/" .. pid .. "/stat")
+        if not stat then return false end
+        pid = tonumber(stat:read("*a"):match("%) %S+ (%d+)"))   -- parent pid (the name may contain spaces)
+        stat:close()
+    end
+    return false
+end
+
 local function is_game(w)
     if not w then return false end
     local c = w.class or ""
     return c:match("^steam_app_%d+$") or c == "gamescope" or w.content_type == "game"
+        or launched_by_steam(w.pid)
 end
 
 local function games_open(except)
@@ -63,8 +82,9 @@ hl.on("window.open", function(w)
     start()
 end)
 
+-- any window closing: the game's process may already be gone, so check what's left open
 hl.on("window.close", function(w)
-    if not exists(marker) or not is_game(w) or games_open(w.address) then return end
+    if not exists(marker) or games_open(w.address) then return end
     stop()
 end)
 
