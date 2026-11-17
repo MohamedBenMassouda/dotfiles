@@ -34,6 +34,9 @@ import qs
 //   "timeout": ms in the rich json keeps a card up longer (idle lock warning)
 //   "sticky": true keeps it up until dismissKind / hide (a game loading)
 //   qs ipc call osd dismissKind <kind>   hides the card only if it's that kind
+//   a sticky card that another card covers comes back when that one hides
+//   "input": {"label": "reps done", "value": "6"} adds a number field; "{input}"
+//     in an action's cmd becomes what was typed (dropped when the field is empty)
 // Notifications are shown as cards under it (Notifs.qml).
 // Hides after ~2.5 s, stays while the pointer is on it. Click the card (or its
 // x, or SUPER+Escape: qs ipc call osd hide) to dismiss it right away.
@@ -43,7 +46,8 @@ Scope {
     property bool shown: false
     property string mode: "media"          // "media", "mic", "brightness", "keyboard" or "toast"
     property int brightness: 0
-    property var toast: ({ kind: "", glyph: 0, color: Theme.accent, title: "", subtitle: "", image: "", colors: [], actions: [] })
+    property var toast: ({ kind: "", glyph: 0, color: Theme.accent, title: "", subtitle: "", image: "", colors: [], actions: [], input: null })
+    property var parked: null             // a sticky toast covered by a newer card, shown again after it
     property bool sticky: false            // stays until dismissed: low battery (until plugged in), a game loading
 
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
@@ -129,7 +133,32 @@ Scope {
 
     function dismiss() {
         sticky = false;
-        shown = false;
+        hideCard();
+    }
+
+    // a sticky toast about to be covered by another card waits in `parked`
+    function park(nextKind) {
+        if (parked && parked.kind === nextKind) parked = null;
+        if (shown && mode === "toast" && sticky && toast.kind !== nextKind) parked = toast;
+    }
+
+    function hideCard() {
+        if (!parked) {
+            shown = false;
+            return;
+        }
+        toast = parked;
+        parked = null;
+        mode = "toast";
+        sticky = true;
+        hideTimer.interval = 6000;
+        show();
+    }
+
+    function showLevel(levelMode) {
+        park("");
+        mode = levelMode;
+        show();
     }
 
     function show() {
@@ -141,8 +170,9 @@ Scope {
         const k = kinds[kind] ?? [0xF009A, Theme.accent];
         const color = kind === "color" && /^#[0-9a-f]{6}$/i.test(title) ? title : k[1];
         const x = extra ?? {};
+        park(kind);
         toast = { kind: kind, glyph: k[0], color: color, title: title, subtitle: subtitle ?? "",
-                  image: x.image ?? "", colors: x.colors ?? [], actions: x.actions ?? [] };
+                  image: x.image ?? "", colors: x.colors ?? [], actions: x.actions ?? [], input: x.input ?? null };
         mode = "toast";
         sticky = kind === "battery-low" || x.sticky === true;
         if (senseKinds.includes(kind)) {
@@ -171,39 +201,36 @@ Scope {
         target: "osd"
 
         function volume(): void {
-            root.mode = "media";
-            root.show();
+            root.showLevel("media");
         }
 
         function media(): void {
-            root.mode = "media";
-            root.show();
+            root.showLevel("media");
         }
 
         function mic(): void {
-            root.mode = "mic";
-            root.show();
+            root.showLevel("mic");
         }
 
         function brightness(percent: int): void {
             root.brightness = percent;
-            root.mode = "brightness";
-            root.show();
+            root.showLevel("brightness");
         }
 
         function hide(): void {
+            root.parked = null;
             root.dismiss();
             Notifs.popups = [];            // pop-ups only, they stay in the panel
         }
 
         function dismissKind(kind: string): void {
+            if (root.parked && root.parked.kind === kind) root.parked = null;
             if (root.mode === "toast" && root.toast.kind === kind) root.dismiss();
         }
 
         function keyboard(percent: int): void {
             root.brightness = percent;
-            root.mode = "keyboard";
-            root.show();
+            root.showLevel("keyboard");
         }
 
         function toast(kind: string, title: string, subtitle: string): void {
@@ -220,7 +247,7 @@ Scope {
     Timer {
         id: hideTimer
         interval: 2500
-        onTriggered: cardHover.hovered || root.sticky ? restart() : root.shown = false
+        onTriggered: cardHover.hovered || root.sticky ? restart() : root.hideCard()
     }
 
     // ---- automatic flyouts ----
@@ -229,8 +256,7 @@ Scope {
     Connections {
         target: Globals
         function onFlyout(kind) {
-            root.mode = kind === "mic" ? "mic" : "media";
-            root.show();
+            root.showLevel(kind === "mic" ? "mic" : "media");
         }
         function onToast(kind, title, subtitle) {
             root.showToast(kind, title, subtitle);
@@ -566,6 +592,8 @@ Scope {
 
         WlrLayershell.namespace: "quickshell-osd"
         WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: root.shown && root.mode === "toast" && root.toast.input
+                                     ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         // spider-sense: three jagged lines fanning out from each side of the card
         Repeater {
@@ -803,6 +831,56 @@ Scope {
                         }
                     }
 
+                    // ---- toast number field ("input" in the rich json) ----
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: root.mode === "toast" && root.toast.input !== null
+                        spacing: 8
+
+                        Text {
+                            text: root.toast.input?.label ?? ""
+                            color: Theme.dim
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 32
+                            radius: 8
+                            color: Theme.surface
+                            border.width: typed.activeFocus ? 1 : 0
+                            border.color: Theme.accent
+
+                            // takes the click so the card's click-to-dismiss never sees it
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.IBeamCursor
+                                onPressed: typed.forceActiveFocus()
+                            }
+
+                            TextInput {
+                                id: typed
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                verticalAlignment: TextInput.AlignVCenter
+                                text: root.toast.input?.value ?? ""
+                                validator: IntValidator { bottom: 0; top: 9999 }
+                                color: Theme.foreground
+                                font.family: Theme.font
+                                font.pixelSize: Theme.fontSize
+                                selectByMouse: true
+                                onActiveFocusChanged: if (activeFocus) selectAll()
+
+                                Connections {
+                                    target: root
+                                    function onToastChanged() { typed.text = root.toast.input?.value ?? ""; }
+                                }
+                            }
+                        }
+                    }
+
                     // ---- toast buttons ----
                     RowLayout {
                         Layout.fillWidth: true
@@ -834,9 +912,10 @@ Scope {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         const a = action.modelData;
-                                        Quickshell.execDetached(a.cmd);
+                                        const cmd = a.cmd.map(arg => arg === "{input}" ? typed.text : arg).filter(arg => arg !== "");
+                                        Quickshell.execDetached(cmd);
                                         if (a.then) root.showToast(a.then[0], a.then[1], a.then[2]);
-                                        else root.shown = false;
+                                        else root.dismiss();
                                     }
                                 }
                             }
