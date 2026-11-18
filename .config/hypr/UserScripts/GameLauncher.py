@@ -367,6 +367,21 @@ def prepare_prefix(name, prefix, env):
                    stderr=subprocess.DEVNULL, timeout=600)
 
 
+def gamepads_through_sdl(prefix, env):
+    """Controllers reach games through SDL only, not also as raw HID devices. The 8BitDo
+    Ultimate 2's 2.4 GHz dongle shows both ways and Proton then fails to create the gamepad
+    ("failed to create device for SDL bus device"), so games saw no controller. Set once per
+    prefix (the marker file); the 8BitDo config app keeps raw HID in its own prefix."""
+    marker = f"{prefix}/.gamepads-through-sdl"
+    if os.path.exists(marker):
+        return
+    done = subprocess.run(["umu-run", "reg", "add", r"HKLM\System\CurrentControlSet\Services\winebus",
+                           "/v", "DisableHidraw", "/t", "REG_DWORD", "/d", "1", "/f"],
+                          env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+    if done.returncode == 0:
+        open(marker, "w").close()
+
+
 def launch(game, gamescope=False, hud=False):
     name, icon, cmd, extra = game
     mark_played(name)
@@ -384,6 +399,7 @@ def launch(game, gamescope=False, hud=False):
         rom = switch_rom(exe)
         if not (rom and gamescope and eden_installed()):
             prepare_prefix(name, prefix, env)
+            gamepads_through_sdl(prefix, env)
         if not share_all_saves():
             notify(f"Windows drive isn't mounted at {WINDOWS}: not starting, the game couldn't save")
             return
