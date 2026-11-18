@@ -12,11 +12,13 @@ usual) and, only while no game is running, sends keyboard / mouse input:
   X           Backspace                Y             workspace overview
   Start       app launcher (Super)     LB / RB       previous / next workspace
 
-"A game is running" = game mode paused the theme pack (the flag file
-$XDG_RUNTIME_DIR/desktop-pack-paused, set by GameMode.sh and AutoGameMode.lua).
+It steps aside while a game is in front: game mode is on (the flag file
+$XDG_RUNTIME_DIR/desktop-pack-paused, set by GameMode.sh and AutoGameMode.lua) and the
+focused window is a game. Switch to another workspace and it drives the desktop again.
 Needs python-evdev (sudo pacman -S python-evdev).
 """
 import fcntl
+import json
 import os
 import selectors
 import subprocess
@@ -36,6 +38,8 @@ GAME_FLAG = f"{RUNTIME}/desktop-pack-paused"
 OFF_FLAG = f"{RUNTIME}/controller-desk-off"          # couch mode switched off (Select+Start)
 LAUNCHER = f"{HOME}/.config/hypr/UserScripts/GameLauncher.py"
 VIRTUAL_NAME = "ControllerDesk virtual input"
+GAME_PARENTS = (b"GameRun.sh", b"SteamLaunch")   # a window started by these is a game
+FOCUS_CHECK = 0.5        # seconds between "is a game focused?" checks while game mode is on
 LOCK = f"{RUNTIME}/controller-desk.lock"   # one copy only: a second start exits
 
 DEADZONE = 0.20          # of the stick's range: ignores drift
@@ -56,6 +60,31 @@ BUTTON_KEYS = {
 BUTTON_MOUSE = {e.BTN_THUMBL: e.BTN_MIDDLE}
 TRIGGER_MOUSE = {e.ABS_RZ: e.BTN_LEFT, e.ABS_Z: e.BTN_RIGHT}
 HAT_KEYS = {e.ABS_HAT0X: (e.KEY_LEFT, e.KEY_RIGHT), e.ABS_HAT0Y: (e.KEY_UP, e.KEY_DOWN)}
+
+
+def started_by_game_launcher(pid):
+    for _ in range(40):
+        if pid <= 1:
+            return False
+        try:
+            cmdline = open(f"/proc/{pid}/cmdline", "rb").read()
+            stat = open(f"/proc/{pid}/stat").read()
+        except OSError:
+            return False
+        if any(parent in cmdline for parent in GAME_PARENTS):
+            return True
+        pid = int(stat.rsplit(")", 1)[1].split()[1])    # parent pid (the name may contain spaces)
+    return False
+
+
+def game_focused():
+    try:
+        out = subprocess.run(["hyprctl", "activewindow", "-j"], capture_output=True, text=True, timeout=2).stdout
+        window = json.loads(out or "{}")
+    except (subprocess.SubprocessError, ValueError):
+        return True              # can't tell: stay out of the game's way
+    cls = window.get("class", "")
+    return cls == "gamescope" or cls.startswith("steam_app_") or started_by_game_launcher(window.get("pid", 0))
 
 
 def toast(kind, title, sub=""):
@@ -119,8 +148,18 @@ def main():
     trigger_down = {code: False for code in TRIGGER_MOUSE}
     moving = False            # a stick is tilted: tick at 120 Hz, otherwise wait for events
 
+    focus = {"checked": 0.0, "game": False}
+
+    def game_in_front():
+        if not os.path.exists(GAME_FLAG):
+            return False
+        now = time.monotonic()
+        if now - focus["checked"] > FOCUS_CHECK:
+            focus["checked"], focus["game"] = now, game_focused()
+        return focus["game"]
+
     def active():
-        return not os.path.exists(GAME_FLAG) and not os.path.exists(OFF_FLAG)
+        return not os.path.exists(OFF_FLAG) and not game_in_front()
 
     def press(keys, down):
         for k in (keys if down else reversed(keys)):
@@ -179,7 +218,7 @@ def main():
                 elif ev.type == e.EV_KEY:
                     down = ev.value != 0
                     keys_now = pad.dev.active_keys()
-                    if ev.code == e.BTN_MODE and down and not os.path.exists(GAME_FLAG):
+                    if ev.code == e.BTN_MODE and down and not game_in_front():
                         # setsid -f: the launcher runs on its own, nothing left to reap here
                         subprocess.run(["setsid", "-f", LAUNCHER], timeout=5)
                         continue
