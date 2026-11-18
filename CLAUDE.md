@@ -147,8 +147,10 @@ no copied artwork or film dialogue.
   (`system/udev/50-bluetooth-no-autosuspend.rules`). Headphones: Sony WH-CH720N
   (A2DP AAC by default, auto headset mode while mic in use, `wireplumber.conf.d/51-…`).
   Bluetooth mics have low priority (`53-…`) so they never become default on connect.
-- Controller: 8BitDo Ultimate 2. **Use Bluetooth;** its 2.4 GHz dongle breaks in Proton
-  (winebus fails to create the device). Over Bluetooth UPower reports its battery.
+- Controller: 8BitDo Ultimate 2, Bluetooth or its 2.4 GHz dongle (xpad). In Proton the dongle
+  shows as raw HID and SDL and winebus fails to create the gamepad, so `GameLauncher.py` sets
+  winebus `DisableHidraw=1` once per prefix (marker `.gamepads-through-sdl`). Over Bluetooth
+  UPower reports its battery.
 - Session: greetd + Quickshell greeter → "Hyprland (uwsm-managed)". Under uwsm, Quickshell is
   `quickshell.service` (auto-restart); outside uwsm (TTY login / crash restart) it's a plain `qs`.
   `Startup_Apps.lua` avoids starting a second bar either way.
