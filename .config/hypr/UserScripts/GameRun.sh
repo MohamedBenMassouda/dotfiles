@@ -48,10 +48,10 @@ line() {  # line KIND FALLBACK: a pack line with the game's name in it
   l=${l:-$2}
   echo "${l//\{game\}/$name}"
 }
-say() {  # say TITLE SUBTITLE [sticky]
+say() {  # say TITLE SUBTITLE [sticky]   ($actions: buttons, while set)
   local extra
-  extra=$(jq -nc --arg i "${GAME_ICON:-}" --argjson s "${3:-false}" \
-    '{sticky: $s} + (if ($i != "" and ($i | test("^/"))) then {image: $i} else {} end)')
+  extra=$(jq -nc --arg i "${GAME_ICON:-}" --argjson s "${3:-false}" --argjson a "${actions:-[]}" \
+    '{sticky: $s, actions: $a} + (if ($i != "" and ($i | test("^/"))) then {image: $i} else {} end)')
   qs ipc call osd rich game "$1" "$2" "$extra" >/dev/null 2>&1
 }
 
@@ -74,6 +74,20 @@ gpid=$!
 # or the game exits first
 first=$(jq -r --arg n "$name" '.[$n].played // 0' "$state" 2>/dev/null || echo 0)
 hint=""; [[ ${first:-0} == 0 ]] && hint=" · first launch can take a minute"
+# video memory: the GTX 1650 Ti has 4 GB and the desktop runs on it too. Psychonauts
+# crashed when it ran out, so with under 3 GB free and memory-hungry apps open, the
+# loading flyout says so and offers to close them (they get SIGTERM: Firefox keeps its tabs)
+HUNGRY=(Discord firefox chrome chromium brave)
+actions="[]"
+vram_free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null | head -1)
+open_hungry=()
+for app in "${HUNGRY[@]}"; do pgrep -x "$app" >/dev/null && open_hungry+=("$app"); done
+if [[ -n $vram_free ]] && (( vram_free < 3000 )) && (( ${#open_hungry[@]} )); then
+  hint+=" · $(awk -v m="$vram_free" 'BEGIN { printf "%.1f", m / 1024 }') GB video memory free"
+  actions=$(jq -nc --arg names "${open_hungry[*]}" '[{label: ("Close " + ($names | split(" ") | map((.[:1] | ascii_upcase) + .[1:]) | join(", "))), glyph: 983382,
+    cmd: ["pkill", "-TERM", "-x", ($names | gsub(" "; "|"))],
+    then: ["game", "Closed to free video memory", $names]}]')
+fi
 title=$(line gameStart "Starting {game}")
 say "$title" "Loading…$hint" true
 while kill -0 "$gpid" 2>/dev/null; do
