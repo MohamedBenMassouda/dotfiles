@@ -34,6 +34,8 @@ system/               files for /etc (udev rules…); never stowed, installed by
 .config/wallust/      colour templates (wallpaper → colours for hypr, rofi, quickshell, kitty, gtk, firefox)
 .config/wireplumber/  audio rules (wireplumber.conf.d/5x-*.conf)
 .config/systemd/user/ quickshell.service
+.config/autostart/    Hidden=true overrides for XDG autostart apps the bar replaces (nm-applet,
+                      print-applet; blueman stays: it answers Bluetooth pairing prompts)
 .config/uwsm/env      session environment
 .local/share/applications/  desktop entry overrides
 .zshrc .tmux.conf     shell (the Neovim config is a separate repo, cloned by bootstrap)
