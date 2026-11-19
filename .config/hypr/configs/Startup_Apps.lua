@@ -37,6 +37,8 @@ hl.on("hyprland.start", function()
     -- it keeps one copy running itself (a lock file): a `pgrep -f` guard here matched its
     -- own `sh -c` line, which names the script, so couch mode never started
     hl.exec_cmd(s .. "/ControllerDesk.py")
+    -- switches Bluetooth off and on when the Realtek chip gets stuck, then reconnects (one copy, lock file)
+    hl.exec_cmd(s .. "/BtWatch.sh")
     hl.exec_cmd(s .. "/Hyprsunset.sh init")
     hl.exec_cmd(app("wl-paste --type text --watch cliphist store"))
     hl.exec_cmd(app("wl-paste --type image --watch cliphist store"))
