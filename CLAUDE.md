@@ -185,5 +185,8 @@ no copied artwork or film dialogue.
 `sudo greeter/install.sh` (greeter + keyring unlock + sync unit),
 `sudo systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service`
 (without them Hyprland crashes on resume), `sudo cp system/udev/*.rules /etc/udev/rules.d/`,
-`127.0.1.1 archlinux` in `/etc/hosts`, `sudo cp system/tmpfiles.d/*.conf /etc/tmpfiles.d/ &&
-sudo systemd-tmpfiles --create` (game mode's CPU cap, `Pack.sh pause|resume`). Still open: `sudo pacman -Rns waybar` (unused leftover).
+`127.0.1.1 archlinux` in `/etc/hosts`, then `sudo bash system/finish-setup.sh` (idempotent):
+game mode's CPU cap (`tmpfiles.d/`), package cache trim, waybar removal.
+Snapshots: Timeshift (btrfs mode, weekly, excludes /home) + `timeshift-autosnap` before every
+pacman transaction; `grub-btrfsd --timeshift-auto` lists them in GRUB. `/boot` is FAT, so
+kernels aren't in snapshots.
