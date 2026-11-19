@@ -114,7 +114,14 @@ if ! $opened && (( played < 20 )); then
 fi
 
 h=$(( played / 3600 )) m=$(( played % 3600 / 60 ))
-say "$(line gameEnd "Back from {game}")" "$name · $( (( h )) && echo "$h h ")$m min played"
+# the NVIDIA driver logs each time a game asks for more video memory than is left (4 GB card):
+# stutter, missing textures or a crash. Say so, with the usual fix
+vram_misses=$(journalctl -k --since "@$start" -q -g "Failed to allocate NVKMS memory" 2>/dev/null | wc -l)
+if (( vram_misses > 0 )); then
+  say "$name ran out of video memory" "$vram_misses times this session · lower Texture Quality (High instead of Ultra) for fewer stutters and crashes"
+else
+  say "$(line gameEnd "Back from {game}")" "$name · $( (( h )) && echo "$h h ")$m min played"
+fi
 
 mkdir -p "${state%/*}"
 [[ -s $state ]] || echo '{}' > "$state"
