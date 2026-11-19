@@ -38,6 +38,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(s .. "/ControllerDesk.py")
     -- switches Bluetooth off and on when the Realtek chip gets stuck, then reconnects (one copy, lock file)
     hl.exec_cmd(s .. "/BtWatch.sh")
+    -- Spotifast starts at full volume each launch: remember its volume and put it back
+    hl.exec_cmd(s .. "/PlayerVolume.sh")
     hl.exec_cmd(s .. "/Hyprsunset.sh init")
     hl.exec_cmd(app("wl-paste --type text --watch cliphist store"))
     hl.exec_cmd(app("wl-paste --type image --watch cliphist store"))
