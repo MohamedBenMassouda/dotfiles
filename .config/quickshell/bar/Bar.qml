@@ -47,7 +47,7 @@ PanelWindow {
         MascotButton {}
         Workspaces { screenName: bar.screen.name }
         SysStats {}
-        Cava {}
+        Cava { screen: bar.screen }
         Taskbar { screenName: bar.screen.name }
     }
 
