@@ -24,6 +24,8 @@ import html
 import json
 import time
 import os
+import urllib.parse
+import urllib.request
 import re
 import shutil
 import subprocess
@@ -259,7 +261,7 @@ def mark_played(name):
 # per-game options, remembered in the stats file: gamescope (Windows games), the FPS
 # overlay, and extra launch arguments (e.g. -dx11: Unreal games default to DirectX 12,
 # which Proton runs through vkd3d, slow on NVIDIA; DirectX 11 goes through DXVK)
-DEFAULT_OPTIONS = {"gamescope": True, "hud": False, "args": []}
+DEFAULT_OPTIONS = {"gamescope": True, "hud": False, "args": [], "appid": ""}
 
 
 def game_options(name):
@@ -281,6 +283,8 @@ def options_menu(game):
         rows = ([f"Gamescope: {'on' if o['gamescope'] else 'off'}"] if windows else []) + [
             f"FPS overlay: {'on' if o['hud'] else 'off'}",
             f"Launch options: {' '.join(o['args']) or 'none'}" if windows else None,
+            f"Steam app ID: {o['appid'] or 'auto (' + (load_stats().get(name, {}).get('appid') or 'not found yet') + ')'}"
+            if windows else None,
             "Play"]
         rows = [r for r in rows if r]
         res = subprocess.run(["rofi", "-dmenu", "-i", "-p", name, "-format", "s"],
@@ -299,6 +303,13 @@ def options_menu(game):
             if typed.returncode != 0:
                 continue
             o["args"] = typed.stdout.split()
+        elif pick.startswith("Steam app ID"):
+            typed = subprocess.run(["rofi", "-dmenu", "-p", "Steam app ID", "-filter", o["appid"],
+                                    "-mesg", "The number in the game's Steam store link. Empty: find it automatically"],
+                                   input="", capture_output=True, text=True)
+            if typed.returncode != 0 or not (typed.stdout.strip().isdigit() or not typed.stdout.strip()):
+                continue
+            o["appid"] = typed.stdout.strip()
         else:
             launch(game, o["gamescope"], o["hud"], o["args"])
             return
@@ -453,6 +464,69 @@ def gamepads_through_sdl(name, prefix, env):
         open(marker, "w").close()
 
 
+# Proton fixes per game: GAMEID=umu-<Steam app ID> makes umu apply the game's protonfixes and
+# Proton's own per-game tweaks (it sets STEAM_COMPAT_APP_ID from it); umu-default gets none.
+# Found once per game and remembered in the stats file ("appid"), in this order: the app ID
+# set in Ctrl+O, a steam_appid.txt in the game folder (copies that aren't from the Steam
+# store often carry one), Steam's store search by the game's name (sends only the name).
+APP_ID_FILE = "steam_appid.txt"
+PLACEHOLDER_APP_IDS = {"0", "480"}   # 480 is Spacewar, Valve's test app: a stand-in, not the game
+NOT_THE_GAME = re.compile(r"soundtrack|\bost\b|dlc|pack|art ?book|upgrade|demo|bundle", re.I)
+
+
+def appid_from_folder(exe):
+    top = os.path.join(GAMES_DIR, os.path.relpath(exe, GAMES_DIR).split(os.sep)[0])
+    for root, dirs, files in os.walk(top):
+        if root[len(top):].count(os.sep) >= 4:
+            dirs[:] = []
+        for f in files:
+            if f.lower() == APP_ID_FILE:
+                text = open(os.path.join(root, f), errors="ignore").read().strip()
+                if text.isdigit() and text not in PLACEHOLDER_APP_IDS:
+                    return text
+    return None
+
+
+def appid_from_store(name):
+    """None when Steam can't be reached (try again next launch), "" when it has no match.
+    Searches the name as written, then without punctuation (Steam finds nothing for
+    "Sackboy - A Big Adventure" but does for "Sackboy A Big Adventure")."""
+    items = []
+    for term in dict.fromkeys([name, " ".join(re.sub(r"[^\w\s]", " ", name).split())]):
+        url = "https://store.steampowered.com/api/storesearch/?" + urllib.parse.urlencode(
+            {"term": term, "l": "english", "cc": "US"})
+        try:
+            items = json.load(urllib.request.urlopen(url, timeout=8)).get("items", [])
+        except (OSError, ValueError):
+            return None
+        if items:
+            break
+    wanted = norm(name)
+    games = [i for i in items if not NOT_THE_GAME.search(i.get("name", ""))]
+    for item in games:
+        if norm(item.get("name", "")) == wanted:
+            return str(item["id"])
+    for item in games:
+        if wanted and wanted in norm(item.get("name", "")):
+            return str(item["id"])
+    return ""
+
+
+def umu_game_id(name, exe):
+    o = game_options(name)
+    if o["appid"]:
+        return f"umu-{o['appid']}"
+    stats = load_stats()
+    found = stats.get(name, {}).get("appid")
+    if found is None:
+        found = appid_from_folder(exe) or appid_from_store(name)
+        if found is not None:
+            stats = load_stats()
+            stats.setdefault(name, {})["appid"] = found
+            save_stats(stats)
+    return f"umu-{found}" if found else "umu-default"
+
+
 def launch(game, gamescope=False, hud=False, args=()):
     name, icon, cmd, extra = game
     mark_played(name)
@@ -465,7 +539,7 @@ def launch(game, gamescope=False, hud=False, args=()):
         exe, slug = extra
         prefix = f"{PREFIXES}/{slug}"
         os.makedirs(prefix, exist_ok=True)
-        env.update(WINEPREFIX=prefix, GAMEID="umu-default")
+        env.update(WINEPREFIX=prefix, GAMEID=umu_game_id(name, exe))
         cwd = os.path.dirname(exe)
         rom = switch_rom(exe)
         if not (rom and gamescope and eden_installed()):
