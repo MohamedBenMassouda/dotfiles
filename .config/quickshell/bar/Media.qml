@@ -14,7 +14,11 @@ Item {
     // the player that is playing, else the first one
     readonly property var player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
     readonly property string song: player ? [player.trackTitle, player.trackArtist].filter(s => s).join(" - ") : ""
-    readonly property string appIcon: player ? (Icons.forApp(player.desktopEntry) || Icons.forApp(player.identity)) : ""
+    // Spotify clients (Spotifast, spotify-player) show the Spotify icon instead of their own
+    readonly property bool spotifyClient: /spotifast|spotify.player|spotify_player/i.test((player?.desktopEntry ?? "") + " " + (player?.identity ?? ""))
+    readonly property string appIcon: !player ? ""
+        : spotifyClient ? (Icons.forApp("com.spotify.Client") || Icons.forApp("spotify"))
+        : (Icons.forApp(player.desktopEntry) || Icons.forApp(player.identity))
 
     // the bar shrinks this on narrow screens so the right island never reaches the clock
     property real maxTextWidth: 240
