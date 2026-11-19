@@ -1,0 +1,6 @@
+[Unit]
+Description=Check disk health (SMART), for the login flyout (hypr/scripts/DiskHealth.sh)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/disk-health
