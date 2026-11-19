@@ -82,7 +82,12 @@ while kill -0 "$gpid" 2>/dev/null; do
   while read -r pid; do ours "$pid" && { opened=true; break; }; done < <(hyprctl clients -j | jq -r '.[].pid')
   $opened && break
   t=$(( $(date +%s) - start ))
-  (( t % 3 == 0 )) && say "$title" "Loading… ${t} s$hint" true
+  # umu fetching a new Proton / Steam runtime first: say so, it can take minutes
+  if read -r mb what < <("$HOME/.config/hypr/UserScripts/UmuDownload.sh"); then
+    say "Downloading $what" "$mb MB so far · one-time, then $name starts" true
+  elif (( t % 3 == 0 )); then
+    say "$title" "Loading… ${t} s$hint" true
+  fi
 done
 qs ipc call osd dismissKind game >/dev/null 2>&1
 

@@ -37,6 +37,7 @@ SKIP_DIRS = {"GameSaves"}
 STATE = f"{HOME}/.local/state/game-launcher.json"
 ICONS = f"{HOME}/.cache/game-launcher/icons"
 RUN = os.path.join(os.path.dirname(os.path.realpath(__file__)), "GameRun.sh")
+DOWNLOAD = os.path.join(os.path.dirname(os.path.realpath(__file__)), "UmuDownload.sh")
 # helper executables and tools that are not the game itself
 NOT_GAME = re.compile(
     r"unins|setup|install|redist|crash|createdump|dedicatedserver|server\.exe|qtwebengine|"
@@ -354,6 +355,25 @@ def share_all_saves():
     return True
 
 
+def run_umu(args, env, name):
+    """umu-run ARGS; while umu downloads a new Proton or Steam runtime first (one-time,
+    minutes), a sticky flyout shows it (UmuDownload.sh finds the download). Returns the exit code."""
+    proc = subprocess.Popen(["umu-run"] + args, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    shown = False
+    while proc.poll() is None:
+        time.sleep(1)
+        download = subprocess.run([DOWNLOAD], capture_output=True, text=True).stdout.split(maxsplit=1)
+        if download:
+            subprocess.run(["qs", "ipc", "call", "osd", "rich", "game", f"Downloading {download[1]}",
+                            f"{download[0]} MB so far · one-time, then {name} starts",
+                            json.dumps({"sticky": True})], capture_output=True)
+            shown = True
+        elif shown:
+            subprocess.run(["qs", "ipc", "call", "osd", "dismissKind", "game"], capture_output=True)
+            shown = False
+    return proc.returncode
+
+
 def prepare_prefix(name, prefix, env):
     """A new game's prefix is made before its first run, so its save folders can be
     linked to the Windows ones first (else the first run saves inside the prefix and
@@ -363,11 +383,10 @@ def prepare_prefix(name, prefix, env):
     subprocess.run(["qs", "ipc", "call", "osd", "rich", "game", f"Setting up {name}",
                     "First launch: linking your Windows saves", json.dumps({"sticky": True})],
                    capture_output=True)
-    subprocess.run(["umu-run", "wineboot", "-u"], env=env, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL, timeout=600)
+    run_umu(["wineboot", "-u"], env, name)
 
 
-def gamepads_through_sdl(prefix, env):
+def gamepads_through_sdl(name, prefix, env):
     """Controllers reach games through SDL only, not also as raw HID devices. The 8BitDo
     Ultimate 2's 2.4 GHz dongle shows both ways and Proton then fails to create the gamepad
     ("failed to create device for SDL bus device"), so games saw no controller. Set once per
@@ -375,10 +394,8 @@ def gamepads_through_sdl(prefix, env):
     marker = f"{prefix}/.gamepads-through-sdl"
     if os.path.exists(marker):
         return
-    done = subprocess.run(["umu-run", "reg", "add", r"HKLM\System\CurrentControlSet\Services\winebus",
-                           "/v", "DisableHidraw", "/t", "REG_DWORD", "/d", "1", "/f"],
-                          env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
-    if done.returncode == 0:
+    if run_umu(["reg", "add", r"HKLM\System\CurrentControlSet\Services\winebus",
+                "/v", "DisableHidraw", "/t", "REG_DWORD", "/d", "1", "/f"], env, name) == 0:
         open(marker, "w").close()
 
 
@@ -399,7 +416,7 @@ def launch(game, gamescope=False, hud=False):
         rom = switch_rom(exe)
         if not (rom and gamescope and eden_installed()):
             prepare_prefix(name, prefix, env)
-            gamepads_through_sdl(prefix, env)
+            gamepads_through_sdl(name, prefix, env)
         if not share_all_saves():
             notify(f"Windows drive isn't mounted at {WINDOWS}: not starting, the game couldn't save")
             return
