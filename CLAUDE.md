@@ -126,6 +126,9 @@ no copied artwork or film dialogue.
   Per-game options (gamescope, MangoHud, launch args like `-dx11`) live in
   `~/.local/state/game-launcher.json` (`options`), never in code (the repo is public): Enter plays
   with them, Alt+Enter / Shift+Enter flip gamescope / MangoHud and remember, Ctrl+O edits.
+  `GAMEID=umu-<Steam app ID>` (protonfixes + Proton's per-app tweaks): app ID from Ctrl+O, else
+  a `steam_appid.txt` in the folder (480 = Spacewar placeholder, ignored), else Steam's store
+  search by name; cached as `appid` in the state file ("" = none found, `umu-default`).
   GameRun: game mode, gamemoderun, sticky loading flyout until the game's window appears
   (also shows umu downloading a new Proton via `UmuDownload.sh`, and low video memory with a
   button to close Discord/browsers), playtime in the same state file. `--list` prints what it finds.
