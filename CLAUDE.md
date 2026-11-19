@@ -186,7 +186,9 @@ no copied artwork or film dialogue.
 `sudo systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service`
 (without them Hyprland crashes on resume), `sudo cp system/udev/*.rules /etc/udev/rules.d/`,
 `127.0.1.1 archlinux` in `/etc/hosts`, then `sudo bash system/finish-setup.sh` (idempotent):
-game mode's CPU cap (`tmpfiles.d/`), package cache trim, waybar removal.
+game mode's CPU cap (`tmpfiles.d/`), package cache trim, waybar removal, weekly SMART check
+(`system/disk-health/` → `/var/lib/disk-health/status`, flyout at login via `DiskHealth.sh`),
+fwupd + `fwupdmgr get-updates`.
 Snapshots: Timeshift (btrfs mode, weekly, excludes /home) + `timeshift-autosnap` before every
 pacman transaction; `grub-btrfsd --timeshift-auto` lists them in GRUB. `/boot` is FAT, so
 kernels aren't in snapshots.
