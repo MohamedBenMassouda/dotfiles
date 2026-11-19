@@ -243,13 +243,66 @@ def load_stats():
         return {}
 
 
-def mark_played(name):
-    stats = load_stats()
-    stats.setdefault(name, {})["last"] = int(time.time())
+def save_stats(stats):
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     with open(STATE + ".tmp", "w") as f:
         json.dump(stats, f)
     os.replace(STATE + ".tmp", STATE)
+
+
+def mark_played(name):
+    stats = load_stats()
+    stats.setdefault(name, {})["last"] = int(time.time())
+    save_stats(stats)
+
+
+# per-game options, remembered in the stats file: gamescope (Windows games), the FPS
+# overlay, and extra launch arguments (e.g. -dx11: Unreal games default to DirectX 12,
+# which Proton runs through vkd3d, slow on NVIDIA; DirectX 11 goes through DXVK)
+DEFAULT_OPTIONS = {"gamescope": True, "hud": False, "args": []}
+
+
+def game_options(name):
+    return {**DEFAULT_OPTIONS, **load_stats().get(name, {}).get("options", {})}
+
+
+def save_options(name, options):
+    stats = load_stats()
+    stats.setdefault(name, {})["options"] = options
+    save_stats(stats)
+
+
+def options_menu(game):
+    """Ctrl+O on a game: switch gamescope / the FPS overlay, edit launch options, play."""
+    name, _icon, cmd, _extra = game
+    windows = cmd[0] == "umu-run"
+    while True:
+        o = game_options(name)
+        rows = ([f"Gamescope: {'on' if o['gamescope'] else 'off'}"] if windows else []) + [
+            f"FPS overlay: {'on' if o['hud'] else 'off'}",
+            f"Launch options: {' '.join(o['args']) or 'none'}" if windows else None,
+            "Play"]
+        rows = [r for r in rows if r]
+        res = subprocess.run(["rofi", "-dmenu", "-i", "-p", name, "-format", "s"],
+                             input="\n".join(rows), capture_output=True, text=True)
+        pick = res.stdout.strip()
+        if res.returncode != 0 or not pick:
+            return
+        if pick.startswith("Gamescope"):
+            o["gamescope"] = not o["gamescope"]
+        elif pick.startswith("FPS overlay"):
+            o["hud"] = not o["hud"]
+        elif pick.startswith("Launch options"):
+            typed = subprocess.run(["rofi", "-dmenu", "-p", "Launch options", "-filter", " ".join(o["args"]),
+                                    "-mesg", "e.g. -dx11. Empty: none"],
+                                   input="", capture_output=True, text=True)
+            if typed.returncode != 0:
+                continue
+            o["args"] = typed.stdout.split()
+        else:
+            launch(game, o["gamescope"], o["hud"], o["args"])
+            return
+        save_options(name, o)
 
 
 def ago(ts):
@@ -270,6 +323,13 @@ def subtitle(game, stats):
         parts.append(f"{h:.0f} h played" if h >= 1 else f"{s['played'] // 60} min played")
     if s.get("last"):
         parts.append(ago(s["last"]))
+    o = {**DEFAULT_OPTIONS, **s.get("options", {})}
+    if cmd[0] == "umu-run" and not o["gamescope"]:
+        parts.append("no gamescope")
+    if o["hud"]:
+        parts.append("FPS overlay")
+    if o["args"] and cmd[0] == "umu-run":
+        parts.append(" ".join(o["args"]))
     return " · ".join(parts)
 
 
@@ -285,12 +345,6 @@ def subtitle(game, stats):
 # (UserConfigs/Startup_Apps.lua), on every launcher start, or with
 # `GameLauncher.py --share-saves`.
 WINDOWS = "/mnt/Windows"
-# extra arguments for a Windows game, by its prefix name (/mnt/Data/Games/.umu/<name>).
-# -dx11: Unreal games default to DirectX 12, which Proton runs through vkd3d, slow on
-# NVIDIA; DirectX 11 goes through DXVK and runs close to Windows speed
-GAME_ARGS = {
-    "psychonauts-2": ["-dx11"],
-}
 SAVE_DIRS = ["Documents", "Saved Games", "AppData/Roaming", "AppData/Local", "AppData/LocalLow"]
 WINE_USER = f"{HOME}/.wine/drive_c/users/{os.environ.get('USER', 'user')}"
 
@@ -399,7 +453,7 @@ def gamepads_through_sdl(name, prefix, env):
         open(marker, "w").close()
 
 
-def launch(game, gamescope=False, hud=False):
+def launch(game, gamescope=False, hud=False, args=()):
     name, icon, cmd, extra = game
     mark_played(name)
     env, cwd = dict(os.environ), None
@@ -425,7 +479,7 @@ def launch(game, gamescope=False, hud=False):
             # Alt+Enter (gamescope=False) keeps the Windows emulator
             cmd = [RUN] + (["--hud"] if hud else []) + [name] + EDEN + ["-f", "-g", rom]
         else:
-            cmd = [RUN] + (["--gamescope"] if gamescope else []) + (["--hud"] if hud else []) + [name, "umu-run", exe] + GAME_ARGS.get(slug, [])
+            cmd = [RUN] + (["--gamescope"] if gamescope else []) + (["--hud"] if hud else []) + [name, "umu-run", exe] + list(args)
     subprocess.Popen(cmd, env=env, cwd=cwd, start_new_session=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if cmd[0] == "steam":   # Windows/Switch games say hello through GameRun.sh
@@ -477,11 +531,21 @@ def main():
     res = subprocess.run(["rofi", "-dmenu", "-i", "-p", "Games", "-show-icons", "-markup-rows",
                           "-format", "i", "-kb-custom-1", "Alt+Return",
                           "-kb-accept-alt", "Control+Alt+Return", "-kb-custom-2", "Shift+Return",
-                          "-mesg", "Enter: play (Windows games in gamescope)   ·   Alt+Enter: without gamescope   ·   Shift+Enter: FPS overlay shown (Alt+R in game toggles it)"],
+                          "-kb-custom-3", "Control+o",
+                          "-mesg", "Enter: play   ·   Alt+Enter: gamescope on/off   ·   Shift+Enter: FPS overlay on/off   ·   Ctrl+O: options   (remembered per game)"],
                          input=rows, capture_output=True, text=True)
-    # exit 0: Enter (gamescope), 10: Alt+Enter (no gamescope), 11: Shift+Enter (gamescope + FPS overlay)
-    if res.returncode in (0, 10, 11) and res.stdout.strip().isdigit():
-        launch(games[int(res.stdout.strip())], gamescope=res.returncode != 10, hud=res.returncode == 11)
+    # exit 0: Enter, 10: Alt+Enter (flip gamescope), 11: Shift+Enter (flip the FPS overlay), 12: Ctrl+O
+    if res.returncode not in (0, 10, 11, 12) or not res.stdout.strip().isdigit():
+        return
+    game = games[int(res.stdout.strip())]
+    if res.returncode == 12:
+        options_menu(game)
+        return
+    o = game_options(game[0])
+    if res.returncode in (10, 11):
+        o["gamescope" if res.returncode == 10 else "hud"] ^= True
+        save_options(game[0], o)
+    launch(game, o["gamescope"], o["hud"], o["args"])
 
 
 if __name__ == "__main__":
