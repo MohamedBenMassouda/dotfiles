@@ -93,7 +93,11 @@ def report(log, start):
         return
     with log.open(errors="replace") as f:
         f.seek(start)
-        upgraded = re.findall(r"\[ALPM\] (?:upgraded|installed) (\S+) ", f.read())
+        text = f.read()
+    upgraded = re.findall(r"\[ALPM\] (?:upgraded|installed) (\S+) ", text)
+    # timeshift-autosnap snapshots the system before the upgrade; grub-btrfsd lists it in
+    # GRUB's "Arch Linux snapshots" menu, which can boot that version if this update breaks something
+    snapshot = "timeshift-autosnap.hook" in text
     if not upgraded:
         return
     restart = sorted({p for p in upgraded if RESTART.match(p)})
@@ -106,6 +110,8 @@ def report(log, start):
         sub = "Restart for the new " + ", ".join(restart[:3])
     else:
         extra, sub = {}, ", ".join(upgraded[:4]) + (" …" if len(upgraded) > 4 else "")
+    if snapshot:
+        sub += " · snapshot taken before"
     subprocess.call(["qs", "ipc", "call", "osd", "rich", "updated", title, sub, json.dumps(extra)],
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
