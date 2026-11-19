@@ -7,9 +7,16 @@
 #   Pack.sh pause|resume  game mode: everything acts as "none" until resumed
 packs="$HOME/.config/quickshell/packs"
 paused="${XDG_RUNTIME_DIR:-/tmp}/desktop-pack-paused"
+# game mode also caps the CPU's top speed (pause and resume are its on/off, from GameMode.sh
+# and UserConfigs/AutoGameMode.lua): 80% keeps the laptop cooler (it reached 89°C) for almost
+# no FPS. Needs system/tmpfiles.d/cpu-game-cap.conf installed, else it's skipped.
+cpu_cap=/sys/devices/system/cpu/intel_pstate/max_perf_pct
+GAME_CPU_PERCENT=80
 case ${1:-} in
-  pause) touch "$paused"; exec qs ipc call panel packPaused true >/dev/null 2>&1 ;;
-  resume) rm -f "$paused"; exec qs ipc call panel packPaused false >/dev/null 2>&1 ;;
+  pause) touch "$paused"; [[ -w $cpu_cap ]] && echo "$GAME_CPU_PERCENT" > "$cpu_cap"
+         exec qs ipc call panel packPaused true >/dev/null 2>&1 ;;
+  resume) rm -f "$paused"; [[ -w $cpu_cap ]] && echo 100 > "$cpu_cap"
+          exec qs ipc call panel packPaused false >/dev/null 2>&1 ;;
 esac
 name=$(cat "$HOME/.local/state/desktop-pack" 2>/dev/null)
 name=${name:-spiderman}
