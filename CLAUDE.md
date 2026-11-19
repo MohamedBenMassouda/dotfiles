@@ -122,16 +122,21 @@ no copied artwork or film dialogue.
 - `ArchUpdate.py`: Arch news first, `yay -Syu`, then a flyout (restart button for kernel/driver).
 - `GameLauncher.py` (SUPER+CTRL+G) + `GameRun.sh`: Steam, Steam shortcuts, Windows games in
   `/mnt/Data/Games` via umu-run (prefix per game in `/mnt/Data/Games/.umu/<slug>`; saves of
-  prefixes and `~/.wine` link to the Windows user folders on `/mnt/Windows`, fstab), Switch games in the Eden Flatpak. Enter = gamescope,
-  Alt+Enter = without, Shift+Enter = MangoHud shown (Alt+R toggles in game). GameRun: game
-  mode, gamemoderun, sticky loading flyout until the game's window appears, playtime in
-  `~/.local/state/game-launcher.json`. `--list` prints what it finds.
+  prefixes and `~/.wine` link to the Windows user folders on `/mnt/Windows`, fstab), Switch games in the Eden Flatpak.
+  Per-game options (gamescope, MangoHud, launch args like `-dx11`) live in
+  `~/.local/state/game-launcher.json` (`options`), never in code (the repo is public): Enter plays
+  with them, Alt+Enter / Shift+Enter flip gamescope / MangoHud and remember, Ctrl+O edits.
+  GameRun: game mode, gamemoderun, sticky loading flyout until the game's window appears
+  (also shows umu downloading a new Proton via `UmuDownload.sh`, and low video memory with a
+  button to close Discord/browsers), playtime in the same state file. `--list` prints what it finds.
 - Training is **rep**, a separate repo (`/mnt/Data/Programming/Python/rep`, installed with
   `uv tool install`, its own CLAUDE.md). Here only the Training tile in `ControlCenter.qml`
   calls `~/.local/bin/rep`, and `~/.config/rep/config.toml` (not in this repo, holds personal
   data) sets `line_command = "~/.config/hypr/scripts/Pack.sh quip {kind}"` for pack lines.
 - `ControllerDesk.py`: couch mode (controller drives the desktop when no game; Home = game
   launcher; View+Menu toggles). Needs python-evdev; reads devices without grabbing.
+- `BtWatch.sh` (login): Bluetooth off/on + reconnect when the Realtek chip logs
+  "Function not implemented (38)".
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for
   long commands), `Sounds.sh`, `Pack.sh`, `BtProfile.sh`, `GameMode.sh`, `WallustSwww.sh`.
 - Menus are rofi (`UserScripts/*Menu.sh`, `applet.sh` helpers, `menu-toggle.sh` so the same key closes).
