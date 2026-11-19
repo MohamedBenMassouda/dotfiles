@@ -1,0 +1,5 @@
+[Desktop Entry]
+# off: the Quickshell bar already handles this (quick settings); this file overrides /etc/xdg/autostart/print-applet.desktop
+Type=Application
+Name=print-applet
+Hidden=true

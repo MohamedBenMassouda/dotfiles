@@ -20,7 +20,6 @@ hl.on("hyprland.start", function()
     end
     hl.exec_cmd(s .. "/Dropterminal.sh kitty")
     hl.exec_cmd(s .. "/Polkit.sh")
-    hl.exec_cmd(app("nm-applet --indicator"))
     hl.exec_cmd(app("kdeconnectd"))  -- phone: notifications, battery, file sharing (quick settings)
     -- bar, flyouts, notifications, panels (~/.config/quickshell). Under uwsm it runs
     -- as a service that restarts itself if it crashes (systemd/user/quickshell.service)

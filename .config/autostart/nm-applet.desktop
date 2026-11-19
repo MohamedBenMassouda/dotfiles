@@ -1,0 +1,5 @@
+[Desktop Entry]
+# off: the Quickshell bar already handles this (quick settings); this file overrides /etc/xdg/autostart/nm-applet.desktop
+Type=Application
+Name=nm-applet
+Hidden=true
