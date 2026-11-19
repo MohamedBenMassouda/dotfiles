@@ -142,6 +142,8 @@ no copied artwork or film dialogue.
   launcher; View+Menu toggles). Needs python-evdev; reads devices without grabbing.
 - `BtWatch.sh` (login): Bluetooth off/on + reconnect when the Realtek chip logs
   "Function not implemented (38)".
+- `PlayerVolume.sh` (login): saves Spotifast's MPRIS volume (`~/.local/state/spotifast-volume`)
+  and restores it when Spotifast starts at 100% (its Soloist player always does).
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for
   long commands), `Sounds.sh`, `Pack.sh`, `BtProfile.sh`, `GameMode.sh`, `WallustSwww.sh`.
 - Menus are rofi (`UserScripts/*Menu.sh`, `applet.sh` helpers, `menu-toggle.sh` so the same key closes).
