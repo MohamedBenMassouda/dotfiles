@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Quick notes in ~/Documents/notes, written in $EDITOR (nvim) in a floating kitty.
+# Quick notes on the Data drive (/mnt/Data/Documents/notes, kept off the system SSD),
+# written in $EDITOR (nvim) in a floating kitty. ~/Documents/notes links there.
 #   Notes.sh new      SUPER+ALT+N  new note, named by date (2026-11-07_1432.md)
 #   Notes.sh search   SUPER+SHIFT+N  rofi list of notes, newest first; typing
 #                     matches titles AND contents; Enter opens it
@@ -7,7 +8,13 @@
 # line is "# Some title" is renamed to some-title.md.
 set -euo pipefail
 
-dir="$HOME/Documents/notes"
+data=/mnt/Data
+dir="$data/Documents/notes"
+if ! mountpoint -q "$data"; then   # never save into the empty mount folder
+  qs ipc call osd toast disk "Notes unavailable" "The Data drive isn't mounted" >/dev/null 2>&1 \
+    || notify-send "Notes unavailable" "The Data drive isn't mounted"
+  exit 1
+fi
 mkdir -p "$dir"
 
 edit() {
