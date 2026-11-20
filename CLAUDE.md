@@ -142,6 +142,10 @@ no copied artwork or film dialogue.
   launcher; View+Menu toggles). Needs python-evdev; reads devices without grabbing.
 - `BtWatch.sh` (login): Bluetooth off/on + reconnect when the Realtek chip logs
   "Function not implemented (38)".
+- Phone (KDE Connect, iPhone app too): `PhoneReceive.sh` (login) watches the share plugin's
+  `shareReceived` D-Bus signal and puts received pictures in the clipboard (HEIC → PNG via
+  magick); `PhoneSend.sh` (SUPER+ALT+V) sends the clipboard: text via the clipboard plugin,
+  images as a file. iOS pauses the app in the background, so it must be open.
 - `PlayerVolume.sh` (login): saves Spotifast's MPRIS volume (`~/.local/state/spotifast-volume`)
   and restores it when Spotifast starts at 100% (its Soloist player always does).
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for
