@@ -42,6 +42,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(s .. "/PlayerVolume.sh")
     -- warns if the weekly disk check (system/disk-health) found a drive reporting trouble
     hl.exec_cmd(s .. "/DiskHealth.sh")
+    -- says which app systemd-oomd closed when memory ran out (system/oomd/)
+    hl.exec_cmd(s .. "/OomWatch.sh")
     hl.exec_cmd(s .. "/Hyprsunset.sh init")
     hl.exec_cmd(app("wl-paste --type text --watch cliphist store"))
     hl.exec_cmd(app("wl-paste --type image --watch cliphist store"))
