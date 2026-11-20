@@ -44,6 +44,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(s .. "/DiskHealth.sh")
     -- says which app systemd-oomd closed when memory ran out (system/oomd/)
     hl.exec_cmd(s .. "/OomWatch.sh")
+    -- pictures shared from the phone (KDE Connect) go straight into the clipboard
+    hl.exec_cmd(s .. "/PhoneReceive.sh")
     hl.exec_cmd(s .. "/Hyprsunset.sh init")
     hl.exec_cmd(app("wl-paste --type text --watch cliphist store"))
     hl.exec_cmd(app("wl-paste --type image --watch cliphist store"))

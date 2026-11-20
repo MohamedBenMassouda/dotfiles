@@ -43,6 +43,7 @@ bind("SUPER + CTRL + R", "Recording menu", exec(us .. "/RecordMenu.sh"))
 bind("SUPER + ALT + D", "Dev menu (containers, ports, lazygit)", exec(us .. "/DevMenu.sh"))
 bind("SUPER + ALT + N", "New note", exec(us .. "/Notes.sh new"))
 bind("SUPER + SHIFT + N", "Search notes", exec(us .. "/Notes.sh search"))
+bind("SUPER + ALT + V", "Send clipboard to phone", exec(s .. "/PhoneSend.sh"))  -- KDE Connect
 bind("SUPER + ALT + G", "Switch primary GPU (next login)", exec(us .. "/GpuPrimary.sh toggle"))
 bind("SUPER + ALT + P", "Cycle power profile", exec(us .. "/PowerProfile.sh"))
 bind("SUPER + SHIFT + R", "Start/stop screen recording", exec(us .. "/ScreenRecord.sh"))
