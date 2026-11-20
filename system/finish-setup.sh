@@ -8,6 +8,8 @@
 # 4. Show what holds the kernel's unreclaimable memory (for checking, changes nothing).
 # 5. Weekly disk health check (disk-health/), shown at login by hypr/scripts/DiskHealth.sh.
 # 6. Firmware: install fwupd and list available updates (installs nothing by itself).
+# 7. systemd-oomd (oomd/): when RAM runs out, close the app using the most memory instead
+#    of the whole desktop freezing; hypr/scripts/OomWatch.sh says which app it closed.
 set -euo pipefail
 [[ $EUID -eq 0 ]] || { echo "Run with sudo: sudo bash $0"; exit 1; }
 here=$(dirname "$(readlink -f "$0")")
@@ -43,6 +45,14 @@ pacman -S --needed --noconfirm fwupd
 fwupdmgr refresh --force >/dev/null 2>&1 || true
 fwupdmgr get-updates || true
 echo "To install them: fwupdmgr update   (laptop on the charger; a BIOS update restarts the laptop)"
+
+step "7. Out-of-memory protection"
+install -D -m 644 "$here/oomd/user-service-oomd.conf" /etc/systemd/system/user@.service.d/10-oomd.conf
+install -D -m 644 "$here/oomd/root-slice-oomd.conf" /etc/systemd/system/-.slice.d/10-oomd.conf
+install -D -m 644 "$here/oomd/oomd.conf" /etc/systemd/oomd.conf.d/10-desktop.conf
+systemctl daemon-reload
+systemctl enable --now systemd-oomd.service
+oomctl | head -20
 
 echo
 echo "Done. (System snapshots are Timeshift's: timeshift-autosnap before every update, listed in GRUB.)"
