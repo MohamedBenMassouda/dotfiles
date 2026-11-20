@@ -188,7 +188,8 @@ no copied artwork or film dialogue.
 `127.0.1.1 archlinux` in `/etc/hosts`, then `sudo bash system/finish-setup.sh` (idempotent):
 game mode's CPU cap (`tmpfiles.d/`), package cache trim, waybar removal, weekly SMART check
 (`system/disk-health/` → `/var/lib/disk-health/status`, flyout at login via `DiskHealth.sh`),
-fwupd + `fwupdmgr get-updates`.
+fwupd + `fwupdmgr get-updates`, systemd-oomd (`system/oomd/`: closes the app using the most
+memory under pressure or at 90% swap; `OomWatch.sh` names it in a flyout).
 Snapshots: Timeshift (btrfs mode, weekly, excludes /home) + `timeshift-autosnap` before every
 pacman transaction; `grub-btrfsd --timeshift-auto` lists them in GRUB. `/boot` is FAT, so
 kernels aren't in snapshots.
