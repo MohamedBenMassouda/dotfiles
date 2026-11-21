@@ -152,7 +152,9 @@ no copied artwork or film dialogue.
   Pictures, Desktop → `~/Pictures/Screenshots`; sets every KDE Connect device's `incoming_path`
   to `~/Pictures/kde-connect` and moves non-media on to `~/Documents/kde-connect`. Moves only,
   never overwrites (" (2)"). `tidy.timer` (user, daily) runs it with `--trash-old 3`: screenshots
-  and KDE Connect files older than 3 days go to the trash (`gio trash`, recoverable).
+  and KDE Connect files older than 3 days go to the trash (`gio trash`, recoverable), and
+  pictures copied more than 3 days ago leave the cliphist history (it has no dates: first-seen
+  day per entry id in `~/.local/state/tidy-clip-images`; text entries untouched).
 - `PlayerVolume.sh` (login): saves Spotifast's MPRIS volume (`~/.local/state/spotifast-volume`)
   and restores it when Spotifast starts at 100% (its Soloist player always does).
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for

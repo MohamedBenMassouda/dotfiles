@@ -11,6 +11,10 @@
 # - KDE Connect: every phone saves to ~/Pictures/kde-connect (set here for each paired
 #   phone); anything that isn't a picture or video moves on to ~/Documents/kde-connect.
 #   The old ~/Documents/Kdeconnect folder is sorted the same way.
+# - Clipboard history (cliphist): with --trash-old, pictures copied more than DAYS ago are
+#   removed from it (every screenshot is copied, so they piled up there too). cliphist keeps
+#   no dates, so the day each picture first shows up is noted in ~/.local/state/tidy-clip-images;
+#   the first time, everything but the newest 20 pictures goes. Text entries are left alone.
 # - Leftovers: clipboard pictures sent to the phone (~/.cache/phone-send) after a day.
 # Files are never overwritten: a name that's taken gets " (2)", " (3)"… added.
 set -uo pipefail
@@ -95,6 +99,39 @@ if [[ -n $trash_days ]]; then
   done < <(find "$phone_media" "$phone_files" -type f -mtime +"$trash_days" -print0)
 fi
 
+# ---- clipboard history pictures ----
+removed_clip=0
+if [[ -n $trash_days ]] && command -v cliphist >/dev/null; then
+  seen="${XDG_STATE_HOME:-$HOME/.local/state}/tidy-clip-images"
+  mkdir -p "${seen%/*}"
+  first_time=false
+  [[ -f $seen ]] || first_time=true
+  touch "$seen"
+  today=$(date +%s)
+  # picture entries, newest first: "<id>\t[[ binary data … ]]"
+  mapfile -t images < <(cliphist list | awk -F'\t' '$2 ~ /^\[\[ binary data/ {print $1}')
+  declare -A first_seen=()
+  while read -r id when; do [[ -n $id ]] && first_seen[$id]=$when; done < "$seen"
+  kept=() index=0
+  for id in "${images[@]}"; do
+    index=$((index + 1))
+    when=${first_seen[$id]:-}
+    if $first_time && (( index > 20 )); then
+      old=true
+    elif [[ -z $when ]]; then
+      when=$today old=false
+    else
+      (( today - when > trash_days * 86400 )) && old=true || old=false
+    fi
+    if $old; then
+      printf '%s\t\n' "$id" | cliphist delete && removed_clip=$((removed_clip + 1))
+    else
+      kept+=("$id ${when:-$today}")
+    fi
+  done
+  printf '%s\n' "${kept[@]}" > "$seen"
+fi
+
 # ---- leftovers ----
 find "${XDG_CACHE_HOME:-$HOME/.cache}/phone-send" -type f -mtime +1 -delete 2>/dev/null
 
@@ -104,6 +141,7 @@ parts=()
 (( moved_phone )) && parts+=("$moved_phone phone files sorted")
 (( trashed )) && parts+=("$trashed old screenshots to the trash")
 (( trashed_phone )) && parts+=("$trashed_phone old phone files to the trash")
+(( removed_clip )) && parts+=("$removed_clip old pictures out of the clipboard history")
 if (( ${#parts[@]} )); then
   summary=$(IFS=';'; echo "${parts[*]}" | sed 's/;/ · /g')
   echo "$summary"
