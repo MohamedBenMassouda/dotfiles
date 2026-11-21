@@ -1,0 +1,6 @@
+[Unit]
+Description=Tidy screenshots and KDE Connect files (hypr/UserScripts/Tidy.sh)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.config/hypr/UserScripts/Tidy.sh --trash-old 3 --quiet

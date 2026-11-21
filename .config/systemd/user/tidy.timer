@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily tidy: screenshots and KDE Connect files older than 3 days go to the trash
+
+[Timer]
+OnCalendar=daily
+OnStartupSec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

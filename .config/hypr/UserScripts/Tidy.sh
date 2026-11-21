@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Tidy.sh: puts files where they belong, and says what it did in a flyout.
 #   Tidy.sh                      sort (moves only, deletes nothing)
-#   Tidy.sh --trash-old DAYS     also move screenshots older than DAYS to the trash
-#                                (recoverable from the file manager's Trash)
+#   Tidy.sh --trash-old DAYS     also move screenshots and KDE Connect files older than DAYS
+#                                to the trash (recoverable from the file manager's Trash).
+#                                Runs daily with 3 days: .config/systemd/user/tidy.timer
 #   Tidy.sh --quiet              no flyout when there was nothing to do (the weekly timer)
 #
 # - Screenshots: screenshot-named files lying in ~, Downloads, Pictures or Desktop go to
@@ -37,7 +38,7 @@ phone_media="$pictures/kde-connect"
 phone_files="$documents/kde-connect"
 mkdir -p "$shots" "$phone_media" "$phone_files"
 
-moved_shots=0 moved_phone=0 trashed=0
+moved_shots=0 moved_phone=0 trashed=0 trashed_phone=0
 
 move() {  # move FILE DIR, without overwriting
   local file=$1 dir=$2 name base ext target n=2
@@ -88,6 +89,12 @@ for src in "$phone_media" "$documents/Kdeconnect"; do
 done
 rmdir "$documents/Kdeconnect" 2>/dev/null   # only if it ended up empty
 
+if [[ -n $trash_days ]]; then
+  while IFS= read -r -d '' f; do
+    gio trash -- "$f" && trashed_phone=$((trashed_phone + 1))
+  done < <(find "$phone_media" "$phone_files" -type f -mtime +"$trash_days" -print0)
+fi
+
 # ---- leftovers ----
 find "${XDG_CACHE_HOME:-$HOME/.cache}/phone-send" -type f -mtime +1 -delete 2>/dev/null
 
@@ -96,6 +103,7 @@ parts=()
 (( moved_shots )) && parts+=("$moved_shots screenshots to Pictures/Screenshots")
 (( moved_phone )) && parts+=("$moved_phone phone files sorted")
 (( trashed )) && parts+=("$trashed old screenshots to the trash")
+(( trashed_phone )) && parts+=("$trashed_phone old phone files to the trash")
 if (( ${#parts[@]} )); then
   summary=$(IFS=';'; echo "${parts[*]}" | sed 's/;/ · /g')
   echo "$summary"
