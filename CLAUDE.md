@@ -148,6 +148,10 @@ no copied artwork or film dialogue.
   `shareReceived` D-Bus signal and puts received pictures in the clipboard (HEIC → PNG via
   magick); `PhoneSend.sh` (SUPER+ALT+V) sends the clipboard: text via the clipboard plugin,
   images as a file. iOS pauses the app in the background, so it must be open.
+- `UserScripts/Tidy.sh` [`--trash-old DAYS`] [`--quiet`]: screenshot-named files from ~, Downloads,
+  Pictures, Desktop → `~/Pictures/Screenshots`; sets every KDE Connect device's `incoming_path`
+  to `~/Pictures/kde-connect` and moves non-media on to `~/Documents/kde-connect`. Moves only,
+  never overwrites (" (2)"); old screenshots only to the trash (`gio trash`), and only if asked.
 - `PlayerVolume.sh` (login): saves Spotifast's MPRIS volume (`~/.local/state/spotifast-volume`)
   and restores it when Spotifast starts at 100% (its Soloist player always does).
 - `Controllers.sh watch`, `Runaway.sh`, `Usb.sh watch`, `Lid.sh`, `CmdDone.sh` (zsh hook for
