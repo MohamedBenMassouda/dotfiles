@@ -9,7 +9,9 @@ local rofi = "bash -c 'source " .. us .. "/menu-toggle.sh; menu_toggle launcher 
 bind("SUPER + Super_L", "App launcher (tap SUPER)", exec(rofi), { release = true })
 bind("SUPER + D", "App launcher", exec(rofi))
 bind("SUPER + SHIFT + Return", "Dropdown terminal", exec(s .. "/Dropterminal.sh " .. lib.term))
-bind("SUPER + Return", "Terminal", exec(app(lib.term)))
+-- -1: new terminals open as windows of the running kitty (one OpenGL context on the NVIDIA
+-- card instead of one per process, about 45 MB of video memory each)
+bind("SUPER + Return", "Terminal", exec(app(lib.term .. " -1")))
 bind("SUPER + E", "File manager", exec(app(lib.files)))
 bind("SUPER + SHIFT + O", "Change oh-my-zsh theme", exec(us .. "/ZshChangeTheme.sh"))
 bind("SUPER + SHIFT + D", "Color picker", exec(us .. "/ColorPick.sh"))

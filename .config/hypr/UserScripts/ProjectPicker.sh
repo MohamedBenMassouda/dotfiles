@@ -32,6 +32,6 @@ choice=$(for i in "${!labels[@]}"; do printf '%s\0icon\x1f%s\n' "${labels[$i]}" 
 
 target=${targets[$choice]}
 case "$target" in
-  session:*) setsid -f kitty -e tmux attach-session -t "${target#session:}" ;;
-  dir:*)     setsid -f kitty -e "$SESSIONIZER" "${target#dir:}" ;;
+  session:*) setsid -f kitty -1 -e tmux attach-session -t "${target#session:}" ;;   # -1: shares the running kitty
+  dir:*)     setsid -f kitty -1 -e "$SESSIONIZER" "${target#dir:}" ;;
 esac
