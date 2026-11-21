@@ -109,14 +109,11 @@ wallust run -s "$wallpaper_path" || true
 wallust_targets=(
   "$HOME/.config/rofi/wallust/colors-rofi.rasi"
   "$HOME/.config/quickshell/colors.json"
-  "$HOME/.config/tmux/wallust.conf"
 )
 wait_for_templates "$start_ts" "${wallust_targets[@]}" || true
 
 # open kitty windows pick up the new colours (wallust-colors.conf) without restarting
 pkill -USR1 -x kitty 2>/dev/null || true
-# and tmux's status bar and borders (~/.tmux.conf reads these colours)
-tmux source-file -q "$HOME/.config/tmux/wallust.conf" 2>/dev/null || true
 # Firefox (Pywalfox add-on) re-reads ~/.cache/wal/colors.json
 command -v pywalfox >/dev/null && pywalfox update >/dev/null 2>&1 &
 

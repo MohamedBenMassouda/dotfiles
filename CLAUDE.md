@@ -39,8 +39,8 @@ system/               files for /etc (udev rules…); never stowed, installed by
 .config/uwsm/env      session environment
 .local/share/applications/  desktop entry overrides
 .zshrc .tmux.conf     shell (the Neovim config is a separate repo, cloned by bootstrap)
-.config/tmux/         tmux status-bar helpers (stats.sh: RAM/VRAM, quiet.sh: prefix+M flyout);
-                      ~/.config/tmux/wallust.conf is generated (colors-tmux.conf), not in the repo
+.config/tmux/         quiet.sh (prefix+M flyout). Theme: catppuccin mocha pinned at commit 99013fa
+                      (cloned by hand; newer versions renamed its options), loaded before continuum
 ```
 
 Deploy = GNU stow from the repo root: `stow -n -v -t ~ .` (dry run), `stow -t ~ .`.
