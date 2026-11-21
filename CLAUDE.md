@@ -197,8 +197,9 @@ game mode's CPU cap (`tmpfiles.d/`), package cache trim, waybar removal, weekly 
 fwupd + `fwupdmgr get-updates`, systemd-oomd (`system/oomd/`: closes the app using the most
 memory under pressure, `OomWatch.sh` names it in a flyout). Pressure only, no `ManagedOOMSwap`:
 the swap trigger ignores user units' `ManagedOOMPreference` and once killed the whole session.
-The compositor (`wayland-wm@.service.d`: omit) and the bar (`quickshell.service.d`: avoid) are
-protected by drop-ins in `.config/systemd/user/`.
+The compositor (`wayland-wm@.service.d`: omit), the bar (`quickshell.service.d`: avoid) and
+tmux windows (`tmux-spawn-.scope.d`, a prefix drop-in: avoid) are protected by drop-ins in
+`.config/systemd/user/`.
 Snapshots: Timeshift (btrfs mode, weekly, excludes /home) + `timeshift-autosnap` before every
 pacman transaction; `grub-btrfsd --timeshift-auto` lists them in GRUB. `/boot` is FAT, so
 kernels aren't in snapshots.
