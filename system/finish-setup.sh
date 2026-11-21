@@ -48,7 +48,9 @@ echo "To install them: fwupdmgr update   (laptop on the charger; a BIOS update r
 
 step "7. Out-of-memory protection"
 install -D -m 644 "$here/oomd/user-service-oomd.conf" /etc/systemd/system/user@.service.d/10-oomd.conf
-install -D -m 644 "$here/oomd/root-slice-oomd.conf" /etc/systemd/system/-.slice.d/10-oomd.conf
+# no swap-based trigger: it ignores the user units' ManagedOOMPreference, so it killed the
+# whole Hyprland session once; memory pressure alone catches the same situations
+rm -f /etc/systemd/system/-.slice.d/10-oomd.conf
 install -D -m 644 "$here/oomd/oomd.conf" /etc/systemd/oomd.conf.d/10-desktop.conf
 systemctl daemon-reload
 systemctl enable --now systemd-oomd.service
