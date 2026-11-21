@@ -182,6 +182,8 @@ no copied artwork or film dialogue.
 - `pkill -f PATTERN` matches the running command line itself (exit 144, kills your shell):
   use `pgrep -x name`, exact PIDs, or a pattern that doesn't occur in the command.
 - `hostname` isn't installed; read `/etc/hostname`.
+- stow links a new folder as one symlink when the target folder doesn't exist, and systemd
+  ignores symlinked `*.service.d` drop-in folders: `mkdir` the real folder in `~`, then stow.
 - Bash `$(…)` strips NUL bytes: pipe rofi rows (`\0icon\x1f…`) straight into rofi.
 
 ## System-side setup (done on this machine; repeat on a fresh install)
@@ -193,7 +195,10 @@ no copied artwork or film dialogue.
 game mode's CPU cap (`tmpfiles.d/`), package cache trim, waybar removal, weekly SMART check
 (`system/disk-health/` → `/var/lib/disk-health/status`, flyout at login via `DiskHealth.sh`),
 fwupd + `fwupdmgr get-updates`, systemd-oomd (`system/oomd/`: closes the app using the most
-memory under pressure or at 90% swap; `OomWatch.sh` names it in a flyout).
+memory under pressure, `OomWatch.sh` names it in a flyout). Pressure only, no `ManagedOOMSwap`:
+the swap trigger ignores user units' `ManagedOOMPreference` and once killed the whole session.
+The compositor (`wayland-wm@.service.d`: omit) and the bar (`quickshell.service.d`: avoid) are
+protected by drop-ins in `.config/systemd/user/`.
 Snapshots: Timeshift (btrfs mode, weekly, excludes /home) + `timeshift-autosnap` before every
 pacman transaction; `grub-btrfsd --timeshift-auto` lists them in GRUB. `/boot` is FAT, so
 kernels aren't in snapshots.
