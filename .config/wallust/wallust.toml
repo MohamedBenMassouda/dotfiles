@@ -53,6 +53,9 @@ quickshell.target = '~/.config/quickshell/colors.json'
 kitty.template = 'colors-kitty.conf'
 kitty.target = '~/.config/kitty/wallust-colors.conf'
 
+tmux.template = 'colors-tmux.conf'
+tmux.target = '~/.config/tmux/wallust.conf'
+
 # GTK 3 (adw-gtk3 theme) and GTK 4 / libadwaita: gtk.css in each folder imports colors.css
 gtk3.template = 'colors-gtk.css'
 gtk3.target = '~/.config/gtk-3.0/colors.css'
